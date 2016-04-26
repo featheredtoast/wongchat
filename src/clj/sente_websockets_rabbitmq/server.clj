@@ -17,15 +17,47 @@
             [langohr.basic     :as lb])
   (:gen-class))
 
+(defn get-user-id [req]
+  (println (format "user id %s" (get-in req [:session :base-user-id])))
+  "jeff")
+
 (let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn
               connected-uids]}
-      (sente/make-channel-socket! sente-web-server-adapter {})]
+      (sente/make-channel-socket! sente-web-server-adapter {:user-id-fn get-user-id})]
   (def ring-ajax-post                ajax-post-fn)
   (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
   (def ch-chsk                       ch-recv) ; ChannelSocket's receive channel
   (def chsk-send!                    send-fn) ; ChannelSocket's send API fn
   (def connected-uids                connected-uids) ; Watchable, read-only atom
   )
+
+(defonce conn  (rmq/connect {:host "172.17.0.2"
+                         :port 5672
+                         :username "guest"
+                         :password "guest"}))
+(defonce ch    (lch/open conn))
+(defonce qname "hello")
+
+
+(defmulti event-msg-handler :id) ; Dispatch on event-id
+;; Wrap for logging, catching, etc.:
+(defn     event-msg-handler* [{:as ev-msg :keys [id ?data event]}]
+  (event-msg-handler ev-msg))
+(do ; Client-side methods
+  (defmethod event-msg-handler :default ; Fallback
+    [{:as ev-msg :keys [event]}]
+    (println "Unhandled event: %s" event))
+  
+  (defmethod event-msg-handler :chsk/ws-ping
+    [{:as ev-msg :keys [event]}]
+    (println "ping"))
+
+  (defmethod event-msg-handler :some/request-id
+    [{:as ev-msg :keys [?data]}]
+    (let [msg (:msg ?data)]
+      (println "Event from client: " msg)
+      (lb/publish ch "" qname msg {:content-type "text/plain" :type "greetings.hi"}))))
+(sente/start-chsk-router! ch-chsk event-msg-handler*)
 
 (defroutes routes
   (GET "/" _
@@ -49,15 +81,9 @@
                     :i payload}]))))
 
 (defn start-broadcaster! []
-  (let [conn  (rmq/connect {:host "172.17.0.2"
-                            :port 5672
-                            :username "guest"
-                            :password "guest"})
-        ch    (lch/open conn)
-        qname "hello"]
-    (println (format "[main] Connected. Channel id: %d" (.getChannelNumber ch)))
-    (lq/declare ch qname {:exclusive false :auto-delete false})
-    (lc/subscribe ch qname message-handler {:auto-ack true})))
+  (println (format "[main] Connected. Channel id: %d" (.getChannelNumber ch)))
+  (lq/declare ch qname {:exclusive false :auto-delete false})
+  (lc/subscribe ch qname message-handler {:auto-ack true}))
 
 (start-broadcaster!)
 

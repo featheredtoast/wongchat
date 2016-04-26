@@ -48,10 +48,24 @@
 
   ;; Add your (defmethod handle-event-msg! <event-id> [ev-msg] <body>)s here...
   )
+
 (sente/start-chsk-router! ch-chsk event-msg-handler*)
 (sente/chsk-reconnect! chsk)
 
+(defn do-a-push [msg]
+  (chsk-send!
+   [:some/request-id {:msg msg}] ;event
+   8000 ; timeout
+   (fn [reply]
+     (if (sente/cb-success? reply)
+       (println "message sent")
+       (println "message failed to send")))))
+
 (defn greeting []
-  [:h1 (:text @app-state)])
+  [:div {:class "app"}
+   [:h1 (:text @app-state)]
+   [:button {:on-click (partial do-a-push (:text @app-state))} "click"]
+   [:input {:type "text" :ref "message"
+            :on-change #(swap! app-state assoc :text (-> % .-target .-value))}]])
 
 (reagent/render [greeting] (js/document.getElementById "app"))
