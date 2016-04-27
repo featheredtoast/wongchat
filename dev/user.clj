@@ -14,4 +14,7 @@
 (defn run []
   (figwheel/start-figwheel!))
 
+(defn start-workers []
+  (#'sente-websockets-rabbitmq.server/start-workers!))
+
 (def browser-repl figwheel/cljs-repl)

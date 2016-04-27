@@ -62,7 +62,6 @@
     (let [msg (:msg ?data)]
       (println "Event from client: " msg)
       (lb/publish ch "" qname msg {:content-type "text/plain" :type "greetings.hi"}))))
-(sente/start-chsk-router! ch-chsk event-msg-handler*)
 
 (defroutes routes
   (GET "/" _
@@ -95,9 +94,13 @@
       wrap-with-logger
       wrap-gzip))
 
-(defn -main [& [port]]
+(defn start-workers! []
   (start-sente!)
   (connect-amqp!)
-  (start-broadcaster!)
+  (sente/start-chsk-router! ch-chsk event-msg-handler*)
+  (start-broadcaster!))
+
+(defn -main [& [port]]
+  (start-workers!)
   (let [port (Integer. (or port (env :port) 10555))]
     (run-server http-handler {:port port :join? false})))
