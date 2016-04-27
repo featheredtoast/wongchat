@@ -7,7 +7,8 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom {:text "Hello Chestnut!"
+(def app-state (atom {:text "Hello Chestnut!"
+                          :messages ["messages appear here..." "hi message" "hi"]
                           :input ""}))
 
 (let [{:keys [chsk ch-recv send-fn state]}
@@ -40,7 +41,7 @@
     (println "Push event from server: %s" ?data)
     (let [i-value (:i (:some/broadcast (apply array-map ?data)))]
       (println "i value %s" i-value)
-      (swap! app-state assoc :text (str i-value))))
+      (swap! app-state assoc :messages (conj (:messages @app-state) (str i-value)))))
 
   (defmethod event-msg-handler :chsk/handshake
     [{:as ev-msg :keys [?data]}]
@@ -66,9 +67,13 @@
   (swap! app-state assoc :input (-> e .-target .-value))
   (swap! app-state assoc :text (-> e .-target .-value)))
 
+(defn print-message [message]
+  ^{:key message} [:div message])
+
 (defn greeting []
   [:div {:class "app"}
    [:h1 (:text @app-state)]
+   (map print-message (:messages @app-state))
    [:button {:on-click (partial do-a-push (:input @app-state))} "click"]
    [:input {:type "text" :ref "message"
             :on-change input-change
