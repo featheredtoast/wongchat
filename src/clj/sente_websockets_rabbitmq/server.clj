@@ -7,7 +7,7 @@
             [ring.middleware.logger :refer [wrap-with-logger]]
             [environ.core :refer [env]]
             [org.httpkit.server :refer [run-server]]
-            [clojure.core.async :as async :refer (<! <!! >! >!! put! chan go go-loop)]
+            [clojure.core.async :as async :refer (<! <!! >! >!! put! take! chan go go-loop)]
             [taoensso.sente :as sente]
             [taoensso.sente.server-adapters.http-kit      :refer (sente-web-server-adapter)]
             [langohr.core      :as rmq]
