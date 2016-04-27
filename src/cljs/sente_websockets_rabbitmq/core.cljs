@@ -7,19 +7,20 @@
 
 (enable-console-print!)
 
-(def app-state (atom {:text "Hello Chestnut!"
+(defonce app-state (atom {:text "Hello Chestnut!"
                           :messages ["messages appear here..." "hi message" "hi"]
                           :input ""}))
 
-(let [{:keys [chsk ch-recv send-fn state]}
-      (sente/make-channel-socket! "/chsk" ; Note the same path as before
-       {:type :auto ; e/o #{:auto :ajax :ws}
-       })]
-  (def chsk       chsk)
-  (def ch-chsk    ch-recv) ; ChannelSocket's receive channel
-  (def chsk-send! send-fn) ; ChannelSocket's send API fn
-  (def chsk-state state)   ; Watchable, read-only atom
-  )
+(defn start-ws! []
+  (let [{:keys [chsk ch-recv send-fn state]}
+        (sente/make-channel-socket! "/chsk" ; Note the same path as before
+                                    {:type :auto ; e/o #{:auto :ajax :ws}
+                                     })]
+    (def chsk       chsk)
+    (def ch-chsk    ch-recv) ; ChannelSocket's receive channel
+    (def chsk-send! send-fn) ; ChannelSocket's send API fn
+    (def chsk-state state)   ; Watchable, read-only atom
+    ))
 
 (defmulti event-msg-handler :id) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
@@ -39,9 +40,13 @@
   (defmethod event-msg-handler :chsk/recv
     [{:as ev-msg :keys [?data]}]
     (println "Push event from server: %s" ?data)
-    (let [i-value (:i (:some/broadcast (apply array-map ?data)))]
-      (println "i value %s" i-value)
-      (swap! app-state assoc :messages (conj (:messages @app-state) (str i-value)))))
+    (let [i-value (:i (:some/broadcast (apply array-map ?data)))
+          new-value-uncut (->> (str i-value)
+                               (conj (:messages @app-state)))
+          new-value-count (count new-value-uncut)
+          new-value (subvec new-value-uncut (- new-value-count 8))]
+      (println "new value %s" new-value)
+      (swap! app-state assoc :messages new-value)))
 
   (defmethod event-msg-handler :chsk/handshake
     [{:as ev-msg :keys [?data]}]
@@ -51,24 +56,29 @@
   ;; Add your (defmethod handle-event-msg! <event-id> [ev-msg] <body>)s here...
   )
 
-(sente/start-chsk-router! ch-chsk event-msg-handler*)
-(sente/chsk-reconnect! chsk)
+(defonce start! 
+  (delay
+   (start-ws!)
+   (sente/start-chsk-router! ch-chsk event-msg-handler*)
+   (sente/chsk-reconnect! chsk)))
+
+(force start!)
 
 (defn do-a-push [msg]
   (chsk-send!
    [:some/request-id {:msg msg}] ;event
    8000 ; timeout
-   (fn [reply]
-     (if (sente/cb-success? reply)
-       (println "message sent")
-       (println "message failed to send")))))
+   (fn [reply])))
 
 (defn input-change [e]
   (swap! app-state assoc :input (-> e .-target .-value))
   (swap! app-state assoc :text (-> e .-target .-value)))
 
+(defn gen-message-key []
+  (.random js/Math))
+
 (defn print-message [message]
-  ^{:key message} [:div message])
+  ^{:key (gen-message-key)} [:div message])
 
 (defn greeting []
   [:div {:class "app"}
