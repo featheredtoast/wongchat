@@ -34,11 +34,9 @@
 (let [host (or (env :amqp-host) "172.17.0.2")
       port (or (env :amqp-port) 5672)
       username (or (env :amqp-user) "guest")
-      password (or (env :amqp-pass) "guest")]
-  (defonce conn  (rmq/connect {:host host
-                               :port port
-                               :username username
-                               :password password})))
+      password (or (env :amqp-pass) "guest")
+      uri (str "amqp://" username ":" password "@" host ":" port)]
+  (defonce conn  (rmq/connect {:uri (or (env :RABBITMQ_BIGWIG_RX_URL) uri)})))
 (defonce ch    (lch/open conn))
 (defonce qname "hello")
 
