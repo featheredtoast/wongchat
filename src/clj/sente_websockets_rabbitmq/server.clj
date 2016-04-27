@@ -21,25 +21,27 @@
   (println (format "user id %s" (get-in req [:session :base-user-id])))
   "user")
 
-(let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn
-              connected-uids]}
-      (sente/make-channel-socket! sente-web-server-adapter {:user-id-fn get-user-id})]
-  (def ring-ajax-post                ajax-post-fn)
-  (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
-  (def ch-chsk                       ch-recv) ; ChannelSocket's receive channel
-  (def chsk-send!                    send-fn) ; ChannelSocket's send API fn
-  (def connected-uids                connected-uids) ; Watchable, read-only atom
-  )
+(defn start-sente! []
+  (let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn
+                connected-uids]}
+        (sente/make-channel-socket! sente-web-server-adapter {:user-id-fn get-user-id})]
+    (def ring-ajax-post                ajax-post-fn)
+    (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
+    (def ch-chsk                       ch-recv) ; ChannelSocket's receive channel
+    (def chsk-send!                    send-fn) ; ChannelSocket's send API fn
+    (def connected-uids                connected-uids) ; Watchable, read-only atom
+    ))
 
-(let [host (or (env :amqp-host) "172.17.0.2")
-      port (or (env :amqp-port) 5672)
-      username (or (env :amqp-user) "guest")
-      password (or (env :amqp-pass) "guest")
-      uri (str "amqp://" username ":" password "@" host ":" port)]
-  (println "amqp uri " (or (env :rabbitmq-bigwig-rx-url) uri))
-  (defonce conn  (rmq/connect {:uri (or (env :rabbitmq-bigwig-rx-url) uri)})))
-(defonce ch    (lch/open conn))
-(defonce qname "hello")
+(defn connect-amqp! []
+  (let [host (or (env :amqp-host) "172.17.0.2")
+        port (or (env :amqp-port) 5672)
+        username (or (env :amqp-user) "guest")
+        password (or (env :amqp-pass) "guest")
+        uri (str "amqp://" username ":" password "@" host ":" port)]
+    (println "amqp uri " (or (env :rabbitmq-bigwig-rx-url) uri))
+    (defonce conn  (rmq/connect {:uri (or (env :rabbitmq-bigwig-rx-url) uri)})))
+  (defonce ch    (lch/open conn))
+  (defonce qname "hello"))
 
 
 (defmulti event-msg-handler :id) ; Dispatch on event-id
@@ -94,6 +96,8 @@
       wrap-gzip))
 
 (defn -main [& [port]]
+  (start-sente!)
+  (connect-amqp!)
   (start-broadcaster!)
   (let [port (Integer. (or port (env :port) 10555))]
     (run-server http-handler {:port port :join? false})))
