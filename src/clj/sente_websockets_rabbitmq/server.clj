@@ -36,9 +36,8 @@
       username (or (env :amqp-user) "guest")
       password (or (env :amqp-pass) "guest")
       uri (str "amqp://" username ":" password "@" host ":" port)]
-  (println "environment: " env)
-  (println "amqp uri " (or (env :RABBITMQ_BIGWIG_RX_URL) uri))
-  (defonce conn  (rmq/connect {:uri (or (env :RABBITMQ_BIGWIG_RX_URL) uri)})))
+  (println "amqp uri " (or (env ::rabbitmq-bigwig-rx-url) uri))
+  (defonce conn  (rmq/connect {:uri (or (env :rabbitmq-bigwig-rx-url) uri)})))
 (defonce ch    (lch/open conn))
 (defonce qname "hello")
 
