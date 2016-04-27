@@ -36,7 +36,7 @@
       username (or (env :amqp-user) "guest")
       password (or (env :amqp-pass) "guest")
       uri (str "amqp://" username ":" password "@" host ":" port)]
-  (println "amqp uri " (or (env ::rabbitmq-bigwig-rx-url) uri))
+  (println "amqp uri " (or (env :rabbitmq-bigwig-rx-url) uri))
   (defonce conn  (rmq/connect {:uri (or (env :rabbitmq-bigwig-rx-url) uri)})))
 (defonce ch    (lch/open conn))
 (defonce qname "hello")
@@ -87,8 +87,6 @@
   (lq/declare ch qname {:exclusive false :auto-delete false})
   (lc/subscribe ch qname message-handler {:auto-ack true}))
 
-(start-broadcaster!)
-
 (def http-handler
   (-> routes
       (wrap-defaults api-defaults)
@@ -96,5 +94,6 @@
       wrap-gzip))
 
 (defn -main [& [port]]
+  (start-broadcaster!)
   (let [port (Integer. (or port (env :port) 10555))]
     (run-server http-handler {:port port :join? false})))
