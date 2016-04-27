@@ -19,7 +19,7 @@
 
 (defn get-user-id [req]
   (println (format "user id %s" (get-in req [:session :base-user-id])))
-  "jeff")
+  "user")
 
 (let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn
               connected-uids]}
@@ -31,10 +31,14 @@
   (def connected-uids                connected-uids) ; Watchable, read-only atom
   )
 
-(defonce conn  (rmq/connect {:host "172.17.0.2"
-                         :port 5672
-                         :username "guest"
-                         :password "guest"}))
+(let [host (or (env :amqp-host) "172.17.0.2")
+      port (or (env :amqp-port) 5672)
+      username (or (env :amqp-user) "guest")
+      password (or (env :amqp-pass) "guest")]
+  (defonce conn  (rmq/connect {:host host
+                               :port port
+                               :username username
+                               :password password})))
 (defonce ch    (lch/open conn))
 (defonce qname "hello")
 
@@ -75,8 +79,7 @@
     (doseq [uid (:any @connected-uids)]
       (chsk-send! uid
                   [:some/broadcast
-                   {:what-is-this "A broadcast pushed from server"
-                    :how-often    "Every 10 seconds"
+                   {:what-is-this "Broadcast from amqp"
                     :to-whom uid
                     :i payload}]))))
 
