@@ -15,7 +15,7 @@
                  [environ "1.0.2"]
                  [reagent "0.5.1"]
                  [org.clojure/core.async "0.2.374"]
-                 [com.taoensso/sente "1.7.0"]
+                 [com.taoensso/sente "1.8.1"]
                  [org.clojure/tools.reader "1.0.0-alpha1"]
                  [com.novemberain/langohr "3.5.0"]]
 
