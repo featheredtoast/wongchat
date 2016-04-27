@@ -7,7 +7,8 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom {:text "Hello Chestnut!"}))
+(defonce app-state (atom {:text "Hello Chestnut!"
+                          :input ""}))
 
 (let [{:keys [chsk ch-recv send-fn state]}
       (sente/make-channel-socket! "/chsk" ; Note the same path as before
@@ -61,11 +62,16 @@
        (println "message sent")
        (println "message failed to send")))))
 
+(defn input-change [e]
+  (swap! app-state assoc :input (-> e .-target .-value))
+  (swap! app-state assoc :text (-> e .-target .-value)))
+
 (defn greeting []
   [:div {:class "app"}
    [:h1 (:text @app-state)]
-   [:button {:on-click (partial do-a-push (:text @app-state))} "click"]
+   [:button {:on-click (partial do-a-push (:input @app-state))} "click"]
    [:input {:type "text" :ref "message"
-            :on-change #(swap! app-state assoc :text (-> % .-target .-value))}]])
+            :on-change input-change
+            :value (:input @app-state)}]])
 
 (reagent/render [greeting] (js/document.getElementById "app"))
