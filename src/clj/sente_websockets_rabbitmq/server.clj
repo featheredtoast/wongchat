@@ -6,7 +6,7 @@
             [ring.middleware.gzip :refer [wrap-gzip]]
             [ring.middleware.logger :refer [wrap-with-logger]]
             [environ.core :refer [env]]
-            [ring.adapter.jetty :refer [run-jetty]]
+            [org.httpkit.server :refer [run-server]]
             [clojure.core.async :as async :refer (<! <!! >! >!! put! chan go go-loop)]
             [taoensso.sente :as sente]
             [taoensso.sente.server-adapters.http-kit      :refer (sente-web-server-adapter)]
@@ -96,4 +96,4 @@
 
 (defn -main [& [port]]
   (let [port (Integer. (or port (env :port) 10555))]
-    (run-jetty http-handler {:port port :join? false})))
+    (run-server http-handler {:port port :join? false})))
