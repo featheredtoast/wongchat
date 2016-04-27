@@ -45,7 +45,7 @@
                                (conj (:messages @app-state)))
           new-value-count (count new-value-uncut)
           limit 8
-          new-value-offset (or (and (< 0 (- new-value-count limit)) (- new-value-count limit)) 0)
+          new-value-offset (or (and (< 0 (- new-value-count limit)) (- new-value-count limit)) new-value-count)
           new-value (subvec new-value-uncut (- new-value-count new-value-offset))]
       (println "new value %s" new-value)
       (swap! app-state assoc :messages new-value)))
