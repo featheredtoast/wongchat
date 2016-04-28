@@ -45,9 +45,10 @@
                                (conj (:messages @app-state)))
           new-value-count (count new-value-uncut)
           limit 8
-          new-value-offset (or (and (< 0 (- new-value-count limit)) (- new-value-count limit)) new-value-count)
-          new-value (subvec new-value-uncut (- new-value-count new-value-offset))]
-      (println "new value %s" new-value)
+          new-value-offset (or (and (< 0 (- new-value-count limit)) limit) new-value-count)
+          new-value-cut (- new-value-count new-value-offset)
+          new-value (subvec new-value-uncut new-value-cut)]
+      
       (swap! app-state assoc :messages new-value)))
 
   (defmethod event-msg-handler :chsk/handshake
