@@ -32,8 +32,8 @@ In the REPL, type
 
 ```clojure
 (run)
-(browser-repl)
 (sente-websockets-rabbitmq.server/start-workers!)
+(browser-repl)
 ```
 
 `(start-workers!)` boots up the connection to rabbitmq and starts sente for websocket connections
