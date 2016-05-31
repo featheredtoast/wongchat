@@ -40,8 +40,10 @@
   (defmethod event-msg-handler :chsk/recv
     [{:as ev-msg :keys [?data]}]
     (println "Push event from server: %s" ?data)
-    (let [i-value (:i (:some/broadcast (apply array-map ?data)))
-          new-value-uncut (->> (str i-value)
+    (let [payload (:some/broadcast (apply array-map ?data))
+          msg (:msg payload)
+          sender (:sender payload)
+          new-value-uncut (->> (str sender ": " msg)
                                (conj (:messages @app-state)))
           new-value-count (count new-value-uncut)
           limit 8
@@ -83,8 +85,16 @@
 (defn print-message [message]
   ^{:key (gen-message-key)} [:div message])
 
+(defn get-cookie-map []
+  (->> (map #(.split % "=") (.split (.-cookie js/document) #";"))
+     (map vec)
+     (map (fn [key-val] [(keyword (.trim (first key-val))) (.trim (second key-val))]))
+     (map (partial apply hash-map))
+     (apply merge)))
+
 (defn greeting []
   [:div {:class "app"}
+   [:div [:span "User: " (js/decodeURIComponent (:user (get-cookie-map)))] [:a {:href "/logout"} "logout"]]
    [:h1 (:text @app-state)]
    (map print-message (:messages @app-state))
    [:button {:on-click (partial do-a-push (:input @app-state))} "click"]

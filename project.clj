@@ -17,7 +17,11 @@
                  [org.clojure/core.async "0.2.374"]
                  [com.taoensso/sente "1.8.1"]
                  [org.clojure/tools.reader "1.0.0-alpha1"]
-                 [com.novemberain/langohr "3.5.0"]]
+                 [com.novemberain/langohr "3.5.0"]
+                 [com.cemerick/friend "0.2.2-SNAPSHOT"]
+                 [qarth "0.1.1"]
+                 [clj-http "2.2.0"]
+                 [org.clojure/data.json "0.2.6"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-environ "1.0.1"]]
@@ -52,6 +56,18 @@
                            :asset-path "js/compiled/out"
                            :output-to "resources/public/js/compiled/sente_websockets_rabbitmq.js"
                            :output-dir "resources/public/js/compiled/out"
+                           :source-map-timestamp true}}
+               :login
+               {:source-paths ["src/cljs"]
+
+                :figwheel true
+                ;; Alternatively, you can configure a function to run every time figwheel reloads.
+                ;; :figwheel {:on-jsload "sente-websockets-rabbitmq.core/on-figwheel-reload"}
+
+                :compiler {:main sente-websockets-rabbitmq.login
+                           :asset-path "js/compiled/login"
+                           :output-to "resources/public/js/compiled/login.js"
+                           :output-dir "resources/public/js/compiled/login"
                            :source-map-timestamp true}}}}
 
   ;; When running figwheel from nREPL, figwheel will read this configuration
@@ -114,6 +130,11 @@
               :aot :all
               :cljsbuild {:builds
                           {:app
+                           {:source-paths ^:replace ["src/cljs"]
+                            :compiler
+                            {:optimizations :advanced
+                             :pretty-print false}}
+                           :login
                            {:source-paths ^:replace ["src/cljs"]
                             :compiler
                             {:optimizations :advanced
