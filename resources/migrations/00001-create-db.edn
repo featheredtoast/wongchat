@@ -1,0 +1,5 @@
+{:up   ["CREATE TABLE messages (
+id    serial primary key, 
+uid VARCHAR(100), 
+msg VARCHAR(4000))"]
+ :down ["DROP TABLE messages"]}

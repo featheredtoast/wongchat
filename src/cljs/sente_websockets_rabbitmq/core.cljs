@@ -7,9 +7,24 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom {:text "Hello Chestnut!"
-                          :messages ["messages appear here..." "hi message" "hi"]
+(defonce app-state (atom {:messages []
                           :input ""}))
+
+(defn handle-message [payload]
+  (let [msg (:msg payload)
+        sender (:uid payload)
+        new-value-uncut (->> (str sender ": " msg)
+                             (conj (:messages @app-state)))
+        new-value-count (count new-value-uncut)
+        limit 10
+        new-value-offset (or (and (< 0 (- new-value-count limit)) limit) new-value-count)
+        new-value-cut (- new-value-count new-value-offset)
+        new-value (subvec new-value-uncut new-value-cut)]
+    (swap! app-state assoc :messages new-value)))
+
+(defn handle-init [payload]
+  (let [messages (mapv #(str (:uid %) ": " (:msg %)) payload)]
+       (swap! app-state assoc :messages messages)))
 
 (defn start-ws! []
   (let [{:keys [chsk ch-recv send-fn state]}
@@ -21,6 +36,12 @@
     (def chsk-send! send-fn) ; ChannelSocket's send API fn
     (def chsk-state state)   ; Watchable, read-only atom
     ))
+
+(defn chat-init []
+  (chsk-send!
+   [:chat/init] ;event
+   8000 ; timeout
+   (fn [reply])))
 
 (defmulti event-msg-handler :id) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
@@ -40,23 +61,17 @@
   (defmethod event-msg-handler :chsk/recv
     [{:as ev-msg :keys [?data]}]
     (println "Push event from server: %s" ?data)
-    (let [payload (:some/broadcast (apply array-map ?data))
-          msg (:msg payload)
-          sender (:sender payload)
-          new-value-uncut (->> (str sender ": " msg)
-                               (conj (:messages @app-state)))
-          new-value-count (count new-value-uncut)
-          limit 8
-          new-value-offset (or (and (< 0 (- new-value-count limit)) limit) new-value-count)
-          new-value-cut (- new-value-count new-value-offset)
-          new-value (subvec new-value-uncut new-value-cut)]
-      
-      (swap! app-state assoc :messages new-value)))
+    (let [data-map (apply array-map ?data)
+          payload (:chat/message data-map)
+          init-payload (:chat/init data-map)]
+      (or (nil? payload) (handle-message payload))
+      (or (nil? init-payload) (handle-init init-payload))))
 
   (defmethod event-msg-handler :chsk/handshake
     [{:as ev-msg :keys [?data]}]
     (let [[?uid ?csrf-token ?handshake-data] ?data]
-      (println "Handshake: %s" ?data)))
+      (do (println "Handshake: %s" ?data)
+          (chat-init))))
 
   ;; Add your (defmethod handle-event-msg! <event-id> [ev-msg] <body>)s here...
   )
@@ -71,7 +86,7 @@
 
 (defn do-a-push [msg]
   (chsk-send!
-   [:some/request-id {:msg msg}] ;event
+   [:chat/submit {:msg msg}] ;event
    8000 ; timeout
    (fn [reply])))
 
@@ -119,6 +134,7 @@
                                  (submit-message)))
                :value (:input @app-state)}]
       [:span {:class "input-group-btn"}
-       [:button {:class "btn btn-default" :on-click submit-message} "send"]]]]]])
+       [:button {:class "btn btn-default" :on-click submit-message} "send"]]]
+     [:button {:class "btn btn-default" :on-click chat-init} "refresh"]]]])
 
 (reagent/render [main-app] (js/document.getElementById "app"))

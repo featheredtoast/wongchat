@@ -21,7 +21,10 @@
                  [com.cemerick/friend "0.2.2-SNAPSHOT"]
                  [qarth "0.1.1"]
                  [clj-http "2.2.0"]
-                 [org.clojure/data.json "0.2.6"]]
+                 [org.clojure/data.json "0.2.6"]
+                 [ragtime "0.6.0"]
+                 [org.clojure/java.jdbc "0.6.1"]
+                 [postgresql/postgresql "9.1-901-1.jdbc4"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-environ "1.0.1"]]

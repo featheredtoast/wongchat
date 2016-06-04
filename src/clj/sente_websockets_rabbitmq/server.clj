@@ -19,19 +19,32 @@
             [qarth.friend]
             [qarth.oauth :as oauth]
             [qarth.impl.google]
-            [clojure.data.json :as json])
+            [clojure.data.json :as json]
+            [ragtime.jdbc]
+            [ragtime.repl]
+            [clojure.java.jdbc :as jdbc])
   (:gen-class))
 
 (def config (try (clojure.edn/read-string (slurp (clojure.java.io/resource "config.edn"))) (catch Throwable e {})))
+
+(defn get-property [property default]
+  (or (env property) (property config) default))
 
 (defn credential-fn [id]
   (let [email (get-in id [:qarth.oauth/record :email])]
     (assoc id :roles [::user])))
 
+(def db-config
+  {:classname "org.postgresql.Driver"
+   :subprotocol "postgresql"
+   :subname (get-property :db-host "")
+   :username (get-property :db-user "")
+   :password (get-property :db-pass "")})
+
 (def conf {:type :google
-           :callback (or (env :oauth-callback) (:oauth-callback config) "http://localhost:3449/login")
-           :api-key (or (env :oauth-api-key) (:oauth-api-key config) "")
-           :api-secret (or (env :oauth-api-secret) (:oauth-api-secret config) "")})
+           :callback (get-property :oauth-callback "http://localhost:3449/login")
+           :api-key (get-property :oauth-api-key "")
+           :api-secret (get-property :oauth-api-secret "")})
 
 (def service (oauth/build conf))
 
@@ -61,16 +74,23 @@
     ))
 
 (defn connect-amqp! []
-  (let [host (or (env :amqp-host) "localhost")
-        port (or (env :amqp-port) 5672)
-        username (or (env :amqp-user) "guest")
-        password (or (env :amqp-pass) "guest")
+  (let [host (get-property :amqp-host "localhost")
+        port (get-property :amqp-port 5672)
+        username (get-property :amqp-user "guest")
+        password (get-property :amqp-pass "guest")
         uri (str "amqp://" username ":" password "@" host ":" port)]
-    (println "amqp uri " (or (env :rabbitmq-bigwig-rx-url) uri))
-    (defonce conn  (rmq/connect {:uri (or (env :rabbitmq-bigwig-rx-url) uri)})))
-  (defonce ch    (lch/open conn))
-  (defonce qname "hello"))
+    (println "amqp uri " (or (get-property :rabbitmq-bigwig-rx-url nil) uri))
+    (def conn  (rmq/connect {:uri (or (get-property :rabbitmq-bigwig-rx-url nil) uri)})))
+  (def ch    (lch/open conn))
+  (def qname "hello"))
 
+(defn disconnect-amqp! []
+  (rmq/close ch)
+  (rmq/close conn))
+
+(defn get-recent-messages []
+  (jdbc/query db-config
+              ["select uid, msg from messages order by id DESC LIMIT 10;"]))
 
 (defmulti event-msg-handler :id) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
@@ -82,13 +102,24 @@
     (println "Unhandled event: %s" event))
   
   (defmethod event-msg-handler :chsk/ws-ping
-    [{:as ev-msg :keys [event]}]
-    #_(println "ping"))
+    [{:as ev-msg :keys [event]}])
 
-  (defmethod event-msg-handler :some/request-id
+  (defmethod event-msg-handler :chsk/uidport-open
+    [{:as ev-msg :keys [uid]}]
+    (println "new client connection"))
+
+  (defmethod event-msg-handler :chat/init
+    [{:as ev-msg :keys [?data uid]}]
+    (chsk-send! uid
+                [:chat/init
+                 (reverse (vec (get-recent-messages)))]))
+
+  (defmethod event-msg-handler :chat/submit
     [{:as ev-msg :keys [?data uid]}]
     (let [msg (:msg ?data)]
       (println "Event from " uid ": " msg)
+      (jdbc/insert! db-config :messages
+                    {:uid uid :msg msg})
       (lb/publish ch "" qname (json/write-str {:msg msg :uid uid}) {:content-type "text/json" :type "greetings.hi"}))))
 
 (defroutes routes
@@ -120,16 +151,14 @@
   (let [payload (json/read-str (String. payload "UTF-8")
                                :key-fn keyword)
         msg (:msg payload)
-        sender (:uid payload)]
+        sender-uid (:uid payload)]
     (println "Broadcasting server>user: %s" @connected-uids)
     (println "sending: " payload)
     (doseq [uid (:any @connected-uids)]
       (chsk-send! uid
-                  [:some/broadcast
-                   {:what-is-this "Broadcast from amqp"
-                    :to-whom uid
-                    :msg msg
-                    :sender sender}]))))
+                  [:chat/message
+                   {:msg msg
+                    :uid sender-uid}]))))
 
 (defn start-broadcaster! []
   (println (format "[main] Connected. Channel id: %d" (.getChannelNumber ch)))
@@ -145,11 +174,20 @@
       wrap-with-logger
       wrap-gzip))
 
+(defn db-migrate! []
+  (ragtime.repl/migrate {:datastore
+   (ragtime.jdbc/sql-database db-config)
+                         :migrations (ragtime.jdbc/load-resources "migrations")}))
+
 (defn start-workers! []
+  (db-migrate!)
   (start-sente!)
   (connect-amqp!)
   (sente/start-chsk-router! ch-chsk event-msg-handler*)
   (start-broadcaster!))
+
+(defn stop-workers! []
+  (disconnect-amqp!))
 
 (defn -main [& [port]]
   (start-workers!)
