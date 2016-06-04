@@ -144,7 +144,7 @@
         (friend/authorize
          #{::user}
          (ring-ajax-post                req)))
-  (friend/logout (ANY "/logout" request (ring.util.response/redirect "/"))))
+  (friend/logout (ANY "/logout" request (ring.util.response/redirect (get-property :url "/")))))
 
 (defn message-handler
   [ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
