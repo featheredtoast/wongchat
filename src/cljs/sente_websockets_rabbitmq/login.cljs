@@ -3,11 +3,10 @@
 
 (enable-console-print!)
 
-(defonce app-state (atom {:text "Hello Chestnut!"}))
-
 (defn login []
-  [:div {:class "app"}
-   [:h1 (:text @app-state)]
-   [:a {:href "/chat"} "login with google"]])
+  [:div {:class "app container"}
+   [:h1 "A wild chat application appears"]
+   [:p "Hi there! This is a pretty basic chat thing implemented in clojure/scirpt, websockets, and rabbitmq with authentication over oauth!"]
+   [:a {:type "button" :class "btn btn-default" :href "/chat"} "login with google"]])
 
 (reagent/render [login] (js/document.getElementById "app"))

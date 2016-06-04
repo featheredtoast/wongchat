@@ -101,6 +101,7 @@
              ;; emacsclient -n +$2 $1
              ;;
              ;; :open-file-command "myfile-opener"
+             :builds-to-start [:app :login]
 
              :server-logfile "log/figwheel.log"}
 

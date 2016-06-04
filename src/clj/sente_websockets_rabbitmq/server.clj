@@ -22,14 +22,16 @@
             [clojure.data.json :as json])
   (:gen-class))
 
+(def config (try (clojure.edn/read-string (slurp (clojure.java.io/resource "config.edn"))) (catch clojure.lang.ExceptionInfo e {})))
+
 (defn credential-fn [id]
   (let [email (get-in id [:qarth.oauth/record :email])]
     (assoc id :roles [::user])))
 
 (def conf {:type :google
-           :callback (or (env :oauth-callback) "http://localhost:3449/login")
-           :api-key (or (env :oauth-api-key) "")
-           :api-secret (or (env :oauth-api-secret) "")})
+           :callback (or (env :oauth-callback) (:oauth-callback config) "http://localhost:3449/login")
+           :api-key (or (env :oauth-api-key) (:oauth-api-key config) "")
+           :api-secret (or (env :oauth-api-secret) (:oauth-api-secret config) "")})
 
 (def service (oauth/build conf))
 

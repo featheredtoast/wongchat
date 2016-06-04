@@ -92,14 +92,25 @@
      (map (partial apply hash-map))
      (apply merge)))
 
-(defn greeting []
+(defn main-app []
   [:div {:class "app"}
-   [:div [:span "User: " (js/decodeURIComponent (:user (get-cookie-map)))] [:a {:href "/logout"} "logout"]]
-   [:h1 (:text @app-state)]
-   (map print-message (:messages @app-state))
-   [:button {:on-click (partial do-a-push (:input @app-state))} "click"]
-   [:input {:type "text" :ref "message"
-            :on-change input-change
-            :value (:input @app-state)}]])
+   [:nav {:class "navbar navbar-default"}
+    [:div {:class "container-fluid"}
+     [:div {:class "navbar-right"}
+      [:span {:class "navbar-text"} [:span (js/decodeURIComponent (:user (get-cookie-map)))] [:a {:href "/logout"} " logout"]]]]]
+   [:div {:class "container"}
+    [:div {:class "panel panel-default"}
+     [:div {:class "panel-body"}
+      [:div {:class "col-lg-12"}
+       (map print-message (:messages @app-state))]]]
+    [:div {:class "col-lg-4"}
+     [:div {:class "input-group"}
+      [:input {:class "form-control"
+               :placeholder "type a message..."
+               :type "text" :ref "message"
+               :on-change input-change
+               :value (:input @app-state)}]
+      [:span {:class "input-group-btn"}
+       [:button {:class "btn btn-default" :on-click (partial do-a-push (:input @app-state))} "send"]]]]]])
 
-(reagent/render [greeting] (js/document.getElementById "app"))
+(reagent/render [main-app] (js/document.getElementById "app"))
