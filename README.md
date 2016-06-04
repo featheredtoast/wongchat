@@ -2,7 +2,7 @@
 
 Yet another chat app.
 
-A chat app example combining clojure, clojurescript, rabbitmq, reagent, and oauth.
+A chat app example combining clojure, clojurescript, rabbitmq, postgresql, reagent, and oauth.
 
 [Check it out!](https://sente-websockets-rabbitmq.herokuapp.com)
 
@@ -66,3 +66,19 @@ launch Figwheel directly from the REPL**
 ## Chestnut
 
 Created with [Chestnut](http://plexus.github.io/chestnut/) 0.11.0 (3b671cf8).
+
+## TODO
+
+server reconnect, or redirect to login page on reload (sessions in external db?)
+
+update local messages before sending
+
+refactor/code cleanup (components?)
+
+add reload, or startup/shutdown functions
+
+core.async for message passing
+
+connection pooling on postgres
+
+cljc for common properties
