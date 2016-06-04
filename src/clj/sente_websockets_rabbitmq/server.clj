@@ -22,7 +22,7 @@
             [clojure.data.json :as json])
   (:gen-class))
 
-(def config (try (clojure.edn/read-string (slurp (clojure.java.io/resource "config.edn"))) (catch clojure.lang.ExceptionInfo e {})))
+(def config (try (clojure.edn/read-string (slurp (clojure.java.io/resource "config.edn"))) (catch Throwable e {})))
 
 (defn credential-fn [id]
   (let [email (get-in id [:qarth.oauth/record :email])]
