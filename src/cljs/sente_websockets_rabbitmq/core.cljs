@@ -92,6 +92,11 @@
      (map (partial apply hash-map))
      (apply merge)))
 
+(defn submit-message []
+  (when-let [msg (and (not= "" (:input @app-state)) (:input @app-state))]
+    (do-a-push (:input @app-state)))
+  (swap! app-state assoc :input ""))
+
 (defn main-app []
   [:div {:class "app"}
    [:nav {:class "navbar navbar-default"}
@@ -109,8 +114,11 @@
                :placeholder "type a message..."
                :type "text" :ref "message"
                :on-change input-change
+               :on-key-press (fn [e]
+                               (when (= 13 (.-charCode e))
+                                 (submit-message)))
                :value (:input @app-state)}]
       [:span {:class "input-group-btn"}
-       [:button {:class "btn btn-default" :on-click (partial do-a-push (:input @app-state))} "send"]]]]]])
+       [:button {:class "btn btn-default" :on-click submit-message} "send"]]]]]])
 
 (reagent/render [main-app] (js/document.getElementById "app"))
