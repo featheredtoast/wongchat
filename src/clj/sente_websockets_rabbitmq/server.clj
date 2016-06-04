@@ -38,7 +38,7 @@
   {:classname "org.postgresql.Driver"
    :subprotocol "postgresql"
    :subname (get-property :db-host "")
-   :username (get-property :db-user "")
+   :user (get-property :db-user "")
    :password (get-property :db-pass "")})
 
 (def conf {:type :google
