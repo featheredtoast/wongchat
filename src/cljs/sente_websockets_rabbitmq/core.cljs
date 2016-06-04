@@ -134,7 +134,6 @@
                                  (submit-message)))
                :value (:input @app-state)}]
       [:span {:class "input-group-btn"}
-       [:button {:class "btn btn-default" :on-click submit-message} "send"]]]
-     [:button {:class "btn btn-default" :on-click chat-init} "refresh"]]]])
+       [:button {:class "btn btn-default" :on-click submit-message} "send"]]]]]])
 
 (reagent/render [main-app] (js/document.getElementById "app"))
