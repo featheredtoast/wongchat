@@ -82,3 +82,5 @@ core.async for message passing
 connection pooling on postgres
 
 cljc for common properties
+
+login with github, twitter, other oauths?
