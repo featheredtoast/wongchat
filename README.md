@@ -23,6 +23,16 @@ A chat app example combining clojure, clojurescript, rabbitmq, reagent, and oaut
 * amqp-user
 * amqp-pass
 
+### Postgres config
+
+* db-host in the form `//server/schema`
+* db-user
+* db-pass
+
+### Webserver config
+
+* url FQDN of the server root `http://site.com/`
+
 ## Development
 
 Open a terminal and type `lein repl` to start a Clojure REPL
