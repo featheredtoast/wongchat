@@ -42,7 +42,7 @@
    :user (get-property :db-user "")
    :password (get-property :db-pass "")})
 
-(def redis-conn {:spec {:uri (get-property :redis-uri "redis://user:pass@localhost:6379")}})
+(def redis-conn {:spec {:uri (get-property :redis-url "redis://user:pass@localhost:6379")}})
 
 (def conf {:type :google
            :callback (get-property :oauth-callback "http://localhost:3449/login")

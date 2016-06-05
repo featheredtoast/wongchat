@@ -33,7 +33,7 @@ HTTP Sessions stored in redis
 
 ### Redis config
 
-* redis-uri in the form `redis://user:password@host:port`
+* redis-url in the form `redis://user:password@host:port`
 
 ### Webserver config
 
