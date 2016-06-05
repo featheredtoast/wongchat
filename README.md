@@ -4,6 +4,8 @@ Yet another chat app.
 
 A chat app example combining clojure, clojurescript, rabbitmq, postgresql, reagent, and oauth.
 
+HTTP Sessions stored in redis
+
 [Check it out!](https://sente-websockets-rabbitmq.herokuapp.com)
 
 ## Env vars
@@ -28,6 +30,10 @@ A chat app example combining clojure, clojurescript, rabbitmq, postgresql, reage
 * db-host in the form `//server/schema`
 * db-user
 * db-pass
+
+### Redis config
+
+* redis-uri in the form `redis://user:password@host:port`
 
 ### Webserver config
 
@@ -68,8 +74,6 @@ launch Figwheel directly from the REPL**
 Created with [Chestnut](http://plexus.github.io/chestnut/) 0.11.0 (3b671cf8).
 
 ## TODO
-
-server reconnect, or redirect to login page on reload (sessions in external db?)
 
 update local messages before sending
 
