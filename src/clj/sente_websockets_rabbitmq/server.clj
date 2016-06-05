@@ -174,8 +174,8 @@
       (friend/authenticate
        {:workflows [workflow] :auth-url "/login"
         :credential-fn credential-fn})
-      (wrap-defaults site-defaults)
       (wrap-session {:store (redis-session/redis-store redis-conn)})
+      (wrap-defaults site-defaults)
       wrap-with-logger
       wrap-gzip))
 
