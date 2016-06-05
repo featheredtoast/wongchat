@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [compojure.core :refer [ANY GET PUT POST DELETE defroutes]]
             [compojure.route :refer [resources]]
+            [ring.middleware.session :refer [wrap-session]] 
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.gzip :refer [wrap-gzip]]
             [ring.middleware.logger :refer [wrap-with-logger]]
@@ -22,7 +23,8 @@
             [clojure.data.json :as json]
             [ragtime.jdbc]
             [ragtime.repl]
-            [clojure.java.jdbc :as jdbc])
+            [clojure.java.jdbc :as jdbc]
+            [clj-redis-session.core :as [redis-session]])
   (:gen-class))
 
 (def config (try (clojure.edn/read-string (slurp (clojure.java.io/resource "config.edn"))) (catch Throwable e {})))
@@ -40,6 +42,8 @@
    :subname (get-property :db-host "")
    :user (get-property :db-user "")
    :password (get-property :db-pass "")})
+
+(def redis-conn {:spec {:uri (get-property :redis-uri "redis://user:pass@localhost:6379")}})
 
 (def conf {:type :google
            :callback (get-property :oauth-callback "http://localhost:3449/login")
@@ -171,6 +175,7 @@
        {:workflows [workflow] :auth-url "/login"
         :credential-fn credential-fn})
       (wrap-defaults site-defaults)
+      (wrap-session {:store (redis-session/redis-store redis-conn)})
       wrap-with-logger
       wrap-gzip))
 
