@@ -116,8 +116,7 @@
   [:div {:class "app"}
    [:nav {:class "navbar navbar-default"}
     [:div {:class "container-fluid"}
-     [:div {:class "navbar-right"}
-      [:span {:class "navbar-text"} [:span (js/decodeURIComponent (:user (get-cookie-map)))] [:a {:href "/logout"} " logout"]]]]]
+     [:span {:class "pull-right navbar-text"} [:span (js/decodeURIComponent (:user (get-cookie-map)))] " " [:a {:href "/logout"} "logout"]]]]
    [:div {:class "container"}
     [:div {:class "panel panel-default"}
      [:div {:class "panel-body"}
