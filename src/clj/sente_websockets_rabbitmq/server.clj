@@ -24,7 +24,7 @@
             [ragtime.jdbc]
             [ragtime.repl]
             [clojure.java.jdbc :as jdbc]
-            [clj-redis-session.core :as [redis-session]])
+            [clj-redis-session.core :as redis-session])
   (:gen-class))
 
 (def config (try (clojure.edn/read-string (slurp (clojure.java.io/resource "config.edn"))) (catch Throwable e {})))
