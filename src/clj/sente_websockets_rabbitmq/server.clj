@@ -2,7 +2,6 @@
   (:require [clojure.java.io :as io]
             [compojure.core :refer [ANY GET PUT POST DELETE defroutes]]
             [compojure.route :refer [resources]]
-            [ring.middleware.session :refer [wrap-session]] 
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.gzip :refer [wrap-gzip]]
             [ring.middleware.logger :refer [wrap-with-logger]]
@@ -174,8 +173,7 @@
       (friend/authenticate
        {:workflows [workflow] :auth-url "/login"
         :credential-fn credential-fn})
-      (wrap-session {:store (redis-session/redis-store redis-conn)})
-      (wrap-defaults site-defaults)
+      (wrap-defaults (assoc site-defaults :session {:store (redis-session/redis-store redis-conn)}))
       wrap-with-logger
       wrap-gzip))
 
