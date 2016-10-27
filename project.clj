@@ -11,6 +11,7 @@
                  [ring/ring-defaults "0.2.0"]
                  [bk/ring-gzip "0.1.1"]
                  [ring.middleware.logger "0.5.0"]
+                 [ring-middleware-format "0.7.0"]
                  [compojure "1.5.0"]
                  [environ "1.0.2"]
                  [reagent "0.5.1"]

@@ -38,6 +38,8 @@
 (defn reload []
   (reset))
 
+(keys (:sente (dev-system)))
+
 (defn run []
   (reloaded.repl/set-init! dev-system)
   (go))

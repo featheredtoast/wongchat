@@ -2,8 +2,10 @@
   (:require-macros
    [cljs.core.async.macros :as asyncm :refer (go go-loop)])
   (:require [reagent.core :as reagent :refer [atom]]
+            [com.stuartsierra.component :as component]
             [cljs.core.async :as async :refer (<! >! put! chan)]
-            [taoensso.sente  :as sente :refer (cb-success?)]))
+            [taoensso.sente  :as sente :refer (cb-success?)]
+            [system.components.sente :refer [new-channel-socket-client]]))
 
 (enable-console-print!)
 
@@ -27,15 +29,11 @@
        (swap! app-state assoc :messages messages)))
 
 (defn start-ws! []
-  (let [{:keys [chsk ch-recv send-fn state]}
-        (sente/make-channel-socket! "/chsk" ; Note the same path as before
-                                    {:type :auto ; e/o #{:auto :ajax :ws}
-                                     })]
-    (def chsk       chsk)
-    (def ch-chsk    ch-recv) ; ChannelSocket's receive channel
-    (def chsk-send! send-fn) ; ChannelSocket's send API fn
-    (def chsk-state state)   ; Watchable, read-only atom
-    ))
+  (def sente-client (component/start (new-channel-socket-client)))
+  (def chsk       (:chsk sente-client))
+  (def ch-chsk    (:ch-chsk sente-client))
+  (def chsk-send! (:chsk-send! sente-client))
+  (def chsk-state (:chsk-state sente-client)))
 
 (defn chat-init []
   (chsk-send!
@@ -79,8 +77,7 @@
 (defonce start! 
   (delay
    (start-ws!)
-   (sente/start-chsk-router! ch-chsk event-msg-handler*)
-   (sente/chsk-reconnect! chsk)))
+   (sente/start-chsk-router! ch-chsk event-msg-handler*)))
 
 (force start!)
 

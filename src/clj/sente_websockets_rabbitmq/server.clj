@@ -3,8 +3,10 @@
             [compojure.core :refer [ANY GET PUT POST DELETE defroutes]]
             [compojure.route :refer [resources]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
+            [ring.middleware.format :refer [wrap-restful-format]]
             [ring.middleware.gzip :refer [wrap-gzip]]
             [ring.middleware.logger :refer [wrap-with-logger]]
+            [ring.middleware.reload :refer [wrap-reload]]
             [environ.core :refer [env]]
             [com.stuartsierra.component :as component]
             (system.components
@@ -12,7 +14,8 @@
              [sente :refer [new-channel-sockets sente-routes]]
              [endpoint :refer [new-endpoint]]
              [handler :refer [new-handler]]
-             [middleware :refer [new-middleware]])
+             [middleware :refer [new-middleware]]
+             [rabbitmq :refer [new-rabbit-mq]])
             [reloaded.repl :refer [system init start stop reset reset-all]]
             [org.httpkit.server :refer [run-server]]
             [clojure.core.async :as async :refer (<! <!! >! >!! put! take! chan go go-loop)]
@@ -73,7 +76,7 @@
        (println (format "user id %s" email))
        email))
 
-(defn start-sente! []
+#_(defn start-sente! []
   (let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn
                 connected-uids]}
         (sente/make-channel-socket! sente-web-server-adapter {:user-id-fn get-user-id})]
@@ -84,7 +87,7 @@
     (def connected-uids                connected-uids) ; Watchable, read-only atom
     ))
 
-(defn connect-amqp! []
+#_(defn connect-amqp! []
   (let [host (get-property :amqp-host "localhost")
         port (get-property :amqp-port 5672)
         username (get-property :amqp-user "guest")
@@ -93,9 +96,18 @@
     (println "amqp uri " (or (get-property :rabbitmq-bigwig-rx-url nil) uri))
     (def conn  (rmq/connect {:uri (or (get-property :rabbitmq-bigwig-rx-url nil) uri)})))
   (def ch    (lch/open conn))
-  (def qname "hello"))
+    (def qname "hello"))
 
-(defn disconnect-amqp! []
+(defn rabbitmq-config []
+  (let [host (get-property :amqp-host "localhost")
+        port (get-property :amqp-port 5672)
+        username (get-property :amqp-user "guest")
+        password (get-property :amqp-pass "guest")
+        uri (str "amqp://" username ":" password "@" host ":" port)]
+    (println "amqp uri " (or (get-property :rabbitmq-bigwig-rx-url nil) uri))
+    {:uri uri}))
+
+#_(defn disconnect-amqp! []
   (rmq/close ch)
   (rmq/close conn))
 
@@ -120,18 +132,22 @@
     (println "new client connection"))
 
   (defmethod event-msg-handler :chat/init
-    [{:as ev-msg :keys [?data uid]}]
-    (chsk-send! uid
-                [:chat/init
-                 (reverse (vec (get-recent-messages)))]))
+    [{:as ev-msg :keys [?data uid send-fn]}]
+    (println "init: " uid)
+    (send-fn uid
+             [:chat/init
+              (reverse (vec (get-recent-messages)))]))
 
   (defmethod event-msg-handler :chat/submit
     [{:as ev-msg :keys [?data uid]}]
     (let [msg (:msg ?data)]
       (println "Event from " uid ": " msg)
-      (jdbc/insert! db-config :messages
+      #_(jdbc/insert! db-config :messages
                     {:uid uid :msg msg})
-      (lb/publish ch "" qname (json/write-str {:msg msg :uid uid}) {:content-type "text/json" :type "greetings.hi"}))))
+      #_(lb/publish ch "" qname (json/write-str {:msg msg :uid uid}) {:content-type "text/json" :type "greetings.hi"}))))
+
+(defn sente-handler [config]
+  event-msg-handler*)
 
 (defroutes routes
   (GET "/" _
@@ -149,7 +165,7 @@
   (resources "/")
   (friend/logout (ANY "/logout" request (ring.util.response/redirect (get-property :url "/")))))
 
-(defn message-handler
+#_(defn message-handler
   [ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
   (let [payload (json/read-str (String. payload "UTF-8")
                                :key-fn keyword)
@@ -163,7 +179,7 @@
                    {:msg msg
                     :uid sender-uid}]))))
 
-(defn start-broadcaster! []
+#_(defn start-broadcaster! []
   (println (format "[main] Connected. Channel id: %d" (.getChannelNumber ch)))
   (lq/declare ch qname {:exclusive false :auto-delete false})
   (lc/subscribe ch qname message-handler {:auto-ack true}))
@@ -178,7 +194,10 @@
       wrap-gzip))
 
 (defn get-http-handler [config]
-  http-handler)
+  (-> routes
+      (friend/authenticate
+       {:workflows [workflow] :auth-url "/login"
+        :credential-fn credential-fn})))
 
 (defn db-migrate! []
   (ragtime.repl/migrate {:datastore
@@ -187,20 +206,56 @@
 
 (defn start-workers! []
   (db-migrate!)
-  (connect-amqp!)
-  (start-broadcaster!))
+  #_(connect-amqp!)
+  #_(start-broadcaster!))
 
 (defn stop-workers! []
-  (disconnect-amqp!))
+  #_(disconnect-amqp!))
+
+(defn message-handler
+  [chsk-send! connected-uids
+   ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
+  (let [payload (json/read-str (String. payload "UTF-8")
+                               :key-fn keyword)
+        msg (:msg payload)
+        sender-uid (:uid payload)]
+    (println "Broadcasting server>user: %s" @connected-uids)
+    (println "sending: " payload)
+    (doseq [uid (:any @connected-uids)]
+      (chsk-send! uid
+                  [:chat/message
+                   {:msg msg
+                    :uid sender-uid}]))))
+
+(defrecord Messager [ch chsk-send! connected-uids]
+  component/Lifecycle
+  (start [component]
+    (let [qname "hello"]
+      (println (format "[main] Connected. Channel id: %d" (.getChannelNumber ch)))
+      (lq/declare ch qname {:exclusive false :auto-delete false})
+      (lc/subscribe ch qname (partial message-handler chsk-send! connected-uids) {:auto-ack true})))
+  (stop [component]
+    component))
+(defn new-messager []
+  (map->Messager {}))
 
 (defn prod-system []
   (component/system-map
-   :sente (new-channel-sockets event-msg-handler* sente-web-server-adapter {:user-id-fn get-user-id})
+   :sente (new-channel-sockets sente-handler sente-web-server-adapter {:wrap-component? true
+                                                                       :user-id-fn get-user-id})
+   :rabbit-mq (new-rabbit-mq (rabbitmq-config))
+   :post-handler (component/using
+                  (new-messager)
+                  [:sente :rabbit-mq])
    :sente-endpoint (component/using
                     (new-endpoint sente-routes)
                     [:sente])
    :routes (new-endpoint get-http-handler)
-   :middleware (new-middleware  {:middleware []})
+   :middleware (new-middleware  {:middleware [[wrap-defaults :defaults]
+                                              wrap-with-logger
+                                              wrap-gzip
+                                              wrap-reload]
+                                 :defaults (assoc site-defaults :session {:store (redis-session/redis-store redis-conn)})})
    :handler (component/using
              (new-handler)
              [:sente-endpoint :routes :middleware])
