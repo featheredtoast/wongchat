@@ -25,14 +25,19 @@
                  [ragtime "0.6.0"]
                  [org.clojure/java.jdbc "0.6.1"]
                  [postgresql/postgresql "9.1-901-1.jdbc4"]
-                 [clj-redis-session "2.1.0"]]
+                 [clj-redis-session "2.1.0"]
+                 [com.stuartsierra/component "0.3.1"]
+                 [org.danielsz/system "0.3.1"]
+                 [reloaded.repl "0.2.3"]
+                 [im.chit/hara.io.watch "2.4.7"]
+                 [garden "1.3.2"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-environ "1.0.1"]]
 
   :min-lein-version "2.6.1"
 
-  :source-paths ["src/clj" "src/cljs" "dev"]
+  :source-paths ["src/clj" "src/cljc" "src/cljs" "dev"]
 
   :test-paths ["test/clj"]
 
@@ -50,7 +55,7 @@
 
   :cljsbuild {:builds
               {:app
-               {:source-paths ["src/cljs"]
+               {:source-paths ["src/cljs" "src/cljc"]
 
                 :figwheel true
                 ;; Alternatively, you can configure a function to run every time figwheel reloads.
@@ -62,7 +67,7 @@
                            :output-dir "resources/public/js/compiled/out"
                            :source-map-timestamp true}}
                :login
-               {:source-paths ["src/cljs"]
+               {:source-paths ["src/cljs" "src/cljc"]
 
                 :figwheel true
                 ;; Alternatively, you can configure a function to run every time figwheel reloads.
@@ -122,25 +127,25 @@
 
               :cljsbuild {:builds
                           {:test
-                           {:source-paths ["src/cljs" "test/cljs"]
+                           {:source-paths ["src/cljs" "src/cljc" "test/cljs"]
                             :compiler
                             {:output-to "resources/public/js/compiled/testable.js"
                              :main sente-websockets-rabbitmq.test-runner
                              :optimizations :none}}}}}
 
              :uberjar
-             {:source-paths ^:replace ["src/clj"]
+             {:source-paths ^:replace ["src/clj" "src/cljc"]
               :hooks [leiningen.cljsbuild]
               :omit-source true
               :aot :all
               :cljsbuild {:builds
                           {:app
-                           {:source-paths ^:replace ["src/cljs"]
+                           {:source-paths ^:replace ["src/cljs" "src/cljc"]
                             :compiler
                             {:optimizations :advanced
                              :pretty-print false}}
                            :login
-                           {:source-paths ^:replace ["src/cljs"]
+                           {:source-paths ^:replace ["src/cljs" "src/cljc"]
                             :compiler
                             {:optimizations :advanced
                              :pretty-print false}}}}}})

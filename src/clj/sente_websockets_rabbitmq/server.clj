@@ -6,6 +6,14 @@
             [ring.middleware.gzip :refer [wrap-gzip]]
             [ring.middleware.logger :refer [wrap-with-logger]]
             [environ.core :refer [env]]
+            [com.stuartsierra.component :as component]
+            (system.components
+             [http-kit :refer [new-web-server]]
+             [sente :refer [new-channel-sockets sente-routes]]
+             [endpoint :refer [new-endpoint]]
+             [handler :refer [new-handler]]
+             [middleware :refer [new-middleware]])
+            [reloaded.repl :refer [system init start stop reset reset-all]]
             [org.httpkit.server :refer [run-server]]
             [clojure.core.async :as async :refer (<! <!! >! >!! put! take! chan go go-loop)]
             [taoensso.sente :as sente]
@@ -139,14 +147,6 @@
          :body (io/input-stream (io/resource "public/chat.html"))
          :cookies {"user" {:value (get-user-id req)}}}))
   (resources "/")
-  (GET  "/chsk" req
-        (friend/authorize
-         #{::user}
-         (ring-ajax-get-or-ws-handshake req)))
-  (POST "/chsk" req
-        (friend/authorize
-         #{::user}
-         (ring-ajax-post                req)))
   (friend/logout (ANY "/logout" request (ring.util.response/redirect (get-property :url "/")))))
 
 (defn message-handler
@@ -177,6 +177,9 @@
       wrap-with-logger
       wrap-gzip))
 
+(defn get-http-handler [config]
+  http-handler)
+
 (defn db-migrate! []
   (ragtime.repl/migrate {:datastore
    (ragtime.jdbc/sql-database db-config)
@@ -184,15 +187,35 @@
 
 (defn start-workers! []
   (db-migrate!)
-  (start-sente!)
   (connect-amqp!)
-  (sente/start-chsk-router! ch-chsk event-msg-handler*)
   (start-broadcaster!))
 
 (defn stop-workers! []
   (disconnect-amqp!))
 
+(defn prod-system []
+  (component/system-map
+   :sente (new-channel-sockets event-msg-handler* sente-web-server-adapter {:user-id-fn get-user-id})
+   :sente-endpoint (component/using
+                    (new-endpoint sente-routes)
+                    [:sente])
+   :routes (new-endpoint get-http-handler)
+   :ring-handler (component/using
+             (new-handler)
+             [:sente-endpoint :routes])
+   :http (component/using
+          (new-web-server (Integer. (or (env :port) 10555)))
+          [:ring-handler])))
+
+(defn run-prod []
+  (reloaded.repl/set-init! prod-system)
+  (reloaded.repl/go))
+
 (defn -main [& [port]]
+  (db-migrate!)
+  (run-prod))
+
+#_(defn -main [& [port]]
   (start-workers!)
   (let [port (Integer. (or port (env :port) 10555))]
     (run-server http-handler {:port port :join? false})))
