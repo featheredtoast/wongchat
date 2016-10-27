@@ -105,7 +105,7 @@
         password (get-property :amqp-pass "guest")
         uri (str "amqp://" username ":" password "@" host ":" port)]
     (println "amqp uri " (or (get-property :rabbitmq-bigwig-rx-url nil) uri))
-    {:uri uri}))
+    uri))
 
 #_(defn disconnect-amqp! []
   (rmq/close ch)
