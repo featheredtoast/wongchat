@@ -200,12 +200,13 @@
                     (new-endpoint sente-routes)
                     [:sente])
    :routes (new-endpoint get-http-handler)
-   :ring-handler (component/using
+   :middleware (new-middleware  {:middleware []})
+   :handler (component/using
              (new-handler)
-             [:sente-endpoint :routes])
+             [:sente-endpoint :routes :middleware])
    :http (component/using
           (new-web-server (Integer. (or (env :port) 10555)))
-          [:ring-handler])))
+          [:handler])))
 
 (defn run-prod []
   (reloaded.repl/set-init! prod-system)
