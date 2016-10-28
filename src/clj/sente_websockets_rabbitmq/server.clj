@@ -138,7 +138,7 @@
     [{:as ev-msg :keys [?data uid rabbit-data]}]
     (let [msg (:msg ?data)]
       (println "Event from " uid ": " msg)
-      #_(jdbc/insert! db-config :messages
+      (jdbc/insert! db-config :messages
                     {:uid uid :msg msg})
       (lb/publish (:ch rabbit-data) "" (:qname rabbit-data) (json/write-str {:msg msg :uid uid}) {:content-type "text/json" :type "greetings.hi"}))))
 
