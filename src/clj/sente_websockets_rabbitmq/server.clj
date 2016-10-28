@@ -90,31 +90,31 @@
   (jdbc/query db-config
               ["select uid, msg from messages order by id DESC LIMIT 10;"]))
 
-(defmulti event-msg-handler :id) ; Dispatch on event-id
+(defmulti event-msg-handler (fn [_ msg] (:id msg))) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
 (defn     event-msg-handler* [rabbit-data {:as ev-msg :keys [id ?data event]}]
-  (event-msg-handler (assoc ev-msg :rabbit-data rabbit-data)))
+  (event-msg-handler rabbit-data ev-msg))
 (do ; Client-side methods
   (defmethod event-msg-handler :default ; Fallback
-    [{:as ev-msg :keys [event]}]
+    [_ {:as ev-msg :keys [event]}]
     (println "Unhandled event: %s" event))
   
   (defmethod event-msg-handler :chsk/ws-ping
-    [{:as ev-msg :keys [event]}])
+    [_ {:as ev-msg :keys [event]}])
 
   (defmethod event-msg-handler :chsk/uidport-open
-    [{:as ev-msg :keys [uid]}]
+    [_ {:as ev-msg :keys [uid]}]
     (println "new client connection"))
 
   (defmethod event-msg-handler :chat/init
-    [{:as ev-msg :keys [?data uid send-fn]}]
+    [_ {:as ev-msg :keys [?data uid send-fn]}]
     (println "init: " uid)
     (send-fn uid
              [:chat/init
               (reverse (vec (get-recent-messages)))]))
 
   (defmethod event-msg-handler :chat/submit
-    [{:as ev-msg :keys [?data uid rabbit-data]}]
+    [rabbit-data {:as ev-msg :keys [?data uid]}]
     (let [msg (:msg ?data)]
       (println "Event from " uid ": " msg)
       (jdbc/insert! db-config :messages
