@@ -76,28 +76,6 @@
        (println (format "user id %s" email))
        email))
 
-#_(defn start-sente! []
-  (let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn
-                connected-uids]}
-        (sente/make-channel-socket! sente-web-server-adapter {:user-id-fn get-user-id})]
-    (def ring-ajax-post                ajax-post-fn)
-    (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
-    (def ch-chsk                       ch-recv) ; ChannelSocket's receive channel
-    (def chsk-send!                    send-fn) ; ChannelSocket's send API fn
-    (def connected-uids                connected-uids) ; Watchable, read-only atom
-    ))
-
-#_(defn connect-amqp! []
-  (let [host (get-property :amqp-host "localhost")
-        port (get-property :amqp-port 5672)
-        username (get-property :amqp-user "guest")
-        password (get-property :amqp-pass "guest")
-        uri (str "amqp://" username ":" password "@" host ":" port)]
-    (println "amqp uri " (or (get-property :rabbitmq-bigwig-rx-url nil) uri))
-    (def conn  (rmq/connect {:uri (or (get-property :rabbitmq-bigwig-rx-url nil) uri)})))
-  (def ch    (lch/open conn))
-    (def qname "hello"))
-
 (defn rabbitmq-config []
   (let [host (get-property :amqp-host "localhost")
         port (get-property :amqp-port 5672)
