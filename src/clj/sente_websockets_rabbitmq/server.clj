@@ -113,8 +113,8 @@
 
 (defmulti event-msg-handler :id) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
-(defn     event-msg-handler* [{:as ev-msg :keys [id ?data event]}]
-  (event-msg-handler ev-msg))
+(defn     event-msg-handler* [rabbit-data {:as ev-msg :keys [id ?data event]}]
+  (event-msg-handler (assoc ev-msg :rabbit-data rabbit-data)))
 (do ; Client-side methods
   (defmethod event-msg-handler :default ; Fallback
     [{:as ev-msg :keys [event]}]
@@ -135,15 +135,16 @@
               (reverse (vec (get-recent-messages)))]))
 
   (defmethod event-msg-handler :chat/submit
-    [{:as ev-msg :keys [?data uid]}]
+    [{:as ev-msg :keys [?data uid rabbit-data]}]
     (let [msg (:msg ?data)]
       (println "Event from " uid ": " msg)
       #_(jdbc/insert! db-config :messages
                     {:uid uid :msg msg})
-      #_(lb/publish ch "" qname (json/write-str {:msg msg :uid uid}) {:content-type "text/json" :type "greetings.hi"}))))
+      (lb/publish (:ch rabbit-data) "" (:qname rabbit-data) (json/write-str {:msg msg :uid uid}) {:content-type "text/json" :type "greetings.hi"}))))
 
-(defn sente-handler [config]
-  event-msg-handler*)
+(defn sente-handler [{:keys [rabbit-mq]}]
+  (let [{:keys [ch]} rabbit-mq]
+    (partial event-msg-handler* {:ch ch :qname "hello"})))
 
 (defroutes routes
   (GET "/" _
@@ -217,9 +218,11 @@
 
 (defn prod-system []
   (component/system-map
-   :sente (new-channel-sockets sente-handler sente-web-server-adapter {:wrap-component? true
-                                                                       :user-id-fn get-user-id})
    :rabbit-mq (new-rabbit-mq (rabbitmq-config))
+   :sente (component/using
+           (new-channel-sockets sente-handler sente-web-server-adapter {:wrap-component? true
+                                                                        :user-id-fn get-user-id})
+           [:rabbit-mq])
    :post-handler (component/using
                   (new-messager)
                   [:sente :rabbit-mq])
