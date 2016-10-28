@@ -107,10 +107,6 @@
     (println "amqp uri " (or (get-property :rabbitmq-bigwig-rx-url nil) uri))
     uri))
 
-#_(defn disconnect-amqp! []
-  (rmq/close ch)
-  (rmq/close conn))
-
 (defn get-recent-messages []
   (jdbc/query db-config
               ["select uid, msg from messages order by id DESC LIMIT 10;"]))
@@ -165,25 +161,6 @@
   (resources "/")
   (friend/logout (ANY "/logout" request (ring.util.response/redirect (get-property :url "/")))))
 
-#_(defn message-handler
-  [ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
-  (let [payload (json/read-str (String. payload "UTF-8")
-                               :key-fn keyword)
-        msg (:msg payload)
-        sender-uid (:uid payload)]
-    (println "Broadcasting server>user: %s" @connected-uids)
-    (println "sending: " payload)
-    (doseq [uid (:any @connected-uids)]
-      (chsk-send! uid
-                  [:chat/message
-                   {:msg msg
-                    :uid sender-uid}]))))
-
-#_(defn start-broadcaster! []
-  (println (format "[main] Connected. Channel id: %d" (.getChannelNumber ch)))
-  (lq/declare ch qname {:exclusive false :auto-delete false})
-  (lc/subscribe ch qname message-handler {:auto-ack true}))
-
 (def http-handler
   (-> routes
       (friend/authenticate
@@ -205,12 +182,9 @@
                          :migrations (ragtime.jdbc/load-resources "migrations")}))
 
 (defn start-workers! []
-  (db-migrate!)
-  #_(connect-amqp!)
-  #_(start-broadcaster!))
+  (db-migrate!))
 
-(defn stop-workers! []
-  #_(disconnect-amqp!))
+(defn stop-workers! [])
 
 (defn message-handler
   [chsk-send! connected-uids
@@ -227,10 +201,12 @@
                    {:msg msg
                     :uid sender-uid}]))))
 
-(defrecord Messager [ch chsk-send! connected-uids]
+(defrecord Messager [sente rabbit-mq]
   component/Lifecycle
   (start [component]
-    (let [qname "hello"]
+    (let [qname "hello"
+          {:keys [chsk-send! connected-uids]} sente
+          {:keys [ch]} rabbit-mq]
       (println (format "[main] Connected. Channel id: %d" (.getChannelNumber ch)))
       (lq/declare ch qname {:exclusive false :auto-delete false})
       (lc/subscribe ch qname (partial message-handler chsk-send! connected-uids) {:auto-ack true})))
@@ -270,8 +246,3 @@
 (defn -main [& [port]]
   (db-migrate!)
   (run-prod))
-
-#_(defn -main [& [port]]
-  (start-workers!)
-  (let [port (Integer. (or port (env :port) 10555))]
-    (run-server http-handler {:port port :join? false})))
