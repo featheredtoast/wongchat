@@ -4,7 +4,9 @@ Yet another chat app.
 
 A chat app example combining clojure, clojurescript, rabbitmq, postgresql, reagent, and oauth.
 
-HTTP Sessions stored in redis
+HTTP Sessions stored in redis.
+
+This has now been refactored to work using components + system.
 
 [Check it out!](https://sente-websockets-rabbitmq.herokuapp.com)
 
@@ -48,11 +50,8 @@ In the REPL, type
 
 ```clojure
 (run)
-(sente-websockets-rabbitmq.server/start-workers!)
 (browser-repl)
 ```
-
-`(start-workers!)` boots up the connection to rabbitmq and starts sente for websocket connections
 
 The call to `(run)` starts the Figwheel server at port 3449, which takes care of
 live reloading ClojureScript code and CSS. Figwheel's server will also act as

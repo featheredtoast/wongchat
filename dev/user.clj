@@ -25,9 +25,6 @@
 (defn get-http-handler [config]
   http-handler)
 
-(defn start-workers []
-  (#'sente-websockets-rabbitmq.server/start-workers!))
-
 (defn dev-system []
   (merge
    (sente-websockets-rabbitmq.server/prod-system)
@@ -37,8 +34,6 @@
 
 (defn reload []
   (reset))
-
-(keys (:sente (dev-system)))
 
 (defn run []
   (reloaded.repl/set-init! dev-system)

@@ -155,16 +155,6 @@
        {:workflows [workflow] :auth-url "/login"
         :credential-fn credential-fn})))
 
-(defn db-migrate! []
-  (ragtime.repl/migrate {:datastore
-   (ragtime.jdbc/sql-database db-config)
-                         :migrations (ragtime.jdbc/load-resources "migrations")}))
-
-(defn start-workers! []
-  (db-migrate!))
-
-(defn stop-workers! [])
-
 (defn message-handler
   [chsk-send! connected-uids
    ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
@@ -179,6 +169,16 @@
                   [:chat/message
                    {:msg msg
                     :uid sender-uid}]))))
+
+(defrecord Migrate []
+  component/Lifecycle
+  (start [component]
+    (println "migrating...")
+    (ragtime.repl/migrate {:datastore
+                           (ragtime.jdbc/sql-database db-config)
+                           :migrations (ragtime.jdbc/load-resources "migrations")}))
+  (stop [component]
+    component))
 
 (defrecord Messager [sente rabbit-mq]
   component/Lifecycle
@@ -196,6 +196,7 @@
 
 (defn prod-system []
   (component/system-map
+   :db-migrate (map->Migrate {})
    :rabbit-mq (new-rabbit-mq (rabbitmq-config))
    :sente (component/using
            (new-channel-sockets sente-handler sente-web-server-adapter {:wrap-component? true
@@ -225,5 +226,4 @@
   (reloaded.repl/go))
 
 (defn -main [& [port]]
-  (db-migrate!)
   (run-prod))
