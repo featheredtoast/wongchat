@@ -81,9 +81,10 @@
         port (get-property :amqp-port 5672)
         username (get-property :amqp-user "guest")
         password (get-property :amqp-pass "guest")
-        uri (str "amqp://" username ":" password "@" host ":" port)]
-    (println "amqp uri " (or (get-property :rabbitmq-bigwig-rx-url nil) uri))
-    uri))
+        uri (str "amqp://" username ":" password "@" host ":" port)
+        final-uri (or (get-property :rabbitmq-bigwig-rx-url nil) uri)]
+    (println "amqp uri " final-uri)
+    final-uri))
 
 (defn get-recent-messages []
   (jdbc/query db-config
