@@ -12,6 +12,27 @@
 (defonce app-state (atom {:messages []
                           :input ""}))
 
+(defonce message-chan (chan))
+
+(defn chat-init [chsk-send!]
+  (chsk-send!
+   [:chat/init] ;event
+   8000 ; timeout
+   (fn [reply])))
+
+(defn send-message [chsk-send! msg]
+  (chsk-send!
+   [:chat/submit {:msg msg}] ;event
+   8000 ; timeout
+   (fn [reply])))
+
+(defn start-message-sender [chsk-send!]
+  (go-loop []
+    (let [msg (<! message-chan)]
+      (println "sending message.. " msg)
+      (send-message chsk-send! msg))
+    (recur)))
+
 (defn handle-message [payload]
   (let [msg (:msg payload)
         sender (:uid payload)
@@ -26,38 +47,25 @@
 
 (defn handle-init [payload]
   (let [messages (mapv #(str (:uid %) ": " (:msg %)) payload)]
-       (swap! app-state assoc :messages messages)))
+    (swap! app-state assoc :messages messages)))
 
-(defn start-ws! []
-  (def sente-client (component/start (new-channel-socket-client)))
-  (def chsk       (:chsk sente-client))
-  (def ch-chsk    (:ch-chsk sente-client))
-  (def chsk-send! (:chsk-send! sente-client))
-  (def chsk-state (:chsk-state sente-client)))
-
-(defn chat-init []
-  (chsk-send!
-   [:chat/init] ;event
-   8000 ; timeout
-   (fn [reply])))
-
-(defmulti event-msg-handler :id) ; Dispatch on event-id
+(defmulti event-msg-handler (fn [_ msg] (:id msg))) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
-(defn     event-msg-handler* [{:as ev-msg :keys [id ?data event]}]
-  (event-msg-handler ev-msg))
+(defn     event-msg-handler* [chsk-send! {:as ev-msg :keys [id ?data event]}]
+  (event-msg-handler chsk-send! ev-msg))
 (do ; Client-side methods
   (defmethod event-msg-handler :default ; Fallback
-    [{:as ev-msg :keys [event]}]
+    [_ {:as ev-msg :keys [event]}]
     (println "Unhandled event: %s" event))
 
   (defmethod event-msg-handler :chsk/state
-    [{:as ev-msg :keys [?data]}]
+    [_ {:as ev-msg :keys [?data]}]
     (if (= ?data {:first-open? true})
       (println "Channel socket successfully established!")
       (println "Channel socket state change: %s" ?data)))
 
   (defmethod event-msg-handler :chsk/recv
-    [{:as ev-msg :keys [?data]}]
+    [_ {:as ev-msg :keys [?data]}]
     (println "Push event from server: %s" ?data)
     (let [data-map (apply array-map ?data)
           payload (:chat/message data-map)
@@ -66,26 +74,62 @@
       (or (nil? init-payload) (handle-init init-payload))))
 
   (defmethod event-msg-handler :chsk/handshake
-    [{:as ev-msg :keys [?data]}]
+    [chsk-send! {:as ev-msg :keys [?data]}]
     (let [[?uid ?csrf-token ?handshake-data] ?data]
       (do (println "Handshake: %s" ?data)
-          (chat-init))))
+          (chat-init chsk-send!))))
 
   ;; Add your (defmethod handle-event-msg! <event-id> [ev-msg] <body>)s here...
   )
 
-(defonce start! 
-  (delay
-   (start-ws!)
-   (sente/start-chsk-router! ch-chsk event-msg-handler*)))
 
-(force start!)
+(defrecord SenteHandler [router sente]
+  component/Lifecycle
+  (start [component]
+    (let [{:keys [chsk-send! chsk ch-chsk]} sente]
+      (chat-init chsk-send!)
+      (start-message-sender chsk-send!)
+      (assoc component
+             :router
+             (sente/start-chsk-router! ch-chsk (partial event-msg-handler* chsk-send!)))))
+  (stop [component]
+    (when-let [stop-f router]
+      (println "stopping router...") 
+      (stop-f))
+    (assoc component
+           :router nil)))
+
+(defn new-sente-handler []
+  (map->SenteHandler {}))
+
+(defn chat-system []
+  (component/system-map
+   :sente (new-channel-socket-client)
+   :sente-handler (component/using
+                   (new-sente-handler)
+                   [:sente])))
+
+(defonce app-system (atom nil))
+
+(defn init []
+  (reset! app-system
+    (chat-system)))
+
+(defn start []
+  (swap! app-system component/start))
+
+(defn stop []
+  (swap! app-system
+    (fn [s] (when s (component/stop s)))))
+ 
+(defn run []
+  (init)
+  (start))
+
+(when (= nil @app-system) (run))
 
 (defn do-a-push [msg]
-  (chsk-send!
-   [:chat/submit {:msg msg}] ;event
-   8000 ; timeout
-   (fn [reply])))
+  (put! message-chan msg))
 
 (defn input-change [e]
   (swap! app-state assoc :input (-> e .-target .-value))

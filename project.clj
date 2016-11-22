@@ -95,7 +95,7 @@
              ;; assets and API endpoints can all be accessed on the same host
              ;; and port. If you prefer a separate server process then take this
              ;; out and start the server with `lein run`.
-             :ring-handler user/http-handler
+             ;; :ring-handler user/http-handler
 
              ;; Start an nREPL server into the running figwheel process. We
              ;; don't do this, instead we do the opposite, running figwheel from
