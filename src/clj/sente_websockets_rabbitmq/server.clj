@@ -177,7 +177,8 @@
     (println "migrating...")
     (ragtime.repl/migrate {:datastore
                            (ragtime.jdbc/sql-database db-config)
-                           :migrations (ragtime.jdbc/load-resources "migrations")}))
+                           :migrations (ragtime.jdbc/load-resources "migrations")})
+    component)
   (stop [component]
     component))
 
@@ -189,7 +190,8 @@
           {:keys [ch]} rabbit-mq]
       (println (format "[main] Connected. Channel id: %d" (.getChannelNumber ch)))
       (lq/declare ch qname {:exclusive false :auto-delete false})
-      (lc/subscribe ch qname (partial message-handler chsk-send! connected-uids) {:auto-ack true})))
+      (lc/subscribe ch qname (partial message-handler chsk-send! connected-uids) {:auto-ack true})
+      component))
   (stop [component]
     component))
 (defn new-messager []
