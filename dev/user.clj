@@ -19,11 +19,6 @@
 ;; degraded performance.
 (set! *warn-on-reflection* true)
 (set! *unchecked-math* :warn-on-boxed)
-(def http-handler
-  (wrap-reload #'sente-websockets-rabbitmq.server/http-handler))
-
-(defn get-http-handler [config]
-  http-handler)
 
 (defn dev-system []
   (merge

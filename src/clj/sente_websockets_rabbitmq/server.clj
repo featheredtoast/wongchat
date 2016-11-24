@@ -34,24 +34,14 @@
             [ragtime.jdbc]
             [ragtime.repl]
             [clojure.java.jdbc :as jdbc]
-            [clj-redis-session.core :as redis-session])
+            [clj-redis-session.core :as redis-session]
+            [sente-websockets-rabbitmq.config :refer [get-property]]
+            [sente-websockets-rabbitmq.db :as db])
   (:gen-class))
-
-(def config (try (clojure.edn/read-string (slurp (clojure.java.io/resource "config.edn"))) (catch Throwable e {})))
-
-(defn get-property [property default]
-  (or (env property) (property config) default))
 
 (defn credential-fn [id]
   (let [email (get-in id [:qarth.oauth/record :email])]
     (assoc id :roles [::user])))
-
-(def db-config
-  {:classname "org.postgresql.Driver"
-   :subprotocol "postgresql"
-   :subname (get-property :db-host "")
-   :user (get-property :db-user "")
-   :password (get-property :db-pass "")})
 
 (def redis-conn {:spec {:uri (get-property :redis-url "redis://user:pass@localhost:6379")}})
 
@@ -86,10 +76,6 @@
     (println "amqp uri " final-uri)
     final-uri))
 
-(defn get-recent-messages []
-  (jdbc/query db-config
-              ["select uid, msg from messages order by id DESC LIMIT 10;"]))
-
 (defmulti event-msg-handler (fn [_ msg] (:id msg))) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
 (defn     event-msg-handler* [rabbit-data {:as ev-msg :keys [id ?data event]}]
@@ -111,14 +97,13 @@
     (println "init: " uid)
     (send-fn uid
              [:chat/init
-              (reverse (vec (get-recent-messages)))]))
+              (reverse (vec (db/get-recent-messages)))]))
 
   (defmethod event-msg-handler :chat/submit
     [rabbit-data {:as ev-msg :keys [?data uid]}]
     (let [msg (:msg ?data)]
       (println "Event from " uid ": " msg)
-      (jdbc/insert! db-config :messages
-                    {:uid uid :msg msg})
+      (db/insert-message uid msg)
       (lb/publish (:ch rabbit-data) "" (:qname rabbit-data) (json/write-str {:msg msg :uid uid}) {:content-type "text/json" :type "greetings.hi"}))))
 
 (defn sente-handler [{:keys [rabbit-mq]}]
@@ -171,17 +156,6 @@
                    {:msg msg
                     :uid sender-uid}]))))
 
-(defrecord Migrate []
-  component/Lifecycle
-  (start [component]
-    (println "migrating...")
-    (ragtime.repl/migrate {:datastore
-                           (ragtime.jdbc/sql-database db-config)
-                           :migrations (ragtime.jdbc/load-resources "migrations")})
-    component)
-  (stop [component]
-    component))
-
 (defrecord Messager [sente rabbit-mq]
   component/Lifecycle
   (start [component]
@@ -199,7 +173,7 @@
 
 (defn prod-system []
   (component/system-map
-   :db-migrate (map->Migrate {})
+   :db-migrate (db/new-migrate)
    :rabbit-mq (new-rabbit-mq (rabbitmq-config))
    :sente (component/using
            (new-channel-sockets sente-handler sente-web-server-adapter {:wrap-component? true
