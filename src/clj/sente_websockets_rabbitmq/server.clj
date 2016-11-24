@@ -27,44 +27,14 @@
             [langohr.consumers :as lc]
             [langohr.basic     :as lb]
             [cemerick.friend :as friend]
-            [qarth.friend]
-            [qarth.oauth :as oauth]
-            [qarth.impl.google]
             [clojure.data.json :as json]
-            [ragtime.jdbc]
-            [ragtime.repl]
-            [clojure.java.jdbc :as jdbc]
             [clj-redis-session.core :as redis-session]
             [sente-websockets-rabbitmq.config :refer [get-property]]
-            [sente-websockets-rabbitmq.db :as db])
+            [sente-websockets-rabbitmq.db :as db]
+            [sente-websockets-rabbitmq.auth :as auth])
   (:gen-class))
 
-(defn credential-fn [id]
-  (let [email (get-in id [:qarth.oauth/record :email])]
-    (assoc id :roles [::user])))
-
 (def redis-conn {:spec {:uri (get-property :redis-url "redis://user:pass@localhost:6379")}})
-
-(def conf {:type :google
-           :callback (get-property :oauth-callback "http://localhost:3449/login")
-           :api-key (get-property :oauth-api-key "")
-           :api-secret (get-property :oauth-api-secret "")})
-
-(def service (oauth/build conf))
-
-(def workflow
-  (qarth.friend/oauth-workflow
-   {:service service
-    :login-failure-handler
-    (fn [_] (ring.util.response/redirect
-             "/login?exception=true"))}))
-
-(defn get-user-id [req]
-  (let [id (-> req (qarth.friend/requestor service) oauth/id)
-            email (get-in req [:session :cemerick.friend/identity :authentications :qarth.oauth/anonymous :qarth.oauth/record :email])
-            friend-attributes (-> req (qarth.friend/auth-record))]
-       (println (format "user id %s" email))
-       email))
 
 (defn rabbitmq-config []
   (let [host (get-property :amqp-host "localhost")
@@ -112,34 +82,25 @@
 
 (defroutes routes
   (GET "/" _
-    {:status 200
-     :headers {"Content-Type" "text/html; charset=utf-8"}
-     :body (io/input-stream (io/resource "public/index.html"))})
+       {:status 200
+        :headers {"Content-Type" "text/html; charset=utf-8"}
+        :body (io/input-stream (io/resource "public/index.html"))})
   (GET "/chat"
        req
        (friend/authorize
-        #{::user}
+        #{:user}
         {:status 200
          :headers {"Content-Type" "text/html; charset=utf-8"}
          :body (io/input-stream (io/resource "public/chat.html"))
-         :cookies {"user" {:value (get-user-id req)}}}))
+         :cookies {"user" {:value (auth/get-user-id req)}}}))
   (resources "/")
   (friend/logout (ANY "/logout" request (ring.util.response/redirect (get-property :url "/")))))
-
-(def http-handler
-  (-> routes
-      (friend/authenticate
-       {:workflows [workflow] :auth-url "/login"
-        :credential-fn credential-fn})
-      (wrap-defaults (assoc site-defaults :session {:store (redis-session/redis-store redis-conn)}))
-      wrap-with-logger
-      wrap-gzip))
 
 (defn get-http-handler [config]
   (-> routes
       (friend/authenticate
-       {:workflows [workflow] :auth-url "/login"
-        :credential-fn credential-fn})))
+       {:workflows [auth/workflow] :auth-url "/login"
+        :credential-fn auth/credential-fn})))
 
 (defn message-handler
   [chsk-send! connected-uids
@@ -177,7 +138,7 @@
    :rabbit-mq (new-rabbit-mq (rabbitmq-config))
    :sente (component/using
            (new-channel-sockets sente-handler sente-web-server-adapter {:wrap-component? true
-                                                                        :user-id-fn get-user-id})
+                                                                        :user-id-fn auth/get-user-id})
            [:rabbit-mq])
    :post-handler (component/using
                   (new-messager)
