@@ -19,6 +19,10 @@
     (println "amqp uri " final-uri)
     final-uri))
 
+(defn publish [rabbit-data msg type]
+  "publish an event to rabbit in json. rabbit-data is a map of {:ch :qname}"
+  (lb/publish (:ch rabbit-data) "" (:qname rabbit-data) (json/write-str msg) {:content-type "text/json" :type type}))
+
 (defmulti event-msg-handler (fn [_ msg] (:id msg))) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
 (defn     event-msg-handler* [rabbit-data {:as ev-msg :keys [id ?data event]}]
@@ -47,13 +51,13 @@
     (let [msg (:msg ?data)]
       (println "Event from " uid ": " msg)
       (db/insert-message uid msg)
-      (lb/publish (:ch rabbit-data) "" (:qname rabbit-data) (json/write-str {:msg msg :uid uid}) {:content-type "text/json" :type "message"}))))
+      (publish rabbit-data {:msg msg :uid uid} "message"))))
 
 (defn sente-handler [{:keys [rabbit-mq]}]
   (let [{:keys [ch]} rabbit-mq]
     (partial event-msg-handler* {:ch ch :qname "hello"})))
 
-(defn message-handler
+(defn rabbit-message-handler
   [chsk-send! connected-uids
    ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
   (let [{msg :msg sender-uid :uid :as payload}
@@ -75,7 +79,7 @@
           {:keys [ch]} rabbit-mq]
       (println (format "[main] Connected. Channel id: %d" (.getChannelNumber ch)))
       (lq/declare ch qname {:exclusive false :auto-delete false})
-      (lc/subscribe ch qname (partial message-handler chsk-send! connected-uids) {:auto-ack true})
+      (lc/subscribe ch qname (partial rabbit-message-handler chsk-send! connected-uids) {:auto-ack true})
       component))
   (stop [component]
     component))
