@@ -10,6 +10,8 @@
 (enable-console-print!)
 
 (defonce app-state (atom {:messages []
+                          :typing #{}
+                          :user-typing false
                           :input ""}))
 
 (defonce message-chan (chan))
@@ -20,26 +22,24 @@
    8000 ; timeout
    (fn [reply])))
 
-(defn send-message [chsk-send! msg]
+(defn send-message [chsk-send! msg type]
   (chsk-send!
-   [:chat/submit {:msg msg}] ;event
+   [type {:msg msg}] ;event
    8000 ; timeout
    (fn [reply])))
 
 (defn start-message-sender [chsk-send!]
   (go-loop []
-    (let [msg (<! message-chan)]
-      (if (= msg :shutdown)
+    (let [{:keys [msg type]} (<! message-chan)]
+      (if (= type :shutdown)
         (println "shutdown")
         (do
           (println "sending message... " msg)
-          (send-message chsk-send! msg)
+          (send-message chsk-send! msg type)
           (recur))))))
 
-(defn handle-message [payload]
-  (let [msg (:msg payload)
-        sender (:uid payload)
-        new-value-uncut (->> (str sender ": " msg)
+(defn handle-message [{:keys [msg uid]}]
+  (let [new-value-uncut (->> (str uid ": " msg)
                              (conj (:messages @app-state)))
         new-value-count (count new-value-uncut)
         limit 10
@@ -51,6 +51,14 @@
 (defn handle-init [payload]
   (let [messages (mapv #(str (:uid %) ": " (:msg %)) payload)]
     (swap! app-state assoc :messages messages)))
+
+(defn handle-typing [{:keys [uid msg]}]
+  (let [typists (:typing @app-state)
+        new-typists(if msg
+          (conj typists uid)
+          (disj typists uid))]
+    (swap! app-state assoc :typing new-typists))
+  (println "typing notification by " uid " and it is " msg))
 
 (defmulti event-msg-handler (fn [_ msg] (:id msg))) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
@@ -72,9 +80,11 @@
     (println "Push event from server: %s" ?data)
     (let [data-map (apply array-map ?data)
           payload (:chat/message data-map)
-          init-payload (:chat/init data-map)]
+          init-payload (:chat/init data-map)
+          typing (:chat/typing data-map)]
       (or (nil? payload) (handle-message payload))
-      (or (nil? init-payload) (handle-init init-payload))))
+      (or (nil? init-payload) (handle-init init-payload))
+      (or (nil? typing) (handle-typing typing))))
 
   (defmethod event-msg-handler :chsk/handshake
     [chsk-send! {:as ev-msg :keys [?data]}]
@@ -135,15 +145,25 @@
 
 (when (= nil @app-system) (run))
 
+(defn send-typing-notification [is-typing]
+  (if (not= is-typing (:user-typing @app-state))
+    (do
+      (swap! app-state assoc :user-typing is-typing)
+      (put! message-chan {:type :chat/typing :msg is-typing}))))
+
 (defn input-change [e]
-  (swap! app-state assoc :input (-> e .-target .-value))
-  (swap! app-state assoc :text (-> e .-target .-value)))
+  (let [input (-> e .-target .-value)]
+       (send-typing-notification (not= input ""))
+       (swap! app-state assoc :input input)))
 
 (defn gen-message-key []
   (.random js/Math))
 
 (defn print-message [message]
   ^{:key (gen-message-key)} [:div message])
+
+(defn print-typists [typist]
+  ^{:key (gen-message-key)} [:span {:class "small"} typist " is typing"])
 
 (defn get-cookie-map []
   (->> (map #(.split % "=") (.split (.-cookie js/document) #";"))
@@ -154,7 +174,8 @@
 
 (defn submit-message []
   (when-let [msg (and (not= "" (:input @app-state)) (:input @app-state))]
-    (put! message-chan msg))
+    (put! message-chan {:type :chat/submit :msg msg}))
+  (send-typing-notification false)
   (swap! app-state assoc :input ""))
 
 (defn main-app []
@@ -167,6 +188,7 @@
      [:div {:class "panel-body"}
       [:div {:class "col-lg-12"}
        (map print-message (:messages @app-state))]]]
+    
     [:div {:class "col-lg-4"}
      [:div {:class "input-group"}
       [:input {:class "form-control"
@@ -178,12 +200,14 @@
                                  (submit-message)))
                :value (:input @app-state)}]
       [:span {:class "input-group-btn"}
-       [:button {:class "btn btn-default" :on-click submit-message} "send"]]]]]])
+       [:button {:class "btn btn-default" :on-click submit-message} "send"]]]]
+    [:div {:class "col-lg-12"}
+     (map print-typists (:typing @app-state))]]])
 
 (reagent/render [main-app] (js/document.getElementById "app"))
 
 (defn on-figwheel-reload []
   (println "reloading...")
   (stop)
-  (put! message-chan :shutdown)
+  (put! message-chan {:type :shutdown})
   (run))

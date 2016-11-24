@@ -51,7 +51,13 @@
     (let [msg (:msg ?data)]
       (println "Event from " uid ": " msg)
       (db/insert-message uid msg)
-      (publish rabbit-data {:msg msg :uid uid} "message"))))
+      (publish rabbit-data {:msg msg :uid uid} "message")))
+  
+  (defmethod event-msg-handler :chat/typing
+    [rabbit-data {:as ev-msg :keys [?data uid]}]
+    (let [msg (:msg ?data)]
+      (println "Event from " uid ": " msg)
+      (publish rabbit-data {:msg msg :uid uid} "typing"))))
 
 (defn sente-handler [{:keys [rabbit-mq]}]
   (let [{:keys [ch]} rabbit-mq]
@@ -67,7 +73,7 @@
     (println "sending: " payload)
     (doseq [uid (:any @connected-uids)]
       (chsk-send! uid
-                  [:chat/message
+                  [(keyword "chat" type)
                    {:msg msg
                     :uid sender-uid}]))))
 
