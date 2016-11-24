@@ -29,7 +29,7 @@
             [sente-websockets-rabbitmq.auth :as auth])
   (:gen-class))
 
-(def redis-conn {:spec {:uri (get-property :redis-url "redis://user:pass@localhost:6379")}})
+(def redis-conn {:spec {:uri (get-property :redis-url)}})
 
 (defroutes routes
   (GET "/" _
@@ -45,7 +45,7 @@
          :body (io/input-stream (io/resource "public/chat.html"))
          :cookies {"user" {:value (auth/get-user-id req)}}}))
   (resources "/")
-  (friend/logout (ANY "/logout" request (ring.util.response/redirect (get-property :url "/")))))
+  (friend/logout (ANY "/logout" request (ring.util.response/redirect (get-property :url)))))
 
 (defn get-http-handler [config]
   (-> routes

@@ -10,9 +10,9 @@
     (assoc id :roles [:user])))
 
 (def conf {:type :google
-           :callback (get-property :oauth-callback "http://localhost:10555/login")
-           :api-key (get-property :oauth-api-key "")
-           :api-secret (get-property :oauth-api-secret "")})
+           :callback (get-property :oauth-callback)
+           :api-key (get-property :oauth-api-key)
+           :api-secret (get-property :oauth-api-secret)})
 
 (def service (oauth/build conf))
 

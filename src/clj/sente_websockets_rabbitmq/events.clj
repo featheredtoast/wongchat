@@ -10,12 +10,12 @@
    [sente-websockets-rabbitmq.db :as db]))
 
 (defn rabbitmq-config []
-  (let [host (get-property :amqp-host "localhost")
-        port (get-property :amqp-port 5672)
-        username (get-property :amqp-user "guest")
-        password (get-property :amqp-pass "guest")
+  (let [host (get-property :amqp-host)
+        port (get-property :amqp-port)
+        username (get-property :amqp-user)
+        password (get-property :amqp-pass)
         uri (str "amqp://" username ":" password "@" host ":" port)
-        final-uri (or (get-property :rabbitmq-bigwig-rx-url nil) uri)]
+        final-uri (or (get-property :rabbitmq-bigwig-rx-url) uri)]
     (println "amqp uri " final-uri)
     final-uri))
 
@@ -47,7 +47,7 @@
     (let [msg (:msg ?data)]
       (println "Event from " uid ": " msg)
       (db/insert-message uid msg)
-      (lb/publish (:ch rabbit-data) "" (:qname rabbit-data) (json/write-str {:msg msg :uid uid}) {:content-type "text/json" :type "greetings.hi"}))))
+      (lb/publish (:ch rabbit-data) "" (:qname rabbit-data) (json/write-str {:msg msg :uid uid}) {:content-type "text/json" :type "message"}))))
 
 (defn sente-handler [{:keys [rabbit-mq]}]
   (let [{:keys [ch]} rabbit-mq]
@@ -56,10 +56,9 @@
 (defn message-handler
   [chsk-send! connected-uids
    ch {:keys [content-type delivery-tag type] :as meta} ^bytes payload]
-  (let [payload (json/read-str (String. payload "UTF-8")
-                               :key-fn keyword)
-        msg (:msg payload)
-        sender-uid (:uid payload)]
+  (let [{msg :msg sender-uid :uid :as payload}
+        (json/read-str (String. payload "UTF-8")
+                       :key-fn keyword)]
     (println "Broadcasting server>user: %s" @connected-uids)
     (println "sending: " payload)
     (doseq [uid (:any @connected-uids)]
