@@ -135,9 +135,6 @@
 
 (when (= nil @app-system) (run))
 
-(defn do-a-push [msg]
-  (put! message-chan msg))
-
 (defn input-change [e]
   (swap! app-state assoc :input (-> e .-target .-value))
   (swap! app-state assoc :text (-> e .-target .-value)))
@@ -157,7 +154,7 @@
 
 (defn submit-message []
   (when-let [msg (and (not= "" (:input @app-state)) (:input @app-state))]
-    (do-a-push (:input @app-state)))
+    (put! message-chan msg))
   (swap! app-state assoc :input ""))
 
 (defn main-app []
@@ -189,4 +186,4 @@
   (println "reloading...")
   (stop)
   (put! message-chan :shutdown)
-  (start))
+  (run))
