@@ -29,9 +29,13 @@
 (defn start-message-sender [chsk-send!]
   (go-loop []
     (let [msg (<! message-chan)]
-      (println "sending message.. " msg)
-      (send-message chsk-send! msg))
-    (recur)))
+      (if (= msg :shutdown)
+        (println "shutdown")
+        (do
+          (println "sending message... " msg)
+          (send-message chsk-send! msg)
+          (recur))))))
+
 
 (defn handle-message [payload]
   (let [msg (:msg payload)
@@ -177,3 +181,9 @@
        [:button {:class "btn btn-default" :on-click submit-message} "send"]]]]]])
 
 (reagent/render [main-app] (js/document.getElementById "app"))
+
+(defn on-figwheel-reload []
+  (println "reloading...")
+  (stop)
+  (put! message-chan :shutdown)
+  (start))

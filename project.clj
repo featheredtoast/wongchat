@@ -58,9 +58,9 @@
               {:app
                {:source-paths ["src/cljs" "src/cljc"]
 
-                :figwheel true
+                ;; :figwheel true
                 ;; Alternatively, you can configure a function to run every time figwheel reloads.
-                ;; :figwheel {:on-jsload "sente-websockets-rabbitmq.core/on-figwheel-reload"}
+                :figwheel {:on-jsload "sente-websockets-rabbitmq.core/on-figwheel-reload"}
 
                 :compiler {:main sente-websockets-rabbitmq.core
                            :asset-path "js/compiled/out"
