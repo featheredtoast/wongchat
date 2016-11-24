@@ -97,6 +97,7 @@
              (sente/start-chsk-router! ch-chsk (partial event-msg-handler* chsk-send!)))))
   (stop [component]
     (when chsk
+      (println "disconnecting...")
       (sente/chsk-disconnect! chsk))
     (when-let [stop-f router]
       (println "stopping router...") 
