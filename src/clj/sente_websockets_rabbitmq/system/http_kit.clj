@@ -5,32 +5,26 @@
             [org.httpkit.server :refer [run-server]]
             [clojure.core.async :as async :refer (<! <!! >! >!! put! take! chan go go-loop timeout alts!)]))
 
-(defrecord WebServer [options server handler stop-boops]
+(defrecord WebServer [options server handler boops]
   component/Lifecycle
   (start [component]
     (let [handler (get-in component [:handler :handler] handler)
           server (run-server handler options)
-          boop-chan (chan)
-          stop-boops (fn [] (do
-                              (println "stopping boops")
-                              (put! boop-chan :stop)))
-          go-boops (fn [] (go-loop []
-                            (println "boops are happening..")
-                            (let [[v ch] (alts! boop-chan (timeout 1000))]
-                              (println "yes they are!")
-                              (if (= v :stop)
-                                (println "stopping")
-                                (do
-                                  (println "BOOP!")
-                                  (recur))))))]
+          c (chan)]
       (println "starting boop...")
-      (go-boops)
+      (go-loop []
+        (let [[v ch] (alts! [c (timeout 3000)])]
+          (if (= :stop v)
+            (println "stopping boops")
+            (do
+              (println "boop!")
+              (recur)))))
       (assoc component
              :server server
-             :stop-boops stop-boops)))
+             :boops (fn [] (put! c :stop)))))
   (stop [component]
     (when server (server))
-    (when stop-boops (stop-boops))
+    (when boops (boops))
     (assoc component
            :server nil)))
 
