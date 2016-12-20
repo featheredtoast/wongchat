@@ -16,7 +16,7 @@
         password (get-property :amqp-pass)
         uri (str "amqp://" username ":" password "@" host ":" port)
         final-uri (or (get-property :rabbitmq-bigwig-rx-url) uri)]
-    (println "amqp uri " final-uri)
+    (println "final rabbitmq uri " final-uri)
     final-uri))
 
 (defn publish [rabbit-data msg type]
@@ -44,7 +44,8 @@
     (println "init: " uid)
     (send-fn uid
              [:chat/init
-              (reverse (vec (db/get-recent-messages)))]))
+              {:recent-messages (reverse (vec (db/get-recent-messages)))
+               :online-users #{"jaja" "reloading..." "whateven"}}]))
 
   (defmethod event-msg-handler :chat/submit
     [rabbit-data {:as ev-msg :keys [?data uid]}]

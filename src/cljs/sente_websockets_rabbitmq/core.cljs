@@ -12,6 +12,7 @@
 (defonce app-state (atom {:messages []
                           :typing #{}
                           :user-typing false
+                          :online-users #{}
                           :input ""}))
 
 (defonce message-chan (chan))
@@ -48,9 +49,10 @@
         new-value (subvec new-value-uncut new-value-cut)]
     (swap! app-state assoc :messages new-value)))
 
-(defn handle-init [payload]
-  (let [messages (mapv #(str (:uid %) ": " (:msg %)) payload)]
-    (swap! app-state assoc :messages messages)))
+(defn handle-init [{:as payload :keys [recent-messages online-users]}]
+  (let [messages (mapv #(str (:uid %) ": " (:msg %)) recent-messages)]
+    (swap! app-state assoc :messages messages)
+    (swap! app-state assoc :online-users online-users)))
 
 (defn handle-typing [{:keys [uid msg]}]
   (let [typists (:typing @app-state)
@@ -165,6 +167,9 @@
 (defn print-typists [typist]
   ^{:key (gen-message-key)} [:span {:class "small"} typist " is typing"])
 
+(defn print-user [user]
+  ^{:key (gen-message-key)} [:ul {:class "list-group-item"} user])
+
 (defn get-cookie-map []
   (->> (map #(.split % "=") (.split (.-cookie js/document) #";"))
      (map vec)
@@ -184,10 +189,14 @@
     [:div {:class "container-fluid"}
      [:span {:class "pull-right navbar-text"} [:span (js/decodeURIComponent (:user (get-cookie-map)))] " " [:a {:href "/logout"} "logout"]]]]
    [:div {:class "container"}
-    [:div {:class "panel panel-default"}
-     [:div {:class "panel-body"}
-      [:div {:class "col-lg-12"}
-       (map print-message (:messages @app-state))]]]
+    [:div {:class "col-lg-10"}
+     [:div {:class "panel panel-default"}
+      [:div {:class "panel-body"}
+       [:div {:class "col-lg-12"}
+        (map print-message (:messages @app-state))]]]]
+    [:div {:class "col-lg-2"}
+     [:span "Online"]
+     [:ul {:class "list-group"} (map print-user (:online-users @app-state))]]
     
     [:div {:class "col-lg-4"}
      [:div {:class "input-group"}

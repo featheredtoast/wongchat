@@ -9,13 +9,14 @@
             [ring.middleware.reload :refer [wrap-reload]]
             [environ.core :refer [env]]
             [com.stuartsierra.component :as component]
+            (sente-websockets-rabbitmq.system
+             [rabbitmq :refer [new-rabbit-mq]]
+             [http-kit :refer [new-web-server]])
             (system.components
-             [http-kit :refer [new-web-server]]
              [sente :refer [new-channel-sockets sente-routes]]
              [endpoint :refer [new-endpoint]]
              [handler :refer [new-handler]]
-             [middleware :refer [new-middleware]]
-             [rabbitmq :refer [new-rabbit-mq]])
+             [middleware :refer [new-middleware]])
             [reloaded.repl :refer [system init start stop reset reset-all]]
             [org.httpkit.server :refer [run-server]]
             [clojure.core.async :as async :refer (<! <!! >! >!! put! take! chan go go-loop)]
@@ -55,7 +56,7 @@
 
 (defn prod-system []
   (component/system-map
-   :db-migrate (db/new-migrate)
+   ;;:db-migrate (db/new-migrate)
    :rabbit-mq (new-rabbit-mq (events/rabbitmq-config))
    :sente (component/using
            (new-channel-sockets
