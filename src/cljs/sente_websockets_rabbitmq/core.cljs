@@ -3,9 +3,10 @@
    [cljs.core.async.macros :as asyncm :refer (go go-loop)])
   (:require [reagent.core :as reagent :refer [atom]]
             [com.stuartsierra.component :as component]
-            [cljs.core.async :as async :refer (<! >! put! chan)]
+            [cljs.core.async :as async :refer (<! >! <! poll! put! chan)]
             [taoensso.sente  :as sente :refer (cb-success?)]
-            [system.components.sente :refer [new-channel-socket-client]]))
+            [system.components.sente :refer [new-channel-socket-client]]
+            [org.clojars.featheredtoast.reloaded-repl-cljs :as reloaded]))
 
 (enable-console-print!)
 
@@ -32,7 +33,7 @@
   (go-loop []
     (let [{:keys [msg type]} (<! message-chan)]
       (if (= type :shutdown)
-        (println "shutdown")
+        (println "shutting down message sender")
         (do
           (println "sending message... " msg)
           (send-message chsk-send! msg type)
@@ -95,6 +96,17 @@
   ;; Add your (defmethod handle-event-msg! <event-id> [ev-msg] <body>)s here...
   )
 
+(defrecord MessageSendHandler []
+  component/Lifecycle
+  (start [component]
+    component)
+  (stop [component]
+    (println "sending shutdown message!")
+    (put! message-chan {:type :shutdown})
+    component))
+(defn new-message-send-handler []
+  (map->MessageSendHandler {}))
+
 (defrecord SenteHandler [router chsk sente]
   component/Lifecycle
   (start [component]
@@ -124,9 +136,10 @@
    :sente (new-channel-socket-client)
    :sente-handler (component/using
                    (new-sente-handler)
-                   [:sente])))
+                   [:sente])
+   :message-sender (new-message-send-handler)))
 
-(reloaded.repl/set-init-go! #(chat-system))
+(reloaded/set-init-go! #(chat-system))
 
 (defn send-typing-notification [is-typing]
   (if (not= is-typing (:user-typing @app-state))

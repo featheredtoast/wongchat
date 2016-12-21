@@ -32,7 +32,8 @@
                  [org.clojure/tools.namespace "0.2.11"]
                  [reloaded.repl "0.2.3"]
                  [im.chit/hara.io.watch "2.4.8"]
-                 [garden "1.3.2"]]
+                 [garden "1.3.2"]
+                 [org.clojars.featheredtoast/reloaded-repl-cljs "0.1.0-SNAPSHOT"]]
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-environ "1.0.1"]]
@@ -61,8 +62,7 @@
 
                 ;; :figwheel true
                 ;; Alternatively, you can configure a function to run every time figwheel reloads.
-                :figwheel {:on-jsload "reloaded.repl/after-reload"
-                           :before-jsload "reloaded.repl/before-reload"}
+                :figwheel {:on-jsload "org.clojars.featheredtoast.reloaded-repl-cljs/after-reload"}
 
                 :compiler {:main sente-websockets-rabbitmq.core
                            :asset-path "js/compiled/out"
@@ -87,10 +87,10 @@
   ;; merging. So don't put a :figwheel section under the :dev profile, it will
   ;; not be picked up, instead configure figwheel here on the top level.
 
-  :figwheel {;; :http-server-root "public"       ;; serve static assets from resources/public/
+  :figwheel { ;; :http-server-root "public"       ;; serve static assets from resources/public/
              ;; :server-port 3449                ;; default
              ;; :server-ip "127.0.0.1"           ;; default
-             :css-dirs ["resources/public/css"]  ;; watch and update CSS
+             :css-dirs ["resources/public/css"] ;; watch and update CSS
 
              ;; Instead of booting a separate server on its own port, we embed
              ;; the server ring handler inside figwheel's http-kit server, so
