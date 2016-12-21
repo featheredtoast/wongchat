@@ -62,7 +62,7 @@
 
                 ;; :figwheel true
                 ;; Alternatively, you can configure a function to run every time figwheel reloads.
-                :figwheel {:on-jsload "org.clojars.featheredtoast.reloaded-repl-cljs/after-reload"}
+                :figwheel {:on-jsload "org.clojars.featheredtoast.reloaded-repl-cljs/go"}
 
                 :compiler {:main sente-websockets-rabbitmq.core
                            :asset-path "js/compiled/out"
