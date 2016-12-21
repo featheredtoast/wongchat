@@ -61,7 +61,8 @@
 
                 ;; :figwheel true
                 ;; Alternatively, you can configure a function to run every time figwheel reloads.
-                :figwheel {:on-jsload "sente-websockets-rabbitmq.core/on-figwheel-reload"}
+                :figwheel {:on-jsload "reloaded.repl/after-reload"
+                           :before-jsload "reloaded.repl/before-reload"}
 
                 :compiler {:main sente-websockets-rabbitmq.core
                            :asset-path "js/compiled/out"

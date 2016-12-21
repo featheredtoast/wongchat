@@ -126,24 +126,7 @@
                    (new-sente-handler)
                    [:sente])))
 
-(defonce app-system (atom nil))
-
-(defn init []
-  (reset! app-system
-    (chat-system)))
-
-(defn start []
-  (swap! app-system component/start))
-
-(defn stop []
-  (swap! app-system
-    (fn [s] (when s (component/stop s)))))
- 
-(defn run []
-  (init)
-  (start))
-
-(when (= nil @app-system) (run))
+(reloaded.repl/set-init-go! #(chat-system))
 
 (defn send-typing-notification [is-typing]
   (if (not= is-typing (:user-typing @app-state))
@@ -205,9 +188,3 @@
      (map print-typists (:typing @app-state))]]])
 
 (reagent/render [main-app] (js/document.getElementById "app"))
-
-(defn on-figwheel-reload []
-  (println "reloading...")
-  (stop)
-  (put! message-chan {:type :shutdown})
-  (run))
