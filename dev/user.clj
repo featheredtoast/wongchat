@@ -5,6 +5,7 @@
             [figwheel-sidecar.system :as sys]
             [ring.middleware.reload :refer [wrap-reload]]
             [figwheel-sidecar.repl-api :as figwheel]
+            [clojure.tools.namespace.repl :refer [set-refresh-dirs]]
             [reloaded.repl :refer [system init start stop go reset reset-all]]
             (system.components
              [http-kit :refer [new-web-server]]
@@ -27,11 +28,13 @@
     :figwheel-system (sys/figwheel-system (config/fetch-config))
     :css-watcher (sys/css-watcher {:watch-paths ["resources/public/css"]}))))
 
+(set-refresh-dirs "src" "dev")
+(reloaded.repl/set-init! #(dev-system))
+
 (defn reload []
   (reset))
 
 (defn run []
-  (reloaded.repl/set-init! dev-system)
   (go))
 
 (defn browser-repl []
