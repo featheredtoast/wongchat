@@ -164,6 +164,15 @@
     2 [:span (str (first typists) " and " (second typists) " are typing")]
     [:span "multiple people are typing"]))
 
+(defn print-typing-notification [typists]
+  [:div {:style {:display "inline-block"}}
+   (when (< 0 (count typists))
+     [:span {:class "small typing-notification"}
+      (print-typing-notification-message typists)
+      [:div {:class "circle"}]
+      [:div {:class "circle circle2"}]
+      [:div {:class "circle circle3"}]])])
+
 (defn get-cookie-map []
   (->> (map #(.split % "=") (.split (.-cookie js/document) #";"))
      (map vec)
@@ -186,7 +195,9 @@
     [:div {:class "panel panel-default"}
      [:div {:class "panel-body"}
       [:div {:class "col-lg-12"}
-       (map print-message (:messages @app-state))]]]
+       (map print-message (:messages @app-state))
+       (let [typists (:typing @app-state)]
+         (print-typing-notification typists))]]]
     
     [:div {:class "col-lg-4"}
      [:div {:class "input-group"}
@@ -199,14 +210,6 @@
                                  (submit-message)))
                :value (:input @app-state)}]
       [:span {:class "input-group-btn"}
-       [:button {:class "btn btn-default" :on-click submit-message} "send"]]]]
-    [:div {:class "col-lg-12"}
-     (let [typists (:typing @app-state)]
-       (when (< 0 (count typists))
-         [:span {:class "small typing-notification"}
-          (print-typing-notification-message typists)
-          [:div {:class "circle"}]
-          [:div {:class "circle circle2"}]
-          [:div {:class "circle circle3"}]]))]]])
+       [:button {:class "btn btn-default" :on-click submit-message} "send"]]]]]])
 
 (reagent/render [main-app] (js/document.getElementById "app"))
