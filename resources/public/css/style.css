@@ -1,3 +1,45 @@
+@keyframes typing {
+
+0% {
+    transform: translate(0,0);
+  }
+  
+60% {
+    transform: translate(0,0);
+  }
+  
+100% {
+    transform: translate(0,-3px);
+  }
+
+}
+
 body {
   font-family: sans-serif;
+}
+
+.typing-notification {
+  color: #9d9d9d;
+}
+
+.circle {
+  width: 8px;
+  height: 8px;
+  margin-right: 1px;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  animation-name: typing;
+  margin-left: 1px;
+  border-radius: 8px;
+  display: inline-block;
+  background: #dedede;
+  animation-duration: 0.5s;
+}
+
+.circle2 {
+  animation-delay: .1s;
+}
+
+.circle3 {
+  animation-delay: .2s;
 }

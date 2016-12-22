@@ -158,8 +158,11 @@
 (defn print-message [message]
   ^{:key (gen-message-key)} [:div message])
 
-(defn print-typists [typist]
-  ^{:key (gen-message-key)} [:span {:class "small"} typist " is typing"])
+(defn print-typing-notification-message [typists]
+  (case (count typists)
+    1 [:span (str (first typists) " is typing")]
+    2 [:span (str (first typists) " and " (second typists) " are typing")]
+    [:span "multiple people are typing"]))
 
 (defn get-cookie-map []
   (->> (map #(.split % "=") (.split (.-cookie js/document) #";"))
@@ -198,6 +201,12 @@
       [:span {:class "input-group-btn"}
        [:button {:class "btn btn-default" :on-click submit-message} "send"]]]]
     [:div {:class "col-lg-12"}
-     (map print-typists (:typing @app-state))]]])
+     (let [typists (:typing @app-state)]
+       (when (< 0 (count typists))
+         [:span {:class "small typing-notification"}
+          (print-typing-notification-message typists)
+          [:div {:class "circle"}]
+          [:div {:class "circle circle2"}]
+          [:div {:class "circle circle3"}]]))]]])
 
 (reagent/render [main-app] (js/document.getElementById "app"))
