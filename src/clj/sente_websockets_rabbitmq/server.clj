@@ -40,7 +40,7 @@
         #{:user}
         {:status 200
          :headers {"Content-Type" "text/html; charset=utf-8"}
-         :body (io/input-stream (io/resource "public/chat.html"))
+         :body (html/chat)
          :cookies {"user" {:value (auth/get-user-id req)}}}))
   (resources "/")
   (friend/logout (ANY "/logout" request (ring.util.response/redirect (get-property :url)))))
