@@ -6,17 +6,14 @@
             [ring.middleware.format :refer [wrap-restful-format]]
             [ring.middleware.gzip :refer [wrap-gzip]]
             [ring.middleware.logger :refer [wrap-with-logger]]
-            [ring.middleware.reload :refer [wrap-reload]]
             [environ.core :refer [env]]
             [com.stuartsierra.component :as component]
-            (system.components
-             [http-kit :refer [new-web-server]]
-             [sente :refer [new-channel-sockets sente-routes]]
-             [endpoint :refer [new-endpoint]]
-             [handler :refer [new-handler]]
-             [middleware :refer [new-middleware]]
-             [rabbitmq :refer [new-rabbit-mq]])
-            [reloaded.repl :refer [system init start stop reset reset-all]]
+            [system.components.http-kit :refer [new-web-server]]
+            [system.components.sente :refer [new-channel-sockets sente-routes]]
+            [system.components.endpoint :refer [new-endpoint]]
+            [system.components.handler :refer [new-handler]]
+            [system.components.middleware :refer [new-middleware]]
+            [system.components.rabbitmq :refer [new-rabbit-mq]]
             [org.httpkit.server :refer [run-server]]
             [clojure.core.async :as async :refer (<! <!! >! >!! put! take! chan go go-loop)]
             [taoensso.sente :as sente]
@@ -82,9 +79,5 @@
           (new-web-server (Integer. (or (env :port) 10555)))
           [:handler])))
 
-(defn run-prod []
-  (reloaded.repl/set-init! prod-system)
-  (reloaded.repl/go))
-
 (defn -main [& [port]]
-  (run-prod))
+  (component/start (prod-system)))
