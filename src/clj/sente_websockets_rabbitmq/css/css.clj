@@ -14,6 +14,9 @@
      {:font-family "sans-serif"
       ;;:color "red"
       }]
+    [:.typing-notification-container
+     {:display "inline-block"
+      :height "10px"}]
     [:.typing-notification
      {:color "#9d9d9d"}]
     [:.circle

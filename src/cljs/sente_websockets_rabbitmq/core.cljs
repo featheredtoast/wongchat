@@ -165,7 +165,7 @@
     [:span "multiple people are typing"]))
 
 (defn print-typing-notification [typists]
-  [:div {:style {:display "inline-block"}}
+  [:div {:class "typing-notification-container"}
    (when (< 0 (count typists))
      [:span {:class "small typing-notification"}
       (print-typing-notification-message typists)
