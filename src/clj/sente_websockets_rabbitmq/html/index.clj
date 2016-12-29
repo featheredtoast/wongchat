@@ -15,5 +15,5 @@
          [:body
           [:div {:class "app container"}
            [:h1 "A wild chat application appears"]
-           [:p "Hi there! This is a pretty basic chat thing implemented in clojure/scirpt, websockets, and rabbitmq with authentication over oauth!"]
+           [:p "Hi there! This is a pretty basic chat thing implemented in clojure/script, websockets, and rabbitmq with authentication over oauth!"]
            [:a {:type "button" :class "btn btn-default" :href "/chat"} "login with google"]]]]))
