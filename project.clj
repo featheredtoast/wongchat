@@ -32,6 +32,7 @@
                  [org.clojure/tools.namespace "0.2.11"]
                  [im.chit/hara.io.watch "2.4.8"]
                  [garden "1.3.2"]
+                 [hiccup "1.0.5"]
                  [org.clojars.featheredtoast/reloaded-repl-cljs "0.1.0-SNAPSHOT"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]
@@ -63,14 +64,6 @@
                            :asset-path "js/compiled/out"
                            :output-to "resources/public/js/compiled/sente_websockets_rabbitmq.js"
                            :output-dir "resources/public/js/compiled/out"
-                           :source-map-timestamp true}}
-               {:id "login"
-                :source-paths ["src/cljs" "src/cljc"]
-                :figwheel true
-                :compiler {:main sente-websockets-rabbitmq.login
-                           :asset-path "js/compiled/login"
-                           :output-to "resources/public/js/compiled/login.js"
-                           :output-dir "resources/public/js/compiled/login"
                            :source-map-timestamp true}}
                {:id "test"
                 :source-paths ["src/cljs" "test/cljs" "src/cljc" "test/cljc"]
@@ -112,8 +105,6 @@
              ;; emacsclient -n +$2 $1
              ;;
              ;; :open-file-command "myfile-opener"
-             :builds-to-start ["app" "login"]
-
              :server-logfile "log/figwheel.log"}
 
   :doo {:build "test"}

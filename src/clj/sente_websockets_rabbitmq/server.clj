@@ -23,7 +23,8 @@
             [sente-websockets-rabbitmq.config :refer [get-property]]
             [sente-websockets-rabbitmq.db :as db]
             [sente-websockets-rabbitmq.events :as events]
-            [sente-websockets-rabbitmq.auth :as auth])
+            [sente-websockets-rabbitmq.auth :as auth]
+            [sente-websockets-rabbitmq.html.index :as html])
   (:gen-class))
 
 (def redis-conn {:spec {:uri (get-property :redis-url)}})
@@ -32,7 +33,7 @@
   (GET "/" _
        {:status 200
         :headers {"Content-Type" "text/html; charset=utf-8"}
-        :body (io/input-stream (io/resource "public/index.html"))})
+        :body (html/login)})
   (GET "/chat"
        req
        (friend/authorize
