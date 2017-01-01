@@ -53,7 +53,7 @@
              (new-handler)
              [:sente-endpoint :routes :middleware])
    :http (component/using
-          (new-web-server (Integer. (or (env :port) 10555)))
+          (new-web-server (Integer. (get-property :port)))
           [:handler])))
 
 (defn -main [& [port]]

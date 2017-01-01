@@ -14,7 +14,8 @@
    :amqp-user "guest"
    :amqp-pass "guest"
    :rabbitmq-bigwig-rx-url nil
-   :url "/"})
+   :url "/"
+   :port 10555})
 
 (def config
   (merge defaults
