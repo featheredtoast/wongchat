@@ -1,4 +1,4 @@
-(ns sente-websockets-rabbitmq.server
+(ns sente-websockets-rabbitmq.application
   (:require [clojure.java.io :as io]
             [compojure.core :refer [ANY GET PUT POST DELETE defroutes]]
             [compojure.route :refer [resources]]
@@ -51,7 +51,7 @@
        {:workflows [auth/workflow] :auth-url "/login"
         :credential-fn auth/credential-fn})))
 
-(defn prod-system []
+(defn app-system []
   (component/system-map
    :db-migrate (db/new-migrate)
    :rabbit-mq (new-rabbit-mq (events/rabbitmq-config))
@@ -81,4 +81,4 @@
           [:handler])))
 
 (defn -main [& [port]]
-  (component/start (prod-system)))
+  (component/start (app-system)))

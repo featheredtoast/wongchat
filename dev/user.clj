@@ -1,5 +1,5 @@
 (ns user
-  (:require [sente-websockets-rabbitmq.server]
+  (:require [sente-websockets-rabbitmq.application]
             [com.stuartsierra.component :as component]
             [figwheel-sidecar.config :as fw-config]
             [figwheel-sidecar.system :as fw-sys]
@@ -15,7 +15,7 @@
 
 (defn dev-system []
   (merge
-   (sente-websockets-rabbitmq.server/prod-system)
+   (sente-websockets-rabbitmq.application/app-system)
    (component/system-map
     :figwheel-system (fw-sys/figwheel-system (fw-config/fetch-config))
     :css-watcher (fw-sys/css-watcher {:watch-paths ["resources/public/css"]}))))

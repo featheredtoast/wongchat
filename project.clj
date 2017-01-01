@@ -49,7 +49,7 @@
   :uberjar-name "sente-websockets-rabbitmq.jar"
 
   ;; Use `lein run` if you just want to start a HTTP server, without figwheel
-  :main sente-websockets-rabbitmq.server
+  :main sente-websockets-rabbitmq.application
 
   ;; nREPL by default starts in the :main namespace, we want to start in `user`
   ;; because that's where our development helper functions like (run) and
