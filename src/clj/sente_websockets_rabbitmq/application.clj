@@ -1,7 +1,5 @@
 (ns sente-websockets-rabbitmq.application
   (:require [clojure.java.io :as io]
-            [compojure.core :refer [ANY GET PUT POST DELETE defroutes]]
-            [compojure.route :refer [resources]]
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.middleware.format :refer [wrap-restful-format]]
             [ring.middleware.gzip :refer [wrap-gzip]]
@@ -18,38 +16,16 @@
             [clojure.core.async :as async :refer (<! <!! >! >!! put! take! chan go go-loop)]
             [taoensso.sente :as sente]
             [taoensso.sente.server-adapters.http-kit      :refer (sente-web-server-adapter)]
-            [cemerick.friend :as friend]
             [clj-redis-session.core :as redis-session]
             [sente-websockets-rabbitmq.config :refer [get-property]]
             [sente-websockets-rabbitmq.db :as db]
+            [sente-websockets-rabbitmq.routes :refer [routes]]
             [sente-websockets-rabbitmq.events :as events]
-            [sente-websockets-rabbitmq.auth :as auth]
-            [sente-websockets-rabbitmq.html.index :as html])
+            [sente-websockets-rabbitmq.auth :as auth])
   (:gen-class))
 
 (def redis-conn {:spec {:uri (get-property :redis-url)}})
 
-(defroutes routes
-  (GET "/" _
-       {:status 200
-        :headers {"Content-Type" "text/html; charset=utf-8"}
-        :body (html/login)})
-  (GET "/chat"
-       req
-       (friend/authorize
-        #{:user}
-        {:status 200
-         :headers {"Content-Type" "text/html; charset=utf-8"}
-         :body (html/chat)
-         :cookies {"user" {:value (auth/get-user-id req)}}}))
-  (resources "/")
-  (friend/logout (ANY "/logout" request (ring.util.response/redirect (get-property :url)))))
-
-(defn get-http-handler [config]
-  (-> routes
-      (friend/authenticate
-       {:workflows [auth/workflow] :auth-url "/login"
-        :credential-fn auth/credential-fn})))
 
 (defn app-system []
   (component/system-map
@@ -68,7 +44,7 @@
    :sente-endpoint (component/using
                     (new-endpoint sente-routes)
                     [:sente])
-   :routes (new-endpoint get-http-handler)
+   :routes (new-endpoint routes)
    :middleware (new-middleware  {:middleware [[wrap-defaults :defaults]
                                               wrap-with-logger
                                               wrap-gzip]
