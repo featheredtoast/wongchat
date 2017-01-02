@@ -4,7 +4,6 @@
    [langohr.consumers :as lc]
    [langohr.basic     :as lb]
    [clojure.data.json :as json]
-   [taoensso.sente :as sente]
    [com.stuartsierra.component :as component]
    [sente-websockets-rabbitmq.db :as db]))
 
