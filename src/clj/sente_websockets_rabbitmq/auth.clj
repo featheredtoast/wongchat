@@ -3,16 +3,16 @@
             [qarth.friend]
             [qarth.oauth :as oauth]
             [qarth.impl.google]
-            [sente-websockets-rabbitmq.config :refer [get-property]]))
+            [sente-websockets-rabbitmq.config :refer [config]]))
 
 (defn credential-fn [id]
   (let [email (get-in id [:qarth.oauth/record :email])]
     (assoc id :roles [:user])))
 
 (def conf {:type :google
-           :callback (get-property :oauth-callback)
-           :api-key (get-property :oauth-api-key)
-           :api-secret (get-property :oauth-api-secret)})
+           :callback (:oauth-callback config)
+           :api-key (:oauth-api-key config)
+           :api-secret (:oauth-api-secret config)})
 
 (def service (oauth/build conf))
 

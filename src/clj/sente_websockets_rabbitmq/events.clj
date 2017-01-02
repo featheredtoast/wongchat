@@ -6,18 +6,7 @@
    [clojure.data.json :as json]
    [taoensso.sente :as sente]
    [com.stuartsierra.component :as component]
-   [sente-websockets-rabbitmq.config :refer [get-property]]
    [sente-websockets-rabbitmq.db :as db]))
-
-(defn rabbitmq-config []
-  (let [host (get-property :amqp-host)
-        port (get-property :amqp-port)
-        username (get-property :amqp-user)
-        password (get-property :amqp-pass)
-        uri (str "amqp://" username ":" password "@" host ":" port)
-        final-uri (or (get-property :rabbitmq-bigwig-rx-url) uri)]
-    (println "amqp uri " final-uri)
-    final-uri))
 
 (defn publish [rabbit-data msg type]
   "publish an event to rabbit in json. rabbit-data is a map of {:ch :qname}"

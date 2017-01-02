@@ -17,9 +17,10 @@
    :url "/"
    :port 10555})
 
+(defn get-env-map []
+  (into {} (filter (fn [kv] (some? (second kv))) (zipmap (keys defaults) (map env (keys defaults))))))
+
 (def config
   (merge defaults
-         (try (clojure.edn/read-string (slurp (clojure.java.io/resource "config.edn"))) (catch Throwable e {}))))
-
-(defn get-property [property]
-  (or (env property) (property config)))
+         (try (clojure.edn/read-string (slurp (clojure.java.io/resource "config.edn"))) (catch Throwable e {}))
+         (get-env-map)))
