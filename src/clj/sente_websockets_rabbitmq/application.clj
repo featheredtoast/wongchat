@@ -24,24 +24,18 @@
             [sente-websockets-rabbitmq.auth :as auth])
   (:gen-class))
 
-(defn app-system [{:keys [db-host db-user db-pass
-                          rabbitmq-bigwig-rx-url
+(defn app-system [{:keys [rabbitmq-bigwig-rx-url
                           amqp-user amqp-pass amqp-host amqp-port
                           url]
                    :as config}]
   (let [redis-conn {:spec {:uri (:redis-url config)}}
-        db-config {:classname "org.postgresql.Driver"
-                   :subprotocol "postgresql"
-                   :subname db-host
-                   :user db-user
-                   :password db-pass}
         port (Integer. (:port config))
         rabbitmq-uri (or rabbitmq-bigwig-rx-url
                          (str "amqp://" amqp-user ":"
                               amqp-pass "@" amqp-host ":" amqp-port))]
     (println "amqp uri " rabbitmq-uri)
     (component/system-map
-     :db-migrate (db/new-migrate db-config)
+     :db-migrate (db/new-migrate)
      :rabbit-mq (new-rabbit-mq rabbitmq-uri)
      :sente (component/using
              (new-channel-sockets

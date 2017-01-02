@@ -21,16 +21,16 @@
   (jdbc/insert! db-config :messages
                 {:uid uid :msg msg}))
 
-(defrecord Migrate [config]
+(defrecord Migrate []
   component/Lifecycle
   (start [component]
     (println "migrating...")
     (ragtime.repl/migrate {:datastore
-                           (ragtime.jdbc/sql-database config)
+                           (ragtime.jdbc/sql-database db-config)
                            :migrations (ragtime.jdbc/load-resources "migrations")})
     component)
   (stop [component]
     component))
 
-(defn new-migrate [config]
-  (map->Migrate {:config config}))
+(defn new-migrate []
+  (map->Migrate {}))
