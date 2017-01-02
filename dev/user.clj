@@ -3,7 +3,6 @@
             [com.stuartsierra.component :as component]
             [figwheel-sidecar.config :as fw-config]
             [figwheel-sidecar.system :as fw-sys]
-            [figwheel-sidecar.repl-api :as figwheel]
             [clojure.tools.namespace.repl :refer [set-refresh-dirs]]
             [reloaded.repl :refer [system init start stop go reset reset-all]]
             [sente-websockets-rabbitmq.config :refer [config]]))
