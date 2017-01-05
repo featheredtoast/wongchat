@@ -33,6 +33,7 @@
                  [im.chit/hara.io.watch "2.4.8"]
                  [garden "1.3.2"]
                  [hiccup "1.0.5"]
+                 [rum "0.10.7"]
                  [org.clojars.featheredtoast/reloaded-repl-cljs "0.1.0-SNAPSHOT"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]

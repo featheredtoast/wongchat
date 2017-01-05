@@ -1,12 +1,12 @@
 (ns sente-websockets-rabbitmq.core
   (:require-macros
    [cljs.core.async.macros :as asyncm :refer (go go-loop)])
-  (:require [reagent.core :as reagent :refer [atom]]
-            [com.stuartsierra.component :as component]
+  (:require [com.stuartsierra.component :as component]
             [cljs.core.async :as async :refer (<! >! <! poll! put! chan)]
             [taoensso.sente  :as sente :refer (cb-success?)]
             [system.components.sente :refer [new-channel-socket-client]]
-            [org.clojars.featheredtoast.reloaded-repl-cljs :as reloaded]))
+            [org.clojars.featheredtoast.reloaded-repl-cljs :as reloaded]
+            [rum.core :as rum]))
 
 (enable-console-print!)
 
@@ -186,7 +186,11 @@
   (send-typing-notification false)
   (swap! app-state assoc :input ""))
 
-(defn main-app []
+(def app-messages (rum/cursor-in app-state [:messages]))
+(def app-typing (rum/cursor-in app-state [:typing]))
+(def app-input (rum/cursor-in app-state [:input]))
+
+(rum/defc main-app < rum/reactive []
   [:div {:class "app"}
    [:nav {:class "navbar navbar-default"}
     [:div {:class "container-fluid"}
@@ -195,8 +199,8 @@
     [:div {:class "panel panel-default"}
      [:div {:class "panel-body"}
       [:div {:class "col-lg-12"}
-       (map print-message (:messages @app-state))
-       (let [typists (:typing @app-state)]
+       (map print-message (rum/react app-messages))
+       (let [typists (rum/react app-typing)]
          (print-typing-notification typists))]]]
     
     [:div {:class "col-lg-4"}
@@ -208,8 +212,9 @@
                :on-key-press (fn [e]
                                (when (= 13 (.-charCode e))
                                  (submit-message)))
-               :value (:input @app-state)}]
+               :value (rum/react app-input)}]
       [:span {:class "input-group-btn"}
        [:button {:class "btn btn-default" :on-click submit-message} "send"]]]]]])
 
-(reagent/render [main-app] (js/document.getElementById "app"))
+#_(reagent/render [main-app] (js/document.getElementById "app"))
+(rum/mount (main-app) (js/document.getElementById "app"))
