@@ -1,5 +1,7 @@
 (ns sente-websockets-rabbitmq.html.index
   (:require [hiccup.core :refer [html]]
+            [rum.core :as rum]
+            [sente-websockets-rabbitmq.views :as app]
             [clojure.zip :as zip]))
 
 (def bootstrap-headers
@@ -35,14 +37,14 @@
       (add-headers bootstrap-headers)
       html))
 
-(defn chat []
+(defn chat [state]
   (-> [:html
        [:head
         [:link {:href "css/style.css"
                 :rel "stylesheet"
                 :type "text/css"}]]
        [:body
-        [:div {:id "app"}]
+        [:div {:id "app"} (app/init-main-app (atom state))]
         [:script {:src "js/compiled/sente_websockets_rabbitmq.js"}]]]
       (add-headers basic-headers)
       (add-headers bootstrap-headers)

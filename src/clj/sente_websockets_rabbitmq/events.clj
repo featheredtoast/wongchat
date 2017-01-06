@@ -29,10 +29,9 @@
 
   (defmethod event-msg-handler :chat/init
     [_ {:as ev-msg :keys [?data uid send-fn]}]
-    (println "init: " uid)
     (send-fn uid
              [:chat/init
-              (reverse (vec (db/get-recent-messages)))]))
+              (db/get-recent-messages)]))
 
   (defmethod event-msg-handler :chat/submit
     [rabbit-data {:as ev-msg :keys [?data uid]}]

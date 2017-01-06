@@ -14,8 +14,10 @@
    :password (:db-pass config)})
 
 (defn get-recent-messages []
-  (jdbc/query db-config
-              ["select uid, msg from messages order by id DESC LIMIT 10;"]))
+  (vec
+   (reverse
+    (jdbc/query db-config
+                ["select uid, msg from messages order by id DESC LIMIT 10;"]))))
 
 (defn insert-message [uid msg]
   (jdbc/insert! db-config :messages
