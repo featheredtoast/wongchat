@@ -191,7 +191,5 @@
   (swap! app-state assoc :input ""))
 
 (when (:initializing @app-state)
-  (println "app state: " (get-app-state-cookies))
   (reset! app-state (get-app-state-cookies))
-  (swap! app-state assoc :typing (set (:typing @app-state)))
-  (println "app state after: " @app-state))
+  (swap! app-state assoc :typing (set (:typing @app-state))))
