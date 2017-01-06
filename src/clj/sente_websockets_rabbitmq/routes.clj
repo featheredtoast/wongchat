@@ -24,10 +24,10 @@
                :body (html/login)})
          (GET "/chat"
               req
-              (let [uid (auth/get-user-id req)
+              (friend/authorize
+               #{:user}
+               (let [uid (auth/get-user-id req)
                     initial-state (get-initial-state uid)]
-                (friend/authorize
-                 #{:user}
                  {:status 200
                   :headers {"Content-Type" "text/html; charset=utf-8"}
                   :body (html/chat initial-state)

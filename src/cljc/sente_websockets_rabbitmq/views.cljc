@@ -69,6 +69,8 @@
                :placeholder "type a message..."
                :type "text" :ref "message"
                :on-change input-change
+               :disabled #?(:clj true
+                            :cljs false)
                :on-key-press (fn [e]
                                (when (= 13 (.-charCode e))
                                  (submit-message)))
