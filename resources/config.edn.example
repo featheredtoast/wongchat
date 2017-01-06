@@ -1,0 +1,6 @@
+{:oauth-api-secret ""
+ :oauth-api-key ""
+ :db-host "//localhost/postgres"
+ :db-user "user"
+ :db-pass "password"
+ :redis-url "redis://user:password@localhost"}
