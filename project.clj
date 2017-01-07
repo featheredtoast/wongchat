@@ -61,7 +61,8 @@
   :cljsbuild {:builds
               [{:id "app"
                 :source-paths ["src/cljs" "src/cljc"]
-                :figwheel {:on-jsload "org.clojars.featheredtoast.reloaded-repl-cljs/go"}
+                :figwheel {:on-jsload "org.clojars.featheredtoast.reloaded-repl-cljs/go"
+                           :websocket-host :js-client-host}
                 :compiler {:main sente-websockets-rabbitmq.core
                            :asset-path "js/compiled/out"
                            :output-to "resources/public/js/compiled/sente_websockets_rabbitmq.js"
