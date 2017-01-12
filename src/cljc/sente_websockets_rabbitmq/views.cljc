@@ -13,6 +13,10 @@
      (def app-typing (reaction (:typing @app-state)))
      (def app-input (reaction (:input @app-state)))
      (def app-user (reaction (:user @app-state)))
+     (defn get-component [component]
+       [component])
+     (defn get-component-with-arg [component arg]
+       [component arg])
      (defn gen-message-key []
        (.random js/Math)))
    
@@ -22,6 +26,10 @@
      (def app-messages (atom []))
      (def app-typing (atom #{}))
      (def app-user (atom "username here"))
+     (defn get-component [component]
+       (component))
+     (defn get-component-with-arg [component arg]
+       (component arg))
      (def app-input (atom "jaja"))
      (defn gen-message-key []
        (rand-int 10000))
@@ -29,10 +37,11 @@
      (defn input-change [] ())))
 
 (defn print-message [{:keys [uid msg] :as message}]
-  ^{:key (gen-message-key)} [:div (str uid ": " msg)])
+  [:div (str uid ": " msg)])
 
 (defn print-messages []
-  (map print-message @app-messages))
+  [:div (for [message @app-messages]
+          ^{:key (gen-message-key)} (get-component-with-arg print-message message))])
 
 (defn print-typing-notification-message [typists]
   (case (count typists)
@@ -44,14 +53,14 @@
   [:div {:class "typing-notification-container"}
    (when (< 0 (count typists))
      [:span {:class "small typing-notification"}
-      (print-typing-notification-message typists)
+      (get-component-with-arg print-typing-notification-message typists)
       [:div {:class "circle"}]
       [:div {:class "circle circle2"}]
       [:div {:class "circle circle3"}]])])
 
 (defn print-typists []
   (let [typists @app-typing]
-    (print-typing-notification typists)))
+    (get-component-with-arg print-typing-notification typists)))
 
 (defn main-app []
   [:div {:class "app"}
@@ -63,8 +72,8 @@
     [:div {:class "panel panel-default"}
      [:div {:class "panel-body"}
       [:div {:class "col-lg-12"}
-       (print-messages)
-       (print-typists)]]]
+       (get-component print-messages)
+       (get-component print-typists)]]]
     
     [:div {:class "col-lg-4"}
      [:div {:class "input-group"}
