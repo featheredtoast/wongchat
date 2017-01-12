@@ -4,9 +4,9 @@
   (:require [org.clojars.featheredtoast.reloaded-repl-cljs :as reloaded]
             [sente-websockets-rabbitmq.app :as app :refer [chat-system]]
             [sente-websockets-rabbitmq.views :as views :refer [main-app]]
-            [rum.core :as rum]))
+            [reagent.core :as reagent]))
 
 (enable-console-print!)
 
 (reloaded/set-init-go! #(chat-system))
-(rum/mount (main-app) (js/document.getElementById "app"))
+(reagent/render [main-app] (js/document.getElementById "app"))

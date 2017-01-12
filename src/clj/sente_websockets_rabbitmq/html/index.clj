@@ -1,6 +1,5 @@
 (ns sente-websockets-rabbitmq.html.index
   (:require [hiccup.core :refer [html]]
-            [rum.core :as rum]
             [sente-websockets-rabbitmq.views :as app]
             [clojure.zip :as zip]))
 

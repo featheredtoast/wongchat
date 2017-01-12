@@ -1,15 +1,18 @@
 (ns sente-websockets-rabbitmq.views
   #?(:cljs (:require-macros
-            [cljs.core.async.macros :as asyncm :refer (go go-loop)]))
-  (:require [rum.core :as rum]
-            #?(:cljs [sente-websockets-rabbitmq.app :as core :refer [app-state submit-message input-change]])))
+            [cljs.core.async.macros :as asyncm :refer (go go-loop)]
+            [reagent.ratom :refer [reaction]]))
+  #?(:cljs
+     (:require
+      [reagent.core :as reagent :refer [atom]]
+      [sente-websockets-rabbitmq.app :as core :refer [app-state submit-message input-change]])))
 
 #?(:cljs
    (do
-     (def app-messages (rum/cursor-in app-state [:messages]))
-     (def app-typing (rum/cursor-in app-state [:typing]))
-     (def app-input (rum/cursor-in app-state [:input]))
-     (def app-user (rum/cursor-in app-state [:user]))
+     (def app-messages (reaction (:messages @app-state)))
+     (def app-typing (reaction (:typing @app-state)))
+     (def app-input (reaction (:input @app-state)))
+     (def app-user (reaction (:user @app-state)))
      (defn gen-message-key []
        (.random js/Math)))
    
@@ -29,7 +32,7 @@
   ^{:key (gen-message-key)} [:div (str uid ": " msg)])
 
 (defn print-messages []
-  (map print-message (rum/react app-messages)))
+  (map print-message @app-messages))
 
 (defn print-typing-notification-message [typists]
   (case (count typists)
@@ -47,14 +50,14 @@
       [:div {:class "circle circle3"}]])])
 
 (defn print-typists []
-  (let [typists (rum/react app-typing)]
+  (let [typists @app-typing]
     (print-typing-notification typists)))
 
-(rum/defc main-app < rum/reactive []
+(defn main-app []
   [:div {:class "app"}
    [:nav {:class "navbar navbar-default"}
     [:div {:class "container-fluid"}
-     [:span {:class "pull-right navbar-text"} [:span (rum/react app-user)]
+     [:span {:class "pull-right navbar-text"} [:span @app-user]
       " " [:a {:href "/logout"} "logout"]]]]
    [:div {:class "container"}
     [:div {:class "panel panel-default"}
@@ -74,7 +77,7 @@
                :on-key-press (fn [e]
                                (when (= 13 (.-charCode e))
                                  (submit-message)))
-               :value (rum/react app-input)}]
+               :value @app-input}]
       [:span {:class "input-group-btn"}
        [:button {:class "btn btn-default" :on-click submit-message} "send"]]]]]])
 

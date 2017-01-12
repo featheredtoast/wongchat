@@ -5,7 +5,6 @@
             [cljs.core.async :as async :refer (<! >! <! poll! put! chan)]
             [taoensso.sente  :as sente :refer (cb-success?)]
             [system.components.sente :refer [new-channel-socket-client]]
-            [rum.core :as rum]
             [cognitect.transit :as transit])
   (:import goog.net.Cookies))
 
