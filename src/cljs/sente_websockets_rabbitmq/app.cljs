@@ -5,7 +5,8 @@
             [cljs.core.async :as async :refer (<! >! <! poll! put! chan)]
             [taoensso.sente  :as sente :refer (cb-success?)]
             [system.components.sente :refer [new-channel-socket-client]]
-            [cognitect.transit :as transit])
+            [cognitect.transit :as transit]
+            [reagent.core :as reagent :refer [atom]])
   (:import goog.net.Cookies))
 
 (enable-console-print!)
