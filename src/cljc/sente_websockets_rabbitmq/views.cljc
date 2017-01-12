@@ -16,9 +16,7 @@
      (defn get-component [component]
        [component])
      (defn get-component-with-arg [component arg]
-       [component arg])
-     (defn gen-message-key []
-       (.random js/Math)))
+       [component arg]))
    
    :clj
    (do
@@ -31,17 +29,15 @@
      (defn get-component-with-arg [component arg]
        (component arg))
      (def app-input (atom "jaja"))
-     (defn gen-message-key []
-       (rand-int 10000))
      (defn submit-message [] ())
      (defn input-change [] ())))
 
-(defn print-message [{:keys [uid msg] :as message}]
-  [:div (str uid ": " msg)])
+(defn print-message [message-key {:keys [uid msg] :as message}]
+  ^{:key message-key} [:div (str uid ": " msg)])
 
 (defn print-messages []
-  [:div (for [message @app-messages]
-          ^{:key (gen-message-key)} (get-component-with-arg print-message message))])
+  [:div
+   (map-indexed print-message @app-messages)])
 
 (defn print-typing-notification-message [typists]
   (case (count typists)
@@ -95,8 +91,6 @@
           (def app-typing (atom (:typing @app-state)))
           (def app-user (atom (:user @app-state)))
           (def app-input (atom ""))
-          (defn gen-message-key []
-            (rand-int 10000))
           (defn submit-message [] ())
           (defn input-change [] ())
           (main-app)))
