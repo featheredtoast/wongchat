@@ -32,7 +32,7 @@
 
 (defn print-messages []
   [:div
-   (vec (map-indexed print-message @app-messages))])
+   (map-indexed print-message @app-messages)])
 
 (defn print-typing-notification-message [typists]
   (case (count typists)
