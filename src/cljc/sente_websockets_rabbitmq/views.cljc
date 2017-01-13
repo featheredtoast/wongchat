@@ -5,18 +5,17 @@
   #?(:cljs
      (:require
       [reagent.core :as reagent :refer [atom]]
-      [sente-websockets-rabbitmq.app :as core :refer [app-state submit-message input-change]])))
+      [sente-websockets-rabbitmq.app :as core :refer [app-state submit-message input-change]]))
+  #?(:clj
+     (:require
+      [reagent-serverside.core :as reagent])))
 
 #?(:cljs
    (do
      (def app-messages (reaction (:messages @app-state)))
      (def app-typing (reaction (:typing @app-state)))
      (def app-input (reaction (:input @app-state)))
-     (def app-user (reaction (:user @app-state)))
-     (defn get-component [component]
-       [component])
-     (defn get-component-with-arg [component arg]
-       [component arg]))
+     (def app-user (reaction (:user @app-state))))
    
    :clj
    (do
@@ -24,10 +23,6 @@
      (def app-messages (atom []))
      (def app-typing (atom #{}))
      (def app-user (atom "username here"))
-     (defn get-component [component]
-       (component))
-     (defn get-component-with-arg [component arg]
-       (component arg))
      (def app-input (atom "jaja"))
      (defn submit-message [] ())
      (defn input-change [] ())))
@@ -37,7 +32,7 @@
 
 (defn print-messages []
   [:div
-   (map-indexed print-message @app-messages)])
+   (vec (map-indexed print-message @app-messages))])
 
 (defn print-typing-notification-message [typists]
   (case (count typists)
@@ -49,14 +44,14 @@
   [:div {:class "typing-notification-container"}
    (when (< 0 (count typists))
      [:span {:class "small typing-notification"}
-      (get-component-with-arg print-typing-notification-message typists)
+      [print-typing-notification-message typists]
       [:div {:class "circle"}]
       [:div {:class "circle circle2"}]
       [:div {:class "circle circle3"}]])])
 
 (defn print-typists []
   (let [typists @app-typing]
-    (get-component-with-arg print-typing-notification typists)))
+    [print-typing-notification typists]))
 
 (defn main-app []
   [:div {:class "app"}
@@ -68,8 +63,8 @@
     [:div {:class "panel panel-default"}
      [:div {:class "panel-body"}
       [:div {:class "col-lg-12"}
-       (get-component print-messages)
-       (get-component print-typists)]]]
+       [print-messages]
+       [print-typists]]]]
     
     [:div {:class "col-lg-4"}
      [:div {:class "input-group"}
@@ -93,4 +88,4 @@
           (def app-input (atom ""))
           (defn submit-message [] ())
           (defn input-change [] ())
-          (main-app)))
+          (reagent/render-page main-app)))
