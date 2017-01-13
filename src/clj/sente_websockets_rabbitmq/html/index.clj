@@ -43,7 +43,7 @@
                 :rel "stylesheet"
                 :type "text/css"}]]
        [:body
-        [:div {:id "app-serverside"} (app/init-main-app (atom state))]
+        #_[:div {:id "app-serverside"} (app/init-main-app (atom state))]
         [:div {:id "app"} (app/init-main-app (atom state))]
         [:script {:src "js/compiled/sente_websockets_rabbitmq.js"}]]]
       (add-headers basic-headers)
