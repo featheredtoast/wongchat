@@ -58,7 +58,7 @@
    [:nav {:class "navbar navbar-default"}
     [:div {:class "container-fluid"}
      [:span {:class "pull-right navbar-text"} [:span @app-user]
-      " " [:a {:href "/logout"} "logout"]]]]
+       [:a {:href "/logout"} "logout"]]]]
    [:div {:class "container"}
     [:div {:class "panel panel-default"}
      [:div {:class "panel-body"}
@@ -70,10 +70,8 @@
      [:div {:class "input-group"}
       [:input {:class "form-control"
                :placeholder "type a message..."
-               :type "text" :ref "message"
+               :type "text"
                :on-change input-change
-               :disabled #?(:clj true
-                            :cljs false)
                :on-key-press (fn [e]
                                (when (= 13 (.-charCode e))
                                  (submit-message)))

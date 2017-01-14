@@ -46,6 +46,17 @@
     component
     (into [(first component) {}] (rest component))))
 
+(defn hiccup-zip
+  "Returns a zipper for hiccup vectors"
+  [root]
+  (clojure.zip/zipper #(or (vector? %) (seq? %))
+          seq
+          (fn [node children]
+            (if (keyword? (first children))
+              (with-meta (vec children) (meta node))
+              (with-meta children (meta node))))
+          root))
+
 (defn render
   ([component] (render [0] component))
   ([id component]
@@ -71,19 +82,17 @@
      (render id (apply (first component) (rest component))))))
 
 (defn render-new [component]
-  (let [root (clojure.zip/vector-zip (render component))]
+  (let [root (hiccup-zip (render component))]
     (loop [node root
            react-id 1]
       (if (clojure.zip/end? node)
-        (do
-          (println (clojure.zip/root node))
-          (clojure.zip/root node))
-        (do
-          (println (first node))
-          (if (map? (first node))
-            (recur (clojure.zip/next (clojure.zip/replace node (into {} (assoc (first node) :data-reactid react-id)))) (inc react-id))
-            (recur (clojure.zip/next node) react-id)))))))
+        (clojure.zip/root node)
+        (if (map? (first node))
+          (recur (clojure.zip/next (clojure.zip/replace node (into {} (assoc (first node) :data-reactid react-id)))) (inc react-id))
+          (recur (clojure.zip/next node) react-id))))))
 
 (defn render-page [page]
-  (let [rendered (render-new page)]
-    (update rendered 1 merge {:data-reactroot "" :data-react-checksum (adler32 (html rendered))})))
+  (let [rendered (render-new page)
+        fully-rendered (reorder-keys (update rendered 1 merge {:data-reactroot "" :data-react-checksum (adler32 (html rendered))}))]
+    (println fully-rendered)
+    fully-rendered))
