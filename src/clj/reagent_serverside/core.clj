@@ -93,6 +93,6 @@
 
 (defn render-page [page]
   (let [rendered (render-new page)
-        fully-rendered (reorder-keys (update rendered 1 merge {:data-reactroot "" :data-react-checksum (adler32 (html rendered))}))]
+        fully-rendered (update rendered 1 merge {:data-reactroot "" :data-react-checksum (adler32 (html rendered))})]
     (println fully-rendered)
     fully-rendered))
