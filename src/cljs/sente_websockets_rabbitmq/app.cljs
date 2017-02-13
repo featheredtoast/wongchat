@@ -5,8 +5,7 @@
             [cljs.core.async :as async :refer (<! >! <! poll! put! chan)]
             [taoensso.sente  :as sente :refer (cb-success?)]
             [system.components.sente :refer [new-channel-socket-client]]
-            [cognitect.transit :as transit]
-            [reagent.core :as reagent :refer [atom]])
+            [cognitect.transit :as transit])
   (:import goog.net.Cookies))
 
 (enable-console-print!)
@@ -16,7 +15,8 @@
                           :user-typing false
                           :input ""
                           :user ""
-                          :initializing true}))
+                          :initializing true
+                          :connected false}))
 
 (defonce message-chan (chan))
 
@@ -79,9 +79,11 @@
 
   (defmethod event-msg-handler :chsk/state
     [_ {:as ev-msg :keys [?data]}]
-    (if (= ?data {:first-open? true})
-      (println "Channel socket successfully established!")
-      (println "Channel socket state change: %s" ?data)))
+    (when-let [new-state (second ?data)]
+      (swap! app-state assoc :connected (:open? new-state))
+      (if (:first-open? new-state)
+        (println "Channel socket successfully established!")
+        (println "Channel socket state change: %s" ?data))))
 
   (defmethod event-msg-handler :chsk/recv
     [_ {:as ev-msg :keys [?data]}]
@@ -127,7 +129,7 @@
       (println "disconnecting...")
       (sente/chsk-disconnect! chsk))
     (when-let [stop-f router]
-      (println "stopping router...") 
+      (println "stopping router...")
       (stop-f))
     (assoc component
            :chsk nil
@@ -168,8 +170,8 @@
 (defn keywordize-map [value]
   (cond
     (map? value)
-    (into {} 
-          (for [[k v] value] 
+    (into {}
+          (for [[k v] value]
             [(keyword k) (keywordize-map v)]))
     (set? value)
     (into #{}

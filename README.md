@@ -2,7 +2,7 @@
 
 Yet another chat app.
 
-A chat app example combining clojure, clojurescript, rabbitmq, postgresql, reagent, and oauth.
+A chat app example combining clojure, clojurescript, rabbitmq, postgresql, rum, and oauth.
 
 HTTP Sessions stored in redis.
 

@@ -14,7 +14,7 @@
                  [ring-middleware-format "0.7.0"]
                  [compojure "1.5.1"]
                  [environ "1.1.0"]
-                 [reagent "0.6.0"]
+                 [rum "0.10.8"]
                  [org.clojure/core.async "0.2.395"]
                  [com.taoensso/sente "1.11.0"]
                  [org.clojure/tools.reader "1.0.0-alpha1"]
