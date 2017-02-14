@@ -175,7 +175,6 @@
   (if (< 0 (:message-history-position @app-state))
     (do
       (let [input (nth (:message-history @app-state) (dec (:message-history-position @app-state)))]
-        (println "swapping for " input " at position " (dec (:message-history-position @app-state)))
         (swap! app-state assoc :input input)))
     (if (= 0 (:message-history-position @app-state))
       (let [input (:latest-input @app-state)]
