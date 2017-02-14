@@ -160,7 +160,8 @@
     (send-typing-notification (not= input ""))
     (swap! app-state assoc :input input)
     (swap! app-state assoc :latest-input input)
-    (swap! app-state assoc :message-history-position 0)))
+    (swap! app-state assoc :message-history-position 0)
+    (swap! app-state assoc :reset-cursor false)))
 
 (defn history-recall-back []
   (when (< (:message-history-position @app-state) (count (:message-history @app-state)))
@@ -193,7 +194,8 @@
       (history-recall-back)
       (swap! app-state assoc :reset-cursor true))
     (when (and (= (count input) cursor-position) (= 40 (.-keyCode e)))
-      (history-recall-forward))))
+      (history-recall-forward)
+      (swap! app-state assoc :reset-cursor false))))
 
 (defn get-cookie-map []
   (->> (map #(.split % "=") (.split (.-cookie js/document) #";"))
