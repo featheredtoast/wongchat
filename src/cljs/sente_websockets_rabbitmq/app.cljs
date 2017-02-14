@@ -169,13 +169,17 @@
       (swap! app-state assoc :message-history-position (inc (:message-history-position @app-state))))))
 
 (defn history-recall-forward []
-  (when (< 0 (:message-history-position @app-state))
-    (swap! app-state assoc :message-history-position (dec (:message-history-position @app-state)))
-    (let [input (nth (:message-history @app-state) (:message-history-position @app-state))]
-      (swap! app-state assoc :input input)))
-  (if (= 0 (:message-history-position @app-state))
-    (let [input (:latest-input @app-state)]
-      (swap! app-state assoc :input input))))
+  (println (:message-history-position @app-state))
+  (if (< 0 (:message-history-position @app-state))
+    (do
+      (swap! app-state assoc :message-history-position (dec (:message-history-position @app-state)))
+      (let [input (nth (:message-history @app-state) (:message-history-position @app-state))]
+        (swap! app-state assoc :input input)))
+    (if (= 0 (:message-history-position @app-state))
+      (do
+        (println "restoring latest history")
+        (let [input (:latest-input @app-state)]
+          (swap! app-state assoc :input input))))))
 
 (defn history-recall [e]
   (let [cursor-position (.-selectionStart (.-target e))
