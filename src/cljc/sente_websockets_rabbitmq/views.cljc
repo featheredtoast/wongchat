@@ -3,7 +3,7 @@
             [cljs.core.async.macros :as asyncm :refer (go go-loop)]))
   (:require
    [rum.core :as rum]
-   #?(:cljs [sente-websockets-rabbitmq.app :as core :refer [app-state submit-message input-change history-recall]])))
+   #?(:cljs [sente-websockets-rabbitmq.app :as core :refer [app-state submit-message input-change history-recall set-cursor-position]])))
 
 #?(:cljs
    (do
@@ -11,7 +11,13 @@
      (def app-typing (rum/cursor-in app-state [:typing]))
      (def app-input (rum/cursor-in app-state [:input]))
      (def app-user (rum/cursor-in app-state [:user]))
-     (def app-connected (rum/cursor-in app-state [:connected])))
+     (def app-connected (rum/cursor-in app-state [:connected]))
+     (def input-change-mixin
+       {:did-update
+        (fn [state]
+          (let [element (js/ReactDOM.findDOMNode (:rum/react-component state))]
+            (set-cursor-position element))
+          state)}))
    :clj
    (do
      (def app-messages (atom []))
@@ -21,7 +27,8 @@
      (def app-connected (atom true))
      (defn submit-message [] ())
      (defn history-recall [] ())
-     (defn input-change [] ())))
+     (defn input-change [] ())
+     (def input-change-mixin {})))
 
 (defn print-message [message-key {:keys [uid msg] :as message}]
   [:div {:key message-key} (str uid ": " msg)])
@@ -49,6 +56,22 @@
   (let [typists (rum/react app-typing)]
     (print-typing-notification typists)))
 
+(rum/defc user-input < rum/reactive
+  input-change-mixin
+   []
+  [:input {:class "form-control"
+           :placeholder "type a message..."
+           :type "text" :ref "message"
+           :on-change input-change
+           :disabled (not (rum/react app-connected))
+           :on-key-down (fn [e]
+                          (when (some #(= % (.-keyCode e)) [38 40])
+                            (history-recall e)))
+           :on-key-press (fn [e]
+                           (when (= 13 (.-charCode e))
+                             (submit-message)))
+           :value (rum/react app-input)}])
+
 (rum/defc main-app < rum/reactive []
   [:div {:class "app"}
    [:nav {:class "navbar navbar-default"}
@@ -64,18 +87,7 @@
 
     [:div {:class "col-lg-4"}
      [:div {:class "input-group"}
-      [:input {:class "form-control"
-               :placeholder "type a message..."
-               :type "text" :ref "message"
-               :on-change input-change
-               :disabled (not (rum/react app-connected))
-               :on-key-down (fn [e]
-                            (when (some #(= % (.-keyCode e)) [38 40])
-                              (history-recall e)))
-               :on-key-press (fn [e]
-                               (when (= 13 (.-charCode e))
-                                 (submit-message)))
-               :value (rum/react app-input)}]
+      (user-input)
       [:span {:class "input-group-btn"}
        [:button {:class "btn btn-default" :on-click submit-message} "send"]]]]]])
 

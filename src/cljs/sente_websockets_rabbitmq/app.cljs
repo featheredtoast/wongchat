@@ -180,13 +180,18 @@
       (let [input (:latest-input @app-state)]
         (swap! app-state assoc :input input)))))
 
+(defn set-cursor-position [element]
+  (when (:reset-cursor @app-state)
+    (.setSelectionRange element 0 0)
+    (swap! app-state assoc :reset-cursor false)))
+
 (defn history-recall [e]
   (let [element (.-target e)
         cursor-position (.-selectionStart element)
         input (.-value element)]
     (when (and (= 0 cursor-position) (= 38 (.-keyCode e)))
       (history-recall-back)
-      (.setSelectionRange element 0 0))
+      (swap! app-state assoc :reset-cursor true))
     (when (and (= (count input) cursor-position) (= 40 (.-keyCode e)))
       (history-recall-forward))))
 
