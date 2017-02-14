@@ -59,7 +59,7 @@
 (rum/defc user-input < rum/reactive
   input-change-mixin
    []
-  [:input {:class "form-control"
+  [:input {:class "form-control user-input"
            :placeholder "type a message..."
            :type "text" :ref "message"
            :on-change input-change

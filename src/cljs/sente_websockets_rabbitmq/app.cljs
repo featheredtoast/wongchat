@@ -236,6 +236,9 @@
   (swap! app-state assoc :latest-input ""))
 
 (when (:initializing @app-state)
+  (.addEventListener js/document "keydown"
+                     (fn [e]
+                       (.focus (js/$ ".user-input"))) false)
   (reset! app-state (get-app-state-cookies))
   (swap! app-state assoc :typing (set (:typing @app-state)))
   (swap! app-state assoc :message-history (into '() (:message-history @app-state))))
