@@ -166,15 +166,15 @@
   (when (< (:message-history-position @app-state) (count (:message-history @app-state)))
     (let [input (nth (:message-history @app-state) (:message-history-position @app-state))]
       (swap! app-state assoc :input input)
-      (println "incrementing to.. "(inc (:message-history-position @app-state)))
       (swap! app-state assoc :message-history-position (inc (:message-history-position @app-state))))))
 
 (defn history-recall-forward []
+  (when (< 0 (:message-history-position @app-state))
+    (swap! app-state assoc :message-history-position (dec (:message-history-position @app-state))))
   (if (< 0 (:message-history-position @app-state))
     (do
-      (swap! app-state assoc :message-history-position (dec (:message-history-position @app-state)))
-      (let [input (nth (:message-history @app-state) (:message-history-position @app-state))]
-        (println "swapping for " input " at position " (:message-history-position @app-state))
+      (let [input (nth (:message-history @app-state) (dec (:message-history-position @app-state)))]
+        (println "swapping for " input " at position " (dec (:message-history-position @app-state)))
         (swap! app-state assoc :input input)))
     (if (= 0 (:message-history-position @app-state))
       (let [input (:latest-input @app-state)]
@@ -231,4 +231,4 @@
 (when (:initializing @app-state)
   (reset! app-state (get-app-state-cookies))
   (swap! app-state assoc :typing (set (:typing @app-state)))
-  (swap! app-state assoc :message-history (into '() (:typing @app-state))))
+  (swap! app-state assoc :message-history (into '() (:message-history @app-state))))
