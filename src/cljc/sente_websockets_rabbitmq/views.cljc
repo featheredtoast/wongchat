@@ -3,7 +3,7 @@
             [cljs.core.async.macros :as asyncm :refer (go go-loop)]))
   (:require
    [rum.core :as rum]
-   #?(:cljs [sente-websockets-rabbitmq.app :as core :refer [app-state submit-message input-change]])))
+   #?(:cljs [sente-websockets-rabbitmq.app :as core :refer [app-state submit-message input-change history-recall]])))
 
 #?(:cljs
    (do
@@ -20,6 +20,7 @@
      (def app-input (atom ""))
      (def app-connected (atom true))
      (defn submit-message [] ())
+     (defn history-recall [] ())
      (defn input-change [] ())))
 
 (defn print-message [message-key {:keys [uid msg] :as message}]
@@ -68,6 +69,9 @@
                :type "text" :ref "message"
                :on-change input-change
                :disabled (not (rum/react app-connected))
+               :on-key-down (fn [e]
+                            (when (some #(= % (.-keyCode e)) [38 40])
+                              (history-recall e)))
                :on-key-press (fn [e]
                                (when (= 13 (.-charCode e))
                                  (submit-message)))

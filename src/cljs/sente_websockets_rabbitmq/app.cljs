@@ -15,8 +15,11 @@
                           :user-typing false
                           :input ""
                           :user ""
+                          :latest-input ""
                           :initializing true
-                          :connected false}))
+                          :connected false
+                          :message-history '()
+                          :message-history-position 0}))
 
 (defonce message-chan (chan))
 
@@ -154,8 +157,33 @@
 
 (defn input-change [e]
   (let [input (-> e .-target .-value)]
-       (send-typing-notification (not= input ""))
-       (swap! app-state assoc :input input)))
+    (send-typing-notification (not= input ""))
+    (swap! app-state assoc :input input)
+    (swap! app-state assoc :latest-input input)
+    (swap! app-state assoc :message-history-position 0)))
+
+(defn history-recall-back []
+  (when (< (:message-history-position @app-state) (count (:message-history @app-state)))
+    (let [input (nth (:message-history @app-state) (:message-history-position @app-state))]
+      (swap! app-state assoc :input input)
+      (swap! app-state assoc :message-history-position (inc (:message-history-position @app-state))))))
+
+(defn history-recall-forward []
+  (when (< 0 (:message-history-position @app-state))
+    (swap! app-state assoc :message-history-position (dec (:message-history-position @app-state)))
+    (let [input (nth (:message-history @app-state) (:message-history-position @app-state))]
+      (swap! app-state assoc :input input)))
+  (if (= 0 (:message-history-position @app-state))
+    (let [input (:latest-input @app-state)]
+      (swap! app-state assoc :input input))))
+
+(defn history-recall [e]
+  (let [cursor-position (.-selectionStart (.-target e))
+        input (-> e .-target .-value)]
+    (if (and (= 0 cursor-position) (= 38 (.-keyCode e)))
+      (history-recall-back))
+    (if (and (= (count input) cursor-position) (= 40 (.-keyCode e)))
+      (history-recall-forward))))
 
 (defn get-cookie-map []
   (->> (map #(.split % "=") (.split (.-cookie js/document) #";"))
@@ -188,10 +216,14 @@
 
 (defn submit-message []
   (when-let [msg (and (not= "" (:input @app-state)) (:input @app-state))]
-    (put! message-chan {:type :chat/submit :msg msg}))
+    (put! message-chan {:type :chat/submit :msg msg})
+    (swap! app-state assoc :message-history (conj (:message-history @app-state) msg))
+    (swap! app-state assoc :message-history-position 0))
   (send-typing-notification false)
-  (swap! app-state assoc :input ""))
+  (swap! app-state assoc :input "")
+  (swap! app-state assoc :latest-input ""))
 
 (when (:initializing @app-state)
   (reset! app-state (get-app-state-cookies))
-  (swap! app-state assoc :typing (set (:typing @app-state))))
+  (swap! app-state assoc :typing (set (:typing @app-state)))
+  (swap! app-state assoc :message-history (into '() (:typing @app-state))))

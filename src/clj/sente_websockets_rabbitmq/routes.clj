@@ -13,7 +13,10 @@
    :typing #{}
    :user-typing false
    :input ""
-   :user uid})
+   :latest-input ""
+   :user uid
+   :message-history '()
+   :message-history-position 0})
 
 (defn routes [url _]
   (let [basic-routes
