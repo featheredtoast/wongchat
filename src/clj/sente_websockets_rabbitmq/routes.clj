@@ -15,7 +15,7 @@
    :input ""
    :latest-input ""
    :user uid
-   :message-history '()
+   :message-history (db/get-user-messages uid)
    :message-history-position 0})
 
 (defn routes [url _]

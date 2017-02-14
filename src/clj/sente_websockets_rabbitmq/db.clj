@@ -19,6 +19,13 @@
     (jdbc/query db-config
                 ["select uid, msg from messages order by id DESC LIMIT 10;"]))))
 
+(defn get-user-messages [uid]
+  (reverse
+   (map :msg
+        (jdbc/query db-config
+                    ["select uid, msg from messages where uid = ? order by id DESC LIMIT 10;"
+                     uid]))))
+
 (defn insert-message [uid msg]
   (jdbc/insert! db-config :messages
                 {:uid uid :msg msg}))
