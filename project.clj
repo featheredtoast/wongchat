@@ -34,7 +34,8 @@
                  [garden "1.3.2"]
                  [hiccup "1.0.5"]
                  [org.clojars.featheredtoast/reloaded-repl-cljs "0.1.0-SNAPSHOT"]
-                 [com.cognitect/transit-cljs "0.8.239"]]
+                 [com.cognitect/transit-cljs "0.8.239"]
+                 [com.cognitect/transit-clj "0.8.297"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]
             [lein-environ "1.1.0"]]

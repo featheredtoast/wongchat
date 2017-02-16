@@ -6,7 +6,7 @@
    [sente-websockets-rabbitmq.html.index :as html]
    [sente-websockets-rabbitmq.auth :as auth]
    [sente-websockets-rabbitmq.db :as db]
-   [clojure.data.json :as json]))
+   [cognitect.transit :as transit]))
 
 (defn get-initial-state [uid]
   {:messages (db/get-recent-messages)
@@ -30,7 +30,12 @@
               (friend/authorize
                #{:user}
                (let [uid (auth/get-user-id req)
-                    initial-state (get-initial-state uid)]
+                     initial-state (get-initial-state uid)
+                     out (java.io.ByteArrayOutputStream. 4096)
+                     writer (transit/writer out :json)
+                     message (do (transit/write writer initial-state)
+                                 (println (.toString out))
+                                 (.toString out))]
                  {:status 200
                   :headers {"Content-Type" "text/html; charset=utf-8"}
                   :body (html/chat initial-state)
@@ -38,8 +43,7 @@
                             "app-state" {:value
                                          (. java.net.URLEncoder
                                             encode
-                                            (json/write-str
-                                             initial-state)
+                                            message
                                             "UTF-8")}}})))
          (resources "/")
          (friend/logout (ANY "/logout" request (ring.util.response/redirect url))))]

@@ -206,24 +206,8 @@
 (defn get-cookie [key]
   (js/decodeURIComponent (.get (goog.net.Cookies. js/document) (name key))))
 
-(defn keywordize-map [value]
-  (cond
-    (map? value)
-    (into {}
-          (for [[k v] value]
-            [(keyword k) (keywordize-map v)]))
-    (set? value)
-    (into #{}
-          (map keywordize-map value))
-    (vector? value)
-    (into []
-          (map keywordize-map value))
-    :else
-    value))
-
 (defn get-app-state-cookies []
-  (let [app-state-raw (from-json (js/decodeURIComponent (clojure.string/replace (get-cookie :app-state) "+" " ")))]
-    (keywordize-map app-state-raw)))
+  (from-json (js/decodeURIComponent (clojure.string/replace (get-cookie :app-state) "+" " "))))
 
 (defn submit-message []
   (when-let [msg (and (not= "" (:input @app-state)) (:input @app-state))]
@@ -238,6 +222,4 @@
   (.addEventListener js/document "keydown"
                      (fn [e]
                        (.focus (js/$ ".user-input"))) false)
-  (reset! app-state (get-app-state-cookies))
-  (swap! app-state assoc :typing (set (:typing @app-state)))
-  (swap! app-state assoc :message-history (into '() (:message-history @app-state))))
+  (reset! app-state (get-app-state-cookies)))
