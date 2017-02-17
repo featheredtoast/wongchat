@@ -22,7 +22,6 @@
                  [com.cemerick/friend "0.2.3"]
                  [qarth "0.1.2"]
                  [clj-http "2.2.0"]
-                 [org.clojure/data.json "0.2.6"]
                  [ragtime "0.6.3"]
                  [org.clojure/java.jdbc "0.6.1"]
                  [postgresql/postgresql "9.3-1102.jdbc41"]
