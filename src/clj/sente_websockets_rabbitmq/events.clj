@@ -34,12 +34,6 @@
     [_ {:as ev-msg :keys [uid]}]
     (println "new client connection"))
 
-  (defmethod event-msg-handler :chat/init
-    [_ {:as ev-msg :keys [?data uid send-fn]}]
-    (send-fn uid
-             [:chat/init
-              (db/get-recent-messages)]))
-
   (defmethod event-msg-handler :chat/message
     [rabbit-data {:as ev-msg :keys [?data uid id]}]
     (let [msg (:msg ?data)]

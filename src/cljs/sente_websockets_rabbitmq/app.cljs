@@ -29,12 +29,6 @@
 (defn to-json [data]
   (transit/write (transit/writer :json) data))
 
-(defn chat-init [chsk-send!]
-  (chsk-send!
-   [:chat/init] ;event
-   8000 ; timeout
-   (fn [reply])))
-
 (defn send-message [chsk-send! msg type]
   (chsk-send!
    [type {:msg msg}] ;event
@@ -59,9 +53,6 @@
         new-value-cut (- new-value-count new-value-offset)
         new-value (subvec new-value-uncut new-value-cut)]
     (swap! app-state assoc :messages new-value)))
-
-(defn handle-init [payload]
-  (swap! app-state assoc :messages payload))
 
 (defn handle-typing [{:keys [uid msg]}]
   (let [typists (:typing @app-state)
@@ -92,16 +83,9 @@
     [_ {:as ev-msg :keys [?data]}]
     (let [data-map (apply array-map ?data)
           payload (:chat/message data-map)
-          init-payload (:chat/init data-map)
           typing (:chat/typing data-map)]
       (or (nil? payload) (handle-message payload))
-      (or (nil? init-payload) (handle-init init-payload))
       (or (nil? typing) (handle-typing typing))))
-
-  (defmethod event-msg-handler :chsk/handshake
-    [chsk-send! {:as ev-msg :keys [?data]}]
-    (let [[?uid ?csrf-token ?handshake-data] ?data]
-      (chat-init chsk-send!)))
 
   ;; Add your (defmethod handle-event-msg! <event-id> [ev-msg] <body>)s here...
   )
@@ -121,7 +105,6 @@
   component/Lifecycle
   (start [component]
     (let [{:keys [chsk-send! chsk ch-chsk]} sente]
-      (chat-init chsk-send!)
       (start-message-sender chsk-send!)
       (assoc component
              :chsk chsk
