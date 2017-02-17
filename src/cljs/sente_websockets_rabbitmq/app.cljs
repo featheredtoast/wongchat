@@ -211,7 +211,7 @@
 
 (defn submit-message []
   (when-let [msg (and (not= "" (:input @app-state)) (:input @app-state))]
-    (put! message-chan {:type :chat/submit :msg msg})
+    (put! message-chan {:type :chat/message :msg msg})
     (swap! app-state assoc :message-history (conj (:message-history @app-state) msg))
     (swap! app-state assoc :message-history-position 0))
   (send-typing-notification false)

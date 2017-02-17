@@ -7,13 +7,16 @@
    [com.stuartsierra.component :as component]
    [sente-websockets-rabbitmq.db :as db]))
 
+(defn stringify-keyword [keywd]
+  (str (namespace keywd) "/" (name keywd)))
+
 (defn publish [rabbit-data msg type]
   "publish an event to rabbit in json. rabbit-data is a map of {:ch :qname}"
   (let [out (java.io.ByteArrayOutputStream. 4096)
         writer (transit/writer out :json)
         json-msg (do (transit/write writer msg)
                      (.toString out))]
-    (lb/publish (:ch rabbit-data) "" (:qname rabbit-data) json-msg {:content-type "text/json" :type type})))
+    (lb/publish (:ch rabbit-data) "" (:qname rabbit-data) json-msg {:content-type "text/json" :type (stringify-keyword type)})))
 
 (defmulti event-msg-handler (fn [_ msg] (:id msg))) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
@@ -37,17 +40,17 @@
              [:chat/init
               (db/get-recent-messages)]))
 
-  (defmethod event-msg-handler :chat/submit
-    [rabbit-data {:as ev-msg :keys [?data uid]}]
+  (defmethod event-msg-handler :chat/message
+    [rabbit-data {:as ev-msg :keys [?data uid id]}]
     (let [msg (:msg ?data)]
       (println "Event from " uid ": " msg)
       (db/insert-message uid msg)
-      (publish rabbit-data {:msg msg :uid uid} "message")))
+      (publish rabbit-data {:msg msg :uid uid} id)))
 
   (defmethod event-msg-handler :chat/typing
-    [rabbit-data {:as ev-msg :keys [?data uid]}]
+    [rabbit-data {:as ev-msg :keys [?data uid id]}]
     (let [msg (:msg ?data)]
-      (publish rabbit-data {:msg msg :uid uid} "typing"))))
+      (publish rabbit-data {:msg msg :uid uid} id))))
 
 (defn sente-handler [{:keys [rabbit-mq]}]
   (let [{:keys [ch]} rabbit-mq]
@@ -63,7 +66,7 @@
     (println "sending: " payload)
     (doseq [uid (:any @connected-uids)]
       (chsk-send! uid
-                  [(keyword "chat" type)
+                  [(keyword type)
                    {:msg msg
                     :uid sender-uid}]))))
 
