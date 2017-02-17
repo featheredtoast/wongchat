@@ -27,7 +27,7 @@
                  [postgresql/postgresql "9.3-1102.jdbc41"]
                  [clj-redis-session "2.1.0"]
                  [com.stuartsierra/component "0.3.1"]
-                 [org.danielsz/system "0.3.1"]
+                 [org.danielsz/system "0.4.1-SNAPSHOT"]
                  [org.clojure/tools.namespace "0.2.11"]
                  [im.chit/hara.io.watch "2.4.8"]
                  [garden "1.3.2"]

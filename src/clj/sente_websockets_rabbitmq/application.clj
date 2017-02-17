@@ -1,5 +1,5 @@
 (ns sente-websockets-rabbitmq.application
-  (:require 
+  (:require
    [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
    [ring.middleware.gzip :refer [wrap-gzip]]
    [ring.middleware.logger :refer [wrap-with-logger]]
@@ -46,10 +46,10 @@
                       (new-endpoint sente-routes)
                       [:sente])
      :routes (new-endpoint (partial routes url))
-     :middleware (new-middleware  {:middleware [[wrap-defaults :defaults]
-                                                wrap-with-logger
-                                                wrap-gzip]
-                                   :defaults (assoc site-defaults :session {:store (redis-session/redis-store redis-conn)})})
+     :middleware (new-middleware
+                  {:middleware [[wrap-defaults (assoc site-defaults :session {:store (redis-session/redis-store redis-conn)})]
+                                wrap-with-logger
+                                wrap-gzip]})
      :handler (component/using
                (new-handler)
                [:sente-endpoint :routes :middleware])
