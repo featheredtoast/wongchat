@@ -58,8 +58,7 @@
    ch {:keys [content-type delivery-tag type] :as meta} ^bytes byte-payload]
   (let [in (java.io.ByteArrayInputStream. byte-payload)
         reader (transit/reader in :json)
-        payload (transit/read reader)
-        {msg :msg sender-uid :uid} (do (println "consumer payload: " payload) payload)]
+        {msg :msg sender-uid :uid :as payload} (transit/read reader)]
     (println "Broadcasting server>user: %s" @connected-uids)
     (println "sending: " payload)
     (doseq [uid (:any @connected-uids)]
