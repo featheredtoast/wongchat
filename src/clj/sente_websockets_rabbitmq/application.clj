@@ -1,5 +1,5 @@
 (ns sente-websockets-rabbitmq.application
-  (:require
+  (:require 
    [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
    [ring.middleware.gzip :refer [wrap-gzip]]
    [ring.middleware.logger :refer [wrap-with-logger]]
@@ -9,7 +9,7 @@
    [system.components.endpoint :refer [new-endpoint]]
    [system.components.handler :refer [new-handler]]
    [system.components.middleware :refer [new-middleware]]
-   [sente-websockets-rabbitmq.components :refer [new-rabbit-mq]]
+   [system.components.rabbitmq :refer [new-rabbit-mq]]
    [taoensso.sente.server-adapters.http-kit :refer [sente-web-server-adapter]]
    [clj-redis-session.core :as redis-session]
    [sente-websockets-rabbitmq.config :refer [config]]
