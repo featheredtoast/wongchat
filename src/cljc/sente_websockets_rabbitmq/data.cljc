@@ -10,8 +10,9 @@
        (transit/write (transit/writer :json) data)))
    :clj
    (do
-     (defn deserialize [byte-payload]
-       (let [in (java.io.ByteArrayInputStream. byte-payload)
+     (defn deserialize [payload]
+       (let [byte-payload (if (= java.lang.String (type payload)) (.getBytes payload) payload)
+             in (java.io.ByteArrayInputStream. byte-payload)
              reader (transit/reader in :json)]
          (transit/read reader)))
 
