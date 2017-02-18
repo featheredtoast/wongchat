@@ -1,7 +1,8 @@
 (ns sente-websockets-rabbitmq.html.index
   (:require [hiccup.core :refer [html]]
             [sente-websockets-rabbitmq.views :as app]
-            [clojure.zip :as zip]))
+            [clojure.zip :as zip]
+            [cognitect.transit :as transit]))
 
 (def bootstrap-headers
   [[:link {:rel "stylesheet"
@@ -37,14 +38,19 @@
       html))
 
 (defn chat [state]
-  (-> [:html
-       [:head
-        [:link {:href "css/style.css"
-                :rel "stylesheet"
-                :type "text/css"}]]
-       [:body
-        [:div {:id "app"} (app/init-main-app (atom state))]
-        [:script {:src "js/compiled/sente_websockets_rabbitmq.js"}]]]
-      (add-headers basic-headers)
-      (add-headers bootstrap-headers)
-      html))
+  (let [out (java.io.ByteArrayOutputStream. 4096)
+        writer (transit/writer out :json)
+        state-json (do (transit/write writer state)
+                     (.toString out))]
+    (-> [:html
+         [:head
+          [:link {:href "css/style.css"
+                  :rel "stylesheet"
+                  :type "text/css"}]]
+         [:body
+          [:div {:id "app"} (app/init-main-app (atom state))]
+          [:div {:id "initial-state" :style "display:none;"} state-json]
+          [:script {:src "js/compiled/sente_websockets_rabbitmq.js"}]]]
+        (add-headers basic-headers)
+        (add-headers bootstrap-headers)
+        html)))

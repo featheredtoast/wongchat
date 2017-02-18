@@ -13,7 +13,9 @@
    :typing #{}
    :user-typing false
    :input ""
+   :initializing true
    :latest-input ""
+   :connected false
    :user uid
    :message-history (db/get-user-messages uid)
    :message-history-position 0})
@@ -30,21 +32,10 @@
               (friend/authorize
                #{:user}
                (let [uid (auth/get-user-id req)
-                     initial-state (get-initial-state uid)
-                     out (java.io.ByteArrayOutputStream. 4096)
-                     writer (transit/writer out :json)
-                     message (do (transit/write writer initial-state)
-                                 (println (.toString out))
-                                 (.toString out))]
+                     initial-state (get-initial-state uid)]
                  {:status 200
                   :headers {"Content-Type" "text/html; charset=utf-8"}
-                  :body (html/chat initial-state)
-                  :cookies {"user" {:value uid}
-                            "app-state" {:value
-                                         (. java.net.URLEncoder
-                                            encode
-                                            message
-                                            "UTF-8")}}})))
+                  :body (html/chat initial-state)})))
          (resources "/")
          (friend/logout (ANY "/logout" request (ring.util.response/redirect url))))]
     (-> basic-routes

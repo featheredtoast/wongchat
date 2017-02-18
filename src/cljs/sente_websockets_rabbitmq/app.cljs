@@ -5,21 +5,9 @@
             [cljs.core.async :as async :refer (<! >! <! poll! put! chan)]
             [taoensso.sente  :as sente :refer (cb-success?)]
             [system.components.sente :refer [new-channel-socket-client]]
-            [cognitect.transit :as transit])
-  (:import goog.net.Cookies))
+            [cognitect.transit :as transit]))
 
 (enable-console-print!)
-
-(defonce app-state (atom {:messages []
-                          :typing #{}
-                          :user-typing false
-                          :input ""
-                          :user ""
-                          :latest-input ""
-                          :initializing true
-                          :connected false
-                          :message-history '()
-                          :message-history-position 0}))
 
 (defonce message-chan (chan))
 
@@ -28,6 +16,9 @@
 
 (defn to-json [data]
   (transit/write (transit/writer :json) data))
+
+(defonce app-state (atom
+                    (from-json (.html (js/$ "#initial-state")))))
 
 (defn send-message [chsk-send! msg type]
   (chsk-send!
@@ -179,19 +170,6 @@
       (history-recall-forward)
       (swap! app-state assoc :reset-cursor false))))
 
-(defn get-cookie-map []
-  (->> (map #(.split % "=") (.split (.-cookie js/document) #";"))
-     (map vec)
-     (map (fn [key-val] [(keyword (.trim (first key-val))) (.trim (second key-val))]))
-     (map (partial apply hash-map))
-     (apply merge)))
-
-(defn get-cookie [key]
-  (js/decodeURIComponent (.get (goog.net.Cookies. js/document) (name key))))
-
-(defn get-app-state-cookies []
-  (from-json (js/decodeURIComponent (clojure.string/replace (get-cookie :app-state) "+" " "))))
-
 (defn submit-message []
   (when-let [msg (and (not= "" (:input @app-state)) (:input @app-state))]
     (put! message-chan {:type :chat/message :msg msg})
@@ -205,4 +183,4 @@
   (.addEventListener js/document "keydown"
                      (fn [e]
                        (.focus (js/$ ".user-input"))) false)
-  (reset! app-state (get-app-state-cookies)))
+  (swap! app-state assoc :initializing false))
