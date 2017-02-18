@@ -3,7 +3,7 @@
    [langohr.queue     :as lq]
    [langohr.consumers :as lc]
    [langohr.basic     :as lb]
-   [cognitect.transit :as transit]
+   [sente-websockets-rabbitmq.data :refer [serialize deserialize]]
    [com.stuartsierra.component :as component]
    [sente-websockets-rabbitmq.db :as db]))
 
@@ -12,11 +12,7 @@
 
 (defn publish [rabbit-data msg type]
   "publish an event to rabbit in json. rabbit-data is a map of {:ch :qname}"
-  (let [out (java.io.ByteArrayOutputStream. 4096)
-        writer (transit/writer out :json)
-        json-msg (do (transit/write writer msg)
-                     (.toString out))]
-    (lb/publish (:ch rabbit-data) "" (:qname rabbit-data) json-msg {:content-type "text/json" :type (stringify-keyword type)})))
+  (lb/publish (:ch rabbit-data) "" (:qname rabbit-data) (serialize msg) {:content-type "text/json" :type (stringify-keyword type)}))
 
 (defmulti event-msg-handler (fn [_ msg] (:id msg))) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
@@ -53,9 +49,7 @@
 (defn rabbit-message-handler
   [chsk-send! connected-uids
    ch {:keys [content-type delivery-tag type] :as meta} ^bytes byte-payload]
-  (let [in (java.io.ByteArrayInputStream. byte-payload)
-        reader (transit/reader in :json)
-        {msg :msg sender-uid :uid :as payload} (transit/read reader)]
+  (let [{msg :msg sender-uid :uid :as payload} (deserialize byte-payload)]
     (println "Broadcasting server>user: %s" @connected-uids)
     (println "sending: " payload)
     (doseq [uid (:any @connected-uids)]
@@ -71,9 +65,7 @@
           {:keys [chsk-send! connected-uids]} sente
           {:keys [ch]} rabbit-mq]
       (println (format "[main] Connected. Channel id: %d" (.getChannelNumber ch)))
-      (println "declaring queue...")
       (lq/declare ch qname {:exclusive false :auto-delete false})
-      (println "subscribing...")
       (lc/subscribe ch qname (partial rabbit-message-handler chsk-send! connected-uids) {:auto-ack true})
       component))
   (stop [component]

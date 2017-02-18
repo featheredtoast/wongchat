@@ -5,20 +5,14 @@
             [cljs.core.async :as async :refer (<! >! <! poll! put! chan)]
             [taoensso.sente  :as sente :refer (cb-success?)]
             [system.components.sente :refer [new-channel-socket-client]]
-            [cognitect.transit :as transit]))
+            [sente-websockets-rabbitmq.data :refer [serialize deserialize]]))
 
 (enable-console-print!)
 
 (defonce message-chan (chan))
 
-(defn from-json [json]
-  (transit/read (transit/reader :json) json))
-
-(defn to-json [data]
-  (transit/write (transit/writer :json) data))
-
 (defonce app-state (atom
-                    (from-json (.html (js/$ "#initial-state")))))
+                    (deserialize (.html (js/$ "#initial-state")))))
 
 (defn send-message [chsk-send! msg type]
   (chsk-send!

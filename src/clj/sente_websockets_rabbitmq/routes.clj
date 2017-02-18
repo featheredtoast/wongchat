@@ -5,8 +5,7 @@
    [cemerick.friend :as friend]
    [sente-websockets-rabbitmq.html.index :as html]
    [sente-websockets-rabbitmq.auth :as auth]
-   [sente-websockets-rabbitmq.db :as db]
-   [cognitect.transit :as transit]))
+   [sente-websockets-rabbitmq.db :as db]))
 
 (defn get-initial-state [uid]
   {:messages (db/get-recent-messages)

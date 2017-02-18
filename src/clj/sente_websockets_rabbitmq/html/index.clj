@@ -2,7 +2,7 @@
   (:require [hiccup.core :refer [html]]
             [sente-websockets-rabbitmq.views :as app]
             [clojure.zip :as zip]
-            [cognitect.transit :as transit]))
+            [sente-websockets-rabbitmq.data :refer [serialize]]))
 
 (def bootstrap-headers
   [[:link {:rel "stylesheet"
@@ -38,19 +38,15 @@
       html))
 
 (defn chat [state]
-  (let [out (java.io.ByteArrayOutputStream. 4096)
-        writer (transit/writer out :json)
-        state-json (do (transit/write writer state)
-                     (.toString out))]
-    (-> [:html
-         [:head
-          [:link {:href "css/style.css"
-                  :rel "stylesheet"
-                  :type "text/css"}]]
-         [:body
-          [:div {:id "app"} (app/init-main-app (atom state))]
-          [:div {:id "initial-state" :style "display:none;"} state-json]
-          [:script {:src "js/compiled/sente_websockets_rabbitmq.js"}]]]
-        (add-headers basic-headers)
-        (add-headers bootstrap-headers)
-        html)))
+  (-> [:html
+       [:head
+        [:link {:href "css/style.css"
+                :rel "stylesheet"
+                :type "text/css"}]]
+       [:body
+        [:div {:id "app"} (app/init-main-app (atom state))]
+        [:div {:id "initial-state" :style "display:none;"} (serialize state)]
+        [:script {:src "js/compiled/sente_websockets_rabbitmq.js"}]]]
+      (add-headers basic-headers)
+      (add-headers bootstrap-headers)
+      html))
