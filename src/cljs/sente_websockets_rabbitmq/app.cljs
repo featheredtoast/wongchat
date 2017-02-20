@@ -11,6 +11,8 @@
 
 (defonce message-chan (chan))
 
+(defonce history-chan (chan))
+
 (defonce app-state (atom
                     (deserialize (.html (js/$ "#initial-state")))))
 
@@ -31,11 +33,14 @@
           (recur))))))
 
 (defn swap-channel [channel]
-  (swap! app-state assoc :active-channel channel)
-  (when (= nil (get-in @app-state [:channel-data channel]))
-    (swap! app-state assoc-in [:channel-data channel] {:messages [] :typing #{}}))
-  (swap! app-state assoc :messages (get-in @app-state [:channel-data channel :messages]))
-  (swap! app-state assoc :typing (get-in @app-state [:channel-data channel :typing])))
+  (go
+    (swap! app-state assoc :active-channel channel)
+    (when (= nil (get-in @app-state [:channel-data channel]))
+      (>! message-chan {:type :chat/history :channel channel})
+      (let [messages (<! history-chan)]
+        (swap! app-state assoc-in [:channel-data channel] {:messages messages :typing #{}})))
+    (swap! app-state assoc :messages (get-in @app-state [:channel-data channel :messages]))
+    (swap! app-state assoc :typing (get-in @app-state [:channel-data channel :typing]))))
 
 (defn handle-message [{:keys [msg uid channel] :as message}]
   (when (not= nil (get-in @app-state [:channel-data channel]))
@@ -59,6 +64,10 @@
       (when (= channel (:active-channel @app-state))
         (swap! app-state assoc :typing new-typists)))))
 
+(defn handle-history [messages]
+  (println "handling history: " messages)
+  (put! history-chan messages))
+
 (defmulti event-msg-handler (fn [_ msg] (:id msg))) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
 (defn     event-msg-handler* [chsk-send! {:as ev-msg :keys [id ?data event]}]
@@ -80,9 +89,11 @@
     [_ {:as ev-msg :keys [?data]}]
     (let [data-map (apply array-map ?data)
           payload (:chat/message data-map)
-          typing (:chat/typing data-map)]
+          typing (:chat/typing data-map)
+          history (:chat/history data-map)]
       (or (nil? payload) (handle-message payload))
-      (or (nil? typing) (handle-typing typing))))
+      (or (nil? typing) (handle-typing typing))
+      (or (nil? history) (handle-history history))))
 
   ;; Add your (defmethod handle-event-msg! <event-id> [ev-msg] <body>)s here...
   )

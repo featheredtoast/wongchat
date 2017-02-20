@@ -40,7 +40,15 @@
   (defmethod event-msg-handler :chat/typing
     [rabbit-data {:as ev-msg :keys [?data uid id]}]
     (let [message ?data]
-      (publish rabbit-data (assoc message :uid uid) id))))
+      (publish rabbit-data (assoc message :uid uid) id)))
+
+  (defmethod event-msg-handler :chat/history
+    [_ {:as ev-msg :keys [?data uid send-fn]}]
+    (let [channel (:channel ?data)
+          messages (db/get-recent-messages channel)]
+      (send-fn uid
+               [:chat/history
+                messages]))))
 
 (defn sente-handler [{:keys [rabbit-mq]}]
   (let [{:keys [ch]} rabbit-mq]
