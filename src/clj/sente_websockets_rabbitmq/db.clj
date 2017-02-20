@@ -4,7 +4,9 @@
    [sente-websockets-rabbitmq.config :refer [config]]
    [ragtime.jdbc]
    [ragtime.repl]
-   [clojure.java.jdbc :as jdbc]))
+   [clojure.java.jdbc :as jdbc]
+   [clj-time.core :as time]
+   [clj-time.coerce :as timec]))
 
 (def db-config
   {:classname "org.postgresql.Driver"
@@ -13,11 +15,18 @@
    :user (:db-user config)
    :password (:db-pass config)})
 
-(defn get-recent-messages []
-  (vec
-   (reverse
-    (jdbc/query db-config
-                ["select uid, msg from messages order by id DESC LIMIT 10;"]))))
+(defn get-recent-messages
+  ([]
+   (vec
+    (reverse
+     (jdbc/query db-config
+                 ["select uid, msg from messages order by id DESC LIMIT 10;"]))))
+  ([channel]
+   (vec
+    (reverse
+     (jdbc/query db-config
+                 ["select uid, msg from messages where channel = ? order by id DESC LIMIT 10;"
+                  channel])))))
 
 (defn get-user-messages [uid]
   (reverse
@@ -26,17 +35,28 @@
                     ["select uid, msg from messages where uid = ? order by id DESC LIMIT 10;"
                      uid]))))
 
-(defn insert-message [uid msg]
-  (jdbc/insert! db-config :messages
-                {:uid uid :msg msg}))
+(defn insert-message
+  ([uid msg]
+   (insert-message uid msg "#general"))
+  ([uid msg channel]
+   (jdbc/insert! db-config :messages
+                 {:uid uid :msg msg :channel channel :date (timec/to-timestamp (time/now))})))
+
+(defn up []
+  (ragtime.repl/migrate {:datastore
+                           (ragtime.jdbc/sql-database db-config)
+                         :migrations (ragtime.jdbc/load-resources "migrations")}))
+
+(defn down []
+  (ragtime.repl/rollback {:datastore
+                         (ragtime.jdbc/sql-database db-config)
+                         :migrations (ragtime.jdbc/load-resources "migrations")}))
 
 (defrecord Migrate []
   component/Lifecycle
   (start [component]
     (println "migrating...")
-    (ragtime.repl/migrate {:datastore
-                           (ragtime.jdbc/sql-database db-config)
-                           :migrations (ragtime.jdbc/load-resources "migrations")})
+    (up)
     component)
   (stop [component]
     component))

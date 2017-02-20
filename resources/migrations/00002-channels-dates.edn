@@ -1,0 +1,4 @@
+{:up   ["ALTER TABLE messages ADD COLUMN date timestamp with time zone;"
+        "ALTER TABLE messages ADD COLUMN channel VARCHAR(4000) DEFAULT '#general';"]
+ :down ["ALTER TABLE messages DROP COLUMN date;"
+        "ALTER TABLE messages DROP COLUMN channel;"]}

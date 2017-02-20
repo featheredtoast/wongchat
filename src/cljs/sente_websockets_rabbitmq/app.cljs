@@ -14,38 +14,46 @@
 (defonce app-state (atom
                     (deserialize (.html (js/$ "#initial-state")))))
 
-(defn send-message [chsk-send! msg type]
+(defn send-message [chsk-send! message type]
   (chsk-send!
-   [type {:msg msg}] ;event
+   [type message] ;event
    8000 ; timeout
    (fn [reply])))
 
 (defn start-message-sender [chsk-send!]
   (go-loop []
-    (let [{:keys [msg type]} (<! message-chan)]
+    (let [{:keys [type channel] :as message} (<! message-chan)]
       (if (= type :shutdown)
         (println "shutting down message sender")
         (do
-          (println "sending message... " msg)
-          (send-message chsk-send! msg type)
+          (println "sending message... " message " to channel " channel)
+          (send-message chsk-send! message type)
           (recur))))))
 
-(defn handle-message [{:keys [msg uid] :as message}]
-  (let [new-value-uncut (conj (:messages @app-state) message)
+(defn swap-channel [channel]
+  (swap! app-state assoc :active-channel channel)
+  (swap! app-state assoc :messages (get-in @app-state [:channel-data channel :messages]))
+  (swap! app-state assoc :typing (get-in @app-state [:channel-data channel :typing])))
+
+(defn handle-message [{:keys [msg uid channel] :as message}]
+  (let [new-value-uncut (conj (get-in @app-state [:channel-data channel :messages]) (dissoc message :channel))
         new-value-count (count new-value-uncut)
         limit 10
         new-value-offset (or (and (< 0 (- new-value-count limit)) limit) new-value-count)
         new-value-cut (- new-value-count new-value-offset)
         new-value (subvec new-value-uncut new-value-cut)]
-    (swap! app-state assoc :messages new-value)))
+    (swap! app-state assoc-in [:channel-data channel :messages] new-value)
+    (when (= channel (:active-channel @app-state))
+      (swap! app-state assoc :messages new-value))))
 
-(defn handle-typing [{:keys [uid msg]}]
-  (let [typists (:typing @app-state)
-        new-typists(if msg
-          (conj typists uid)
-          (disj typists uid))]
-    (swap! app-state assoc :typing new-typists))
-  (println "typing notification by " uid " and it is " msg))
+(defn handle-typing [{:keys [uid msg channel] :as message}]
+  (let [typists (get-in @app-state [:channel-data channel :typing])
+        new-typists (if msg
+                      (conj typists uid)
+                      (disj typists uid))]
+    (swap! app-state assoc-in [:channel-data channel :typing] new-typists)
+    (when (= channel (:active-channel @app-state))
+      (swap! app-state assoc :typing new-typists))))
 
 (defmulti event-msg-handler (fn [_ msg] (:id msg))) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
@@ -121,7 +129,7 @@
   (if (not= is-typing (:user-typing @app-state))
     (do
       (swap! app-state assoc :user-typing is-typing)
-      (put! message-chan {:type :chat/typing :msg is-typing}))))
+      (put! message-chan {:type :chat/typing :msg is-typing :channel (:active-channel @app-state)}))))
 
 (defn input-change [e]
   (let [input (-> e .-target .-value)]
@@ -166,7 +174,7 @@
 
 (defn submit-message []
   (when-let [msg (and (not= "" (:input @app-state)) (:input @app-state))]
-    (put! message-chan {:type :chat/message :msg msg})
+    (put! message-chan {:type :chat/message :msg msg :channel (:active-channel @app-state)})
     (swap! app-state assoc :message-history (conj (:message-history @app-state) msg))
     (swap! app-state assoc :message-history-position 0))
   (send-typing-notification false)

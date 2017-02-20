@@ -78,7 +78,11 @@
     [:div {:class "container-fluid"}
      [:span {:class "pull-right navbar-text"} [:span (rum/react app-user)]
       " " [:a {:href "/logout"} "logout"]]]]
-   [:div {:class "container"}
+   [:div {:class "col-lg-2"}
+    [:ul {:class "nav nav-stacked nav-pills"}
+     [:li {:class "active"} [:a {:href "#"} "#general"]]
+     [:li [:a {:href "#"} "#random"]]]]
+   [:div {:class "col-lg-10"}
     [:div {:class "panel panel-default"}
      [:div {:class "panel-body"}
       [:div {:class "col-lg-12"}

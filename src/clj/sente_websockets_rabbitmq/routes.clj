@@ -8,16 +8,21 @@
    [sente-websockets-rabbitmq.db :as db]))
 
 (defn get-initial-state [uid]
-  {:messages (db/get-recent-messages)
-   :typing #{}
-   :user-typing false
-   :input ""
-   :initializing true
-   :latest-input ""
-   :connected false
-   :user uid
-   :message-history (db/get-user-messages uid)
-   :message-history-position 0})
+  (let [channel "#general"]
+    {:messages (db/get-recent-messages)
+     :typing #{}
+     :channel-data {channel
+                    {:messages (db/get-recent-messages channel)
+                     :typing #{}}}
+     :active-channel channel
+     :user-typing false
+     :input ""
+     :initializing true
+     :latest-input ""
+     :connected false
+     :user uid
+     :message-history (db/get-user-messages uid)
+     :message-history-position 0}))
 
 (defn routes [url _]
   (let [basic-routes

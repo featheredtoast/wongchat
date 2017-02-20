@@ -32,15 +32,15 @@
 
   (defmethod event-msg-handler :chat/message
     [rabbit-data {:as ev-msg :keys [?data uid id]}]
-    (let [msg (:msg ?data)]
-      (println "Event from " uid ": " msg)
-      (db/insert-message uid msg)
-      (publish rabbit-data {:msg msg :uid uid} id)))
+    (let [{:keys [msg channel] :as message} ?data]
+      (println "Event from " uid ": " message)
+      (db/insert-message uid msg channel)
+      (publish rabbit-data (assoc message :uid uid) id)))
 
   (defmethod event-msg-handler :chat/typing
     [rabbit-data {:as ev-msg :keys [?data uid id]}]
-    (let [msg (:msg ?data)]
-      (publish rabbit-data {:msg msg :uid uid} id))))
+    (let [message ?data]
+      (publish rabbit-data (assoc message :uid uid) id))))
 
 (defn sente-handler [{:keys [rabbit-mq]}]
   (let [{:keys [ch]} rabbit-mq]
@@ -49,14 +49,13 @@
 (defn rabbit-message-handler
   [chsk-send! connected-uids
    ch {:keys [content-type delivery-tag type] :as meta} ^bytes byte-payload]
-  (let [{msg :msg sender-uid :uid :as payload} (deserialize byte-payload)]
+  (let [payload (deserialize byte-payload)]
     (println "Broadcasting server>user: %s" @connected-uids)
     (println "sending: " payload)
     (doseq [uid (:any @connected-uids)]
       (chsk-send! uid
                   [(keyword type)
-                   {:msg msg
-                    :uid sender-uid}]))))
+                   payload]))))
 
 (defrecord Messager [sente rabbit-mq]
   component/Lifecycle
