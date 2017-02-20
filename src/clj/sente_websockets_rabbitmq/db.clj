@@ -56,7 +56,8 @@
   component/Lifecycle
   (start [component]
     (println "migrating...")
-    (up)
+    (try (up)
+         (catch Exception e nil))
     component)
   (stop [component]
     component))

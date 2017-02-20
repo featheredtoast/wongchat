@@ -3,7 +3,7 @@
             [cljs.core.async.macros :as asyncm :refer (go go-loop)]))
   (:require
    [rum.core :as rum]
-   #?(:cljs [sente-websockets-rabbitmq.app :as core :refer [app-state submit-message input-change history-recall set-cursor-position]])))
+   #?(:cljs [sente-websockets-rabbitmq.app :as core :refer [app-state submit-message input-change history-recall set-cursor-position swap-channel]])))
 
 #?(:cljs
    (do
@@ -12,6 +12,7 @@
      (def app-input (rum/cursor-in app-state [:input]))
      (def app-user (rum/cursor-in app-state [:user]))
      (def app-connected (rum/cursor-in app-state [:connected]))
+     (def app-active-channel (rum/cursor-in app-state [:active-channel]))
      (def input-change-mixin
        {:did-update
         (fn [state]
@@ -25,9 +26,11 @@
      (def app-user (atom ""))
      (def app-input (atom ""))
      (def app-connected (atom true))
+     (def app-active-channel (atom ""))
      (defn submit-message [] ())
      (defn history-recall [] ())
      (defn input-change [] ())
+     (defn swap-channel [channel] ())
      (def input-change-mixin {})))
 
 (defn print-message [message-key {:keys [uid msg] :as message}]
@@ -79,9 +82,10 @@
      [:span {:class "pull-right navbar-text"} [:span (rum/react app-user)]
       " " [:a {:href "/logout"} "logout"]]]]
    [:div {:class "col-lg-2"}
-    [:ul {:class "nav nav-stacked nav-pills"}
-     [:li {:class "active"} [:a {:href "#"} "#general"]]
-     [:li [:a {:href "#"} "#random"]]]]
+    (let [active-channel (rum/react app-active-channel)]
+      [:ul {:class "nav nav-stacked nav-pills"}
+       [:li (when (= active-channel "#general") {:class "active"}) [:a {:href "#" :on-click #(swap-channel "#general")} "#general"]]
+       [:li (when (= active-channel "#random") {:class "active"}) [:a {:href "#" :on-click #(swap-channel "#random")} "#random"]]])]
    [:div {:class "col-lg-10"}
     [:div {:class "panel panel-default"}
      [:div {:class "panel-body"}
@@ -101,6 +105,7 @@
           (def app-user (atom (:user @app-state)))
           (def app-input (atom ""))
           (def app-connected (atom false))
+          (def app-active-channel (atom (:active-channel @app-state)))
           (defn submit-message [] ())
           (defn input-change [] ())
           (rum/render-html (main-app))))

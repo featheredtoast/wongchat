@@ -32,28 +32,32 @@
 
 (defn swap-channel [channel]
   (swap! app-state assoc :active-channel channel)
+  (when (= nil (get-in @app-state [:channel-data channel]))
+    (swap! app-state assoc-in [:channel-data channel] {:messages [] :typing #{}}))
   (swap! app-state assoc :messages (get-in @app-state [:channel-data channel :messages]))
   (swap! app-state assoc :typing (get-in @app-state [:channel-data channel :typing])))
 
 (defn handle-message [{:keys [msg uid channel] :as message}]
-  (let [new-value-uncut (conj (get-in @app-state [:channel-data channel :messages]) (dissoc message :channel))
-        new-value-count (count new-value-uncut)
-        limit 10
-        new-value-offset (or (and (< 0 (- new-value-count limit)) limit) new-value-count)
-        new-value-cut (- new-value-count new-value-offset)
-        new-value (subvec new-value-uncut new-value-cut)]
-    (swap! app-state assoc-in [:channel-data channel :messages] new-value)
-    (when (= channel (:active-channel @app-state))
-      (swap! app-state assoc :messages new-value))))
+  (when (not= nil (get-in @app-state [:channel-data channel]))
+    (let [new-value-uncut (conj (get-in @app-state [:channel-data channel :messages]) (dissoc message :channel))
+          new-value-count (count new-value-uncut)
+          limit 10
+          new-value-offset (or (and (< 0 (- new-value-count limit)) limit) new-value-count)
+          new-value-cut (- new-value-count new-value-offset)
+          new-value (subvec new-value-uncut new-value-cut)]
+      (swap! app-state assoc-in [:channel-data channel :messages] new-value)
+      (when (= channel (:active-channel @app-state))
+        (swap! app-state assoc :messages new-value)))))
 
 (defn handle-typing [{:keys [uid msg channel] :as message}]
-  (let [typists (get-in @app-state [:channel-data channel :typing])
-        new-typists (if msg
-                      (conj typists uid)
-                      (disj typists uid))]
-    (swap! app-state assoc-in [:channel-data channel :typing] new-typists)
-    (when (= channel (:active-channel @app-state))
-      (swap! app-state assoc :typing new-typists))))
+  (when (not= nil (get-in @app-state [:channel-data channel]))
+    (let [typists (get-in @app-state [:channel-data channel :typing])
+          new-typists (if msg
+                        (conj typists uid)
+                        (disj typists uid))]
+      (swap! app-state assoc-in [:channel-data channel :typing] new-typists)
+      (when (= channel (:active-channel @app-state))
+        (swap! app-state assoc :typing new-typists)))))
 
 (defmulti event-msg-handler (fn [_ msg] (:id msg))) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
