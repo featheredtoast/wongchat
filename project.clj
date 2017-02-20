@@ -35,7 +35,8 @@
                  [org.clojars.featheredtoast/reloaded-repl-cljs "0.1.0-SNAPSHOT"]
                  [com.cognitect/transit-cljs "0.8.239"]
                  [com.cognitect/transit-clj "0.8.297"]
-                 [clj-time "0.13.0"]]
+                 [clj-time "0.13.0"]
+                 [cljsjs/hammer "2.0.4-5"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]
             [lein-environ "1.1.0"]]

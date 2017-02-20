@@ -12,7 +12,6 @@
     typing-keyframe
     [:body
      {:font-family "sans-serif"
-      ;;:color "red"
       }]
     [:.typing-notification-container
      {:display "inline-block"
@@ -34,4 +33,27 @@
     [:.circle2
      {:animation-delay ".1s"}]
     [:.circle3
-     {:animation-delay ".2s"}]))
+     {:animation-delay ".2s"}]
+    [:.main-menu
+     {:display "block"
+      :position "fixed"
+      :border-right "1px solid grey"
+      :width "200px"
+      :height "100%"
+      :z-index "1000"
+      :transition ".2s"
+      :transition-timing-function "linear"}]
+    [:.content-mask
+     {:display "block"
+      :position "fixed"
+      :background "grey"
+      :opacity "0.5"
+      :width "100%"
+      :height "100%"
+      :z-index "999"
+      :transition ".2s"
+      :transition-timing-function "linear"
+      :visibility "visible"}]
+    [:.content-mask-close
+     {:visibility "hidden"
+      :opacity "0.0"}]))

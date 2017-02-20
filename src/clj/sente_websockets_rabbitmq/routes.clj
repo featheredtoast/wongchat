@@ -22,7 +22,8 @@
      :connected false
      :user uid
      :message-history (db/get-user-messages uid)
-     :message-history-position 0}))
+     :message-history-position 0
+     :menu {:percent-open 0}}))
 
 (defn routes [url _]
   (let [basic-routes

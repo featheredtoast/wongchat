@@ -5,7 +5,8 @@
             [cljs.core.async :as async :refer (<! >! <! poll! put! chan)]
             [taoensso.sente  :as sente :refer (cb-success?)]
             [system.components.sente :refer [new-channel-socket-client]]
-            [sente-websockets-rabbitmq.data :refer [serialize deserialize]]))
+            [sente-websockets-rabbitmq.data :refer [serialize deserialize]]
+            [cljsjs.hammer]))
 
 (enable-console-print!)
 
@@ -196,7 +197,19 @@
   (swap! app-state assoc :input "")
   (swap! app-state assoc :latest-input ""))
 
+(defn open-menu []
+  (swap! app-state assoc-in [:menu :percent-open] 100))
+
+(defn close-menu []
+  (swap! app-state assoc-in [:menu :percent-open] 0))
+
+(defn setup-swipe-events [ele]
+  (let [hammer (js/Hammer. ele)]
+    (.on hammer "panright" (fn [e] (println e)))
+    (.on hammer "panend" (fn [e] (println e)))))
+
 (when (:initializing @app-state)
+  (setup-swipe-events (.-body js/document))
   (.addEventListener js/document "keydown"
                      (fn [e]
                        (.focus (js/$ ".user-input"))) false)
