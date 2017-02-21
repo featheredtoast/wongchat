@@ -148,7 +148,7 @@
       (put! message-chan {:type :chat/typing :msg is-typing :channel (:active-channel @app-state)}))))
 
 (defn input-change [e]
-  (let [input (-> e .-target .-value)]
+  (let [input (aget e "target" "value")]
     (send-typing-notification (not= input ""))
     (swap! app-state assoc :input input)
     (swap! app-state assoc :latest-input input)
@@ -178,13 +178,13 @@
     (swap! app-state assoc :reset-cursor false)))
 
 (defn history-recall [e]
-  (let [element (.-target e)
-        cursor-position (.-selectionStart element)
-        input (.-value element)]
-    (when (and (= 0 cursor-position) (= 38 (.-keyCode e)))
+  (let [element (aget e "target")
+        cursor-position (aget element "selectionStart")
+        input (aget element "value")]
+    (when (and (= 0 cursor-position) (= 38 (aget e "keyCode")))
       (history-recall-back)
       (swap! app-state assoc :reset-cursor true))
-    (when (and (= (count input) cursor-position) (= 40 (.-keyCode e)))
+    (when (and (= (count input) cursor-position) (= 40 (aget e "keyCode")))
       (history-recall-forward)
       (swap! app-state assoc :reset-cursor false))))
 
@@ -263,18 +263,15 @@
 
 (defn setup-swipe-events [ele]
   (let [hammer (js/Hammer. ele)]
-    (.on hammer "panright" (fn [e] (swipe-open-menu (.abs js/Math (.-velocityX e)) (.abs js/Math (.-deltaX e)))))
-    (.on hammer "panleft" (fn [e] (swipe-close-menu (.abs js/Math (.-velocityX e)) (.abs js/Math (.-deltaX e)))))
+    (.on hammer "panright" (fn [e] (swipe-open-menu (.abs js/Math (aget e "velocityX")) (.abs js/Math (aget e "deltaX")))))
+    (.on hammer "panleft" (fn [e] (swipe-close-menu (.abs js/Math (aget e "velocityX")) (.abs js/Math (aget e "deltaX")))))
     (.on hammer "panend" (fn [e]
                            (swipe-end)))
     (.on hammer "panstart" (fn [e]
-                             (println "event: " e)
-                             (println "center: " (aget e "center"))
-                             (println "x: " (aget e "center" "x"))
                              (swipe-start (aget e "center" "x"))))))
 
 (when (:initializing @app-state)
-  (setup-swipe-events (.-body js/document))
+  (setup-swipe-events (aget js/document "body"))
   (.addEventListener js/document "keydown"
                      (fn [e]
                        (.focus (js/$ ".user-input"))) false)

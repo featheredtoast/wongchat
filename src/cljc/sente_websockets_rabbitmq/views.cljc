@@ -72,10 +72,10 @@
            :on-change input-change
            :disabled (not (rum/react app-connected))
            :on-key-down (fn [e]
-                          (when (some #(= % (.-keyCode e)) [38 40])
+                          (when (some #(= % (aget e "keyCode")) [38 40])
                             (history-recall e)))
            :on-key-press (fn [e]
-                           (when (= 13 (.-charCode e))
+                           (when (= 13 (aget e "charCode"))
                              (submit-message)))
            :value (rum/react app-input)}])
 
