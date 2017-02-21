@@ -252,7 +252,7 @@
             (< percent-open 40) (close-menu)
             :else (open-menu))
 
-      (cond (< 0.2 velocity) (open-menu)
+      (cond (and (< 0.2 velocity) (< (:start-x @last-swipe-event) 80)) (open-menu)
             (< 60 percent-open) (open-menu)
             :else (close-menu))))
   (reset! last-swipe-event {:direction :close
