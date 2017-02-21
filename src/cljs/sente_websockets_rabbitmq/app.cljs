@@ -267,7 +267,11 @@
     (.on hammer "panleft" (fn [e] (swipe-close-menu (.abs js/Math (.-velocityX e)) (.abs js/Math (.-deltaX e)))))
     (.on hammer "panend" (fn [e]
                            (swipe-end)))
-    (.on hammer "panstart" (fn [e] (swipe-start (.-x (.-center e)))))))
+    (.on hammer "panstart" (fn [e]
+                             (println "event: " e)
+                             (println "center: " (.-center e))
+                             (println "x: " (.-x (.-center e)))
+                             (swipe-start (.-x (.-center e)))))))
 
 (when (:initializing @app-state)
   (setup-swipe-events (.-body js/document))
