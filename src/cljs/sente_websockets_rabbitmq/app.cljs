@@ -228,10 +228,10 @@
 
 (defn swipe-open-menu [velocity distance]
   (let [delta-distance (.abs js/Math (- distance (:distance @last-swipe-event)))
+        end? (:end? @last-swipe-event)
         start-x (:start-x @last-swipe-event)
         {:keys [px-open max-px-width]} (:menu @app-state)]
-    (println "start-x: " start-x)
-    (when (< 0 start-x 80)
+    (when (or (< 0 start-x 80) (not end?))
       (reset! last-swipe-event {:direction :open
                                 :velocity velocity
                                 :distance distance
@@ -272,7 +272,6 @@
 (defn setup-swipe-events [ele]
   (let [hammer (js/Hammer. ele)]
     (.on hammer "panright" (fn [e]
-                             (println e)
                              (swipe-open-menu (.abs js/Math (aget e "velocityX")) (.abs js/Math (aget e "deltaX")))))
     (.on hammer "panleft" (fn [e] (swipe-close-menu (.abs js/Math (aget e "velocityX")) (.abs js/Math (aget e "deltaX")))))
     (.on hammer "panend" (fn [e]
