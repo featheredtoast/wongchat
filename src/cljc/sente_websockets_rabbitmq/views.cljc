@@ -28,7 +28,8 @@
      (def app-input (atom ""))
      (def app-connected (atom true))
      (def app-active-channel (atom ""))
-     (def app-menu-state (atom {:open false :percent-open 0}))
+     (def app-menu-state (atom {:px-open 0
+                                :max-px-width 201}))
      (defn submit-message [] ())
      (defn history-recall [] ())
      (defn input-change [] ())
@@ -86,17 +87,16 @@
        [:li (when (= active-channel "#random") {:class "active"}) [:a {:href "#" :on-click #(swap-channel "#random")} "#random"]]]))
 
 (rum/defc main-menu < rum/reactive []
-  (let [{:keys [percent-open] :as menu-state} (rum/react app-menu-state)
-        percent-closed (- 100 percent-open)
-        menu-offset (* -201 (/ percent-closed 100))
-        opacity-range (* 0.5 (/ percent-open 100))]
+  (let [{:keys [px-open max-px-width] :as menu-state} (rum/react app-menu-state)
+        menu-offset (- px-open max-px-width )
+        opacity-range (* 0.5 (/ px-open max-px-width))]
     [:div {:class "visible-xs"}
      [:div
       {:class "main-menu panel"
        :style {:left menu-offset}}
       (channel-list)]
      [:div
-      (if (= 0 percent-open)
+      (if (= 0 px-open)
         {:class "content-mask content-mask-close"}
         {:class "content-mask"
          :style {:opacity opacity-range}
