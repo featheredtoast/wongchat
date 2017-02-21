@@ -214,8 +214,7 @@
                               :velocity velocity
                               :distance delta-distance
                               :end? false})
-    (swap! app-state assoc-in [:menu :percent-open] (min 100 (+ (* (/ 10 201) delta-distance) (get-in @app-state [:menu :percent-open]))))
-    (println "open menu: " velocity " " delta-distance)))
+    (swap! app-state assoc-in [:menu :percent-open] (min 100 (+ (* (/ 10 201) delta-distance) (get-in @app-state [:menu :percent-open]))))))
 
 (defn swipe-close-menu [velocity distance]
   (let [delta-distance (.abs js/Math (- distance (:distance @last-swipe-event)))]
@@ -223,11 +222,9 @@
                               :velocity velocity
                               :distance delta-distance
                               :end? false})
-    (swap! app-state assoc-in [:menu :percent-open] (max 0 (- (get-in @app-state [:menu :percent-open]) (* (/ 10 201) delta-distance))))
-    (println "close menu: " velocity " " delta-distance)))
+    (swap! app-state assoc-in [:menu :percent-open] (max 0 (- (get-in @app-state [:menu :percent-open]) (* (/ 10 201) delta-distance))))))
 
 (defn swipe-end []
-  (println "end swipe event")
   (let [{:keys [direction velocity distance]} @last-swipe-event
         percent-open (get-in @app-state [:menu :percent-open])]
     (if (= direction :close)
