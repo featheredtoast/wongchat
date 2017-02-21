@@ -269,9 +269,9 @@
                            (swipe-end)))
     (.on hammer "panstart" (fn [e]
                              (println "event: " e)
-                             (println "center: " (.-center e))
-                             (println "x: " (.-x (.-center e)))
-                             (swipe-start (.-x (.-center e)))))))
+                             (println "center: " (aget e "center"))
+                             (println "x: " (aget e "center" "x"))
+                             (swipe-start (aget e "center" "x"))))))
 
 (when (:initializing @app-state)
   (setup-swipe-events (.-body js/document))
