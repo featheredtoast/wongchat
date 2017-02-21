@@ -200,7 +200,8 @@
 (def last-swipe-event (atom {:direction :close
                              :velocity 0
                              :distance 0
-                             :end? true}))
+                             :end? true
+                             :start-x 0}))
 
 (defn open-menu []
   (go-loop [percent (get-in @app-state [:menu :percent-open])
@@ -221,20 +222,27 @@
       (recur (- percent velocity-close) (max 1 (- velocity-close (/ ticks 120))) (inc ticks)))))
 
 (defn swipe-open-menu [velocity distance]
-  (let [delta-distance (.abs js/Math (- distance (:distance @last-swipe-event)))]
-    (reset! last-swipe-event {:direction :open
-                              :velocity velocity
-                              :distance delta-distance
-                              :end? false})
-    (swap! app-state assoc-in [:menu :percent-open] (min 100 (+ (* (/ 2 201) delta-distance) (get-in @app-state [:menu :percent-open]))))))
+  (let [delta-distance (.abs js/Math (- distance (:distance @last-swipe-event)))
+        start-x (:start-x @last-swipe-event)]
+    (when (< start-x 80)
+      (reset! last-swipe-event {:direction :open
+                                :velocity velocity
+                                :distance delta-distance
+                                :end? false
+                                :start-x start-x})
+      (swap! app-state assoc-in [:menu :percent-open] (min 100 (+ (* (/ 2 201) delta-distance) (get-in @app-state [:menu :percent-open])))))))
 
 (defn swipe-close-menu [velocity distance]
   (let [delta-distance (.abs js/Math (- distance (:distance @last-swipe-event)))]
     (reset! last-swipe-event {:direction :close
                               :velocity velocity
                               :distance delta-distance
-                              :end? false})
+                              :end? false
+                              :start-x (:start-x @last-swipe-event)})
     (swap! app-state assoc-in [:menu :percent-open] (max 0 (- (get-in @app-state [:menu :percent-open]) (* (/ 2 201) delta-distance))))))
+
+(defn swipe-start [start-x]
+  (swap! last-swipe-event assoc :start-x start-x))
 
 (defn swipe-end []
   (let [{:keys [direction velocity distance]} @last-swipe-event
@@ -248,16 +256,18 @@
             (< 60 percent-open) (open-menu)
             :else (close-menu))))
   (reset! last-swipe-event {:direction :close
-                             :velocity 0
-                             :distance 0
-                             :end? true}))
+                            :velocity 0
+                            :distance 0
+                            :end? true
+                            :start-x 0}))
 
 (defn setup-swipe-events [ele]
   (let [hammer (js/Hammer. ele)]
     (.on hammer "panright" (fn [e] (swipe-open-menu (.abs js/Math (.-velocityX e)) (.abs js/Math (.-deltaX e)))))
     (.on hammer "panleft" (fn [e] (swipe-close-menu (.abs js/Math (.-velocityX e)) (.abs js/Math (.-deltaX e)))))
     (.on hammer "panend" (fn [e]
-                           (swipe-end)))))
+                           (swipe-end)))
+    (.on hammer "panstart" (fn [e] (swipe-start (.-x (.-center e)))))))
 
 (when (:initializing @app-state)
   (setup-swipe-events (.-body js/document))
