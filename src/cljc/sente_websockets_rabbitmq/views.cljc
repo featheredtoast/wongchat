@@ -90,7 +90,7 @@
         percent-closed (- 100 percent-open)
         menu-offset (* -201 (/ percent-closed 100))
         opacity-range (* 0.5 (/ percent-open 100))]
-    [:div {:class "hidden-lg"}
+    [:div {:class "visible-xs"}
      [:div
       {:class "main-menu panel"
        :style {:left menu-offset}}
@@ -114,16 +114,16 @@
       [:span {:class "icon-bar"}]]
      [:span {:class "pull-right navbar-text"} [:span (rum/react app-user)]
       " " [:a {:href "/logout"} "logout"]]]]
-   [:div {:class "col-lg-2 visible-lg"}
+   [:div {:class "col-sm-2 hidden-xs"}
     (channel-list)]
-   [:div {:class "col-lg-10"}
+   [:div {:class "col-sm-10"}
     [:div {:class "panel panel-default"}
      [:div {:class "panel-body"}
-      [:div {:class "col-lg-12"}
+      [:div {:class "col-sm-12"}
        (print-messages)
        (print-typists)]]]
 
-    [:div {:class "col-lg-4"}
+    [:div {:class "col-lg-12"}
      [:div {:class "input-group"}
       (user-input)
       [:span {:class "input-group-btn"}
