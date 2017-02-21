@@ -197,16 +197,58 @@
   (swap! app-state assoc :input "")
   (swap! app-state assoc :latest-input ""))
 
+(def last-swipe-event (atom {:direction :close
+                             :velocity 0
+                             :distance 0
+                             :end? true}))
+
 (defn open-menu []
   (swap! app-state assoc-in [:menu :percent-open] 100))
 
 (defn close-menu []
   (swap! app-state assoc-in [:menu :percent-open] 0))
 
+(defn swipe-open-menu [velocity distance]
+  (let [delta-distance (.abs js/Math (- distance (:distance @last-swipe-event)))]
+    (reset! last-swipe-event {:direction :open
+                              :velocity velocity
+                              :distance delta-distance
+                              :end? false})
+    (swap! app-state assoc-in [:menu :percent-open] (min 100 (+ (* (/ 80 201) delta-distance) (get-in @app-state [:menu :percent-open]))))
+    (println "open menu: " velocity " " delta-distance)))
+
+(defn swipe-close-menu [velocity distance]
+  (let [delta-distance (.abs js/Math (- distance (:distance @last-swipe-event)))]
+    (reset! last-swipe-event {:direction :close
+                              :velocity velocity
+                              :distance delta-distance
+                              :end? false})
+    (swap! app-state assoc-in [:menu :percent-open] (max 0 (- (get-in @app-state [:menu :percent-open]) (* (/ 80 201) delta-distance))))
+    (println "close menu: " velocity " " delta-distance)))
+
+(defn swipe-end []
+  (println "end swipe event")
+  (let [{:keys [direction velocity distance]} @last-swipe-event
+        percent-open (get-in @app-state [:menu :percent-open])]
+    (if (= direction :close)
+      (cond (< 0.8 velocity) (close-menu)
+            (< percent-open 30) (close-menu)
+            :else (open-menu))
+
+      (cond (< 0.8 velocity) (open-menu)
+            (< 70 percent-open) (open-menu)
+            :else (close-menu))))
+  (reset! last-swipe-event {:direction :close
+                             :velocity 0
+                             :distance 0
+                             :end? true}))
+
 (defn setup-swipe-events [ele]
   (let [hammer (js/Hammer. ele)]
-    (.on hammer "panright" (fn [e] (println e)))
-    (.on hammer "panend" (fn [e] (println e)))))
+    (.on hammer "panright" (fn [e] (swipe-open-menu (.abs js/Math (.-velocityX e)) (.abs js/Math (.-deltaX e)))))
+    (.on hammer "panleft" (fn [e] (swipe-close-menu (.abs js/Math (.-velocityX e)) (.abs js/Math (.-deltaX e)))))
+    (.on hammer "panend" (fn [e]
+                           (swipe-end)))))
 
 (when (:initializing @app-state)
   (setup-swipe-events (.-body js/document))

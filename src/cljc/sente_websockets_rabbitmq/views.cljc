@@ -107,7 +107,7 @@
    (main-menu)
    [:nav {:class "navbar navbar-default"}
     [:div {:class "container-fluid"}
-     [:button {:type "button" :class "pull-left  hidden-lg navbar-toggle"
+     [:button {:type "button" :class "pull-left hidden-lg navbar-toggle"
              :on-click open-menu}
       [:span {:class "icon-bar"}]
       [:span {:class "icon-bar"}]
