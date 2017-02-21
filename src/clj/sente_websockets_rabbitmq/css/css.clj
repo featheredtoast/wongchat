@@ -40,9 +40,7 @@
       :border-right "1px solid grey"
       :width "200px"
       :height "100%"
-      :z-index "1000"
-      :transition ".2s"
-      :transition-timing-function "linear"}]
+      :z-index "1000"}]
     [:.content-mask
      {:display "block"
       :position "fixed"
@@ -51,8 +49,6 @@
       :width "100%"
       :height "100%"
       :z-index "999"
-      :transition ".2s"
-      :transition-timing-function "linear"
       :visibility "visible"}]
     [:.content-mask-close
      {:visibility "hidden"

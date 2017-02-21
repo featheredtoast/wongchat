@@ -2,7 +2,7 @@
   (:require-macros
    [cljs.core.async.macros :as asyncm :refer (go go-loop)])
   (:require [com.stuartsierra.component :as component]
-            [cljs.core.async :as async :refer (<! >! <! poll! put! chan)]
+            [cljs.core.async :as async :refer (<! >! <! poll! put! chan timeout)]
             [taoensso.sente  :as sente :refer (cb-success?)]
             [system.components.sente :refer [new-channel-socket-client]]
             [sente-websockets-rabbitmq.data :refer [serialize deserialize]]
@@ -203,10 +203,20 @@
                              :end? true}))
 
 (defn open-menu []
-  (swap! app-state assoc-in [:menu :percent-open] 100))
+  (go-loop [percent (get-in @app-state [:menu :percent-open])]
+    (let [velocity-open 3]
+      (when (< percent 100)
+        (swap! app-state assoc-in [:menu :percent-open] (min 100 (+ velocity-open percent)))
+        (<! (timeout 1))
+        (recur (+ velocity-open percent))))))
 
 (defn close-menu []
-  (swap! app-state assoc-in [:menu :percent-open] 0))
+  (go-loop [percent (get-in @app-state [:menu :percent-open])]
+    (let [velocity-close 3]
+      (when (< 0 percent)
+        (swap! app-state assoc-in [:menu :percent-open] (max 0 (- percent velocity-close)))
+        (<! (timeout 1))
+        (recur (- percent velocity-close))))))
 
 (defn swipe-open-menu [velocity distance]
   (let [delta-distance (.abs js/Math (- distance (:distance @last-swipe-event)))]
@@ -214,7 +224,7 @@
                               :velocity velocity
                               :distance delta-distance
                               :end? false})
-    (swap! app-state assoc-in [:menu :percent-open] (min 100 (+ (* (/ 4 201) delta-distance) (get-in @app-state [:menu :percent-open]))))))
+    (swap! app-state assoc-in [:menu :percent-open] (min 100 (+ (* (/ 10 201) delta-distance) (get-in @app-state [:menu :percent-open]))))))
 
 (defn swipe-close-menu [velocity distance]
   (let [delta-distance (.abs js/Math (- distance (:distance @last-swipe-event)))]
@@ -222,17 +232,17 @@
                               :velocity velocity
                               :distance delta-distance
                               :end? false})
-    (swap! app-state assoc-in [:menu :percent-open] (max 0 (- (get-in @app-state [:menu :percent-open]) (* (/ 4 201) delta-distance))))))
+    (swap! app-state assoc-in [:menu :percent-open] (max 0 (- (get-in @app-state [:menu :percent-open]) (* (/ 10 201) delta-distance))))))
 
 (defn swipe-end []
   (let [{:keys [direction velocity distance]} @last-swipe-event
         percent-open (get-in @app-state [:menu :percent-open])]
     (if (= direction :close)
-      (cond (< 0.6 velocity) (close-menu)
+      (cond (< 0.4 velocity) (close-menu)
             (< percent-open 30) (close-menu)
             :else (open-menu))
 
-      (cond (< 0.6 velocity) (open-menu)
+      (cond (< 0.4 velocity) (open-menu)
             (< 70 percent-open) (open-menu)
             :else (close-menu))))
   (reset! last-swipe-event {:direction :close
