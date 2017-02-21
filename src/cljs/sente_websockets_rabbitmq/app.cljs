@@ -203,20 +203,22 @@
                              :end? true}))
 
 (defn open-menu []
-  (go-loop [percent (get-in @app-state [:menu :percent-open])]
-    (let [velocity-open 3]
-      (when (< percent 100)
-        (swap! app-state assoc-in [:menu :percent-open] (min 100 (+ velocity-open percent)))
-        (<! (timeout 1))
-        (recur (+ velocity-open percent))))))
+  (go-loop [percent (get-in @app-state [:menu :percent-open])
+            velocity-open 4
+            ticks 0]
+    (when (< percent 100)
+      (swap! app-state assoc-in [:menu :percent-open] (min 100 (+ velocity-open percent)))
+      (<! (timeout 1))
+      (recur (+ velocity-open percent) (max 1 (- velocity-open (/ ticks 120))) (inc ticks)))))
 
 (defn close-menu []
-  (go-loop [percent (get-in @app-state [:menu :percent-open])]
-    (let [velocity-close 3]
-      (when (< 0 percent)
-        (swap! app-state assoc-in [:menu :percent-open] (max 0 (- percent velocity-close)))
-        (<! (timeout 1))
-        (recur (- percent velocity-close))))))
+  (go-loop [percent (get-in @app-state [:menu :percent-open])
+            velocity-close 4
+            ticks 0]
+    (when (< 0 percent)
+      (swap! app-state assoc-in [:menu :percent-open] (max 0 (- percent velocity-close)))
+      (<! (timeout 1))
+      (recur (- percent velocity-close) (max 1 (- velocity-close (/ ticks 120))) (inc ticks)))))
 
 (defn swipe-open-menu [velocity distance]
   (let [delta-distance (.abs js/Math (- distance (:distance @last-swipe-event)))]
@@ -238,12 +240,12 @@
   (let [{:keys [direction velocity distance]} @last-swipe-event
         percent-open (get-in @app-state [:menu :percent-open])]
     (if (= direction :close)
-      (cond (< 0.4 velocity) (close-menu)
-            (< percent-open 30) (close-menu)
+      (cond (< 0.2 velocity) (close-menu)
+            (< percent-open 40) (close-menu)
             :else (open-menu))
 
-      (cond (< 0.4 velocity) (open-menu)
-            (< 70 percent-open) (open-menu)
+      (cond (< 0.2 velocity) (open-menu)
+            (< 60 percent-open) (open-menu)
             :else (close-menu))))
   (reset! last-swipe-event {:direction :close
                              :velocity 0
