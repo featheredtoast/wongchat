@@ -6,7 +6,8 @@
             [taoensso.sente  :as sente :refer (cb-success?)]
             [system.components.sente :refer [new-channel-socket-client]]
             [sente-websockets-rabbitmq.data :refer [serialize deserialize]]
-            [cljsjs.hammer]))
+            [cljsjs.hammer]
+            [goog.events :as gevents]))
 
 (enable-console-print!)
 
@@ -269,29 +270,36 @@
     (.on hammer "panend" (fn [e]
                            (swipe-end)))
     (.on hammer "panstart" (fn [e]
-                             (println "panstart3333333333!!!")
                              (swipe-start (aget e "center" "x"))))
     hammer))
 
 (defn keydown-focus [e]
-  (println "moar focus 333333333333")
   (.focus (js/$ ".user-input")))
 
-(defrecord EventHandler [swipes]
+(defn stop-hammer [hammer]
+  (.destroy hammer))
+
+(defn start-focus-listener []
+  (gevents/listen
+   (aget js/document "body")
+   goog.events.EventType.KEYDOWN
+   keydown-focus))
+
+(defn stop-focus-listener []
+  (gevents/removeAll (aget js/document "body") goog.events.EventType.KEYDOWN))
+
+(defrecord EventHandler [hammer]
   component/Lifecycle
   (start [component]
     (println "starting event handler component...")
-    (.addEventListener js/document "keydown"
-                       keydown-focus false)
-    (assoc component :swipes {:hammer (setup-swipe-events (aget js/document "body"))}))
+    (start-focus-listener)
+    (assoc component :hammer (setup-swipe-events (aget js/document "body"))))
   (stop [component]
     (println "stopping event handler component...")
-    (let [hammer (:hammer swipes)]
-      (println hammer)
-      (.destory hammer)
-      (println "stopping event listener...")
-      (.removeEventListener js/document "keydown" keydown-focus)
-      component)))
+    (stop-hammer hammer)
+    (println "stopping event listener...")
+    (stop-focus-listener)
+    component))
 (defn new-event-handler []
   (map->EventHandler {}))
 
