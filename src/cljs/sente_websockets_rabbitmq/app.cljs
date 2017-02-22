@@ -219,8 +219,10 @@
         (<! (timeout 1))
         (recur new-px-open (max 3 (- velocity-close (/ ticks 5))) (inc ticks))))))
 
-(defn swipe-open-menu [velocity distance]
-  (let [delta-distance (.abs js/Math (- distance (:distance @last-swipe-event)))
+(defn swipe-open-menu [e]
+  (let [velocity (.abs js/Math (aget e "velocityX"))
+        distance (.abs js/Math (aget e "deltaX"))
+        delta-distance (.abs js/Math (- distance (:distance @last-swipe-event)))
         end? (:end? @last-swipe-event)
         start-x (:start-x @last-swipe-event)
         {:keys [px-open max-px-width]} (:menu @app-state)]
@@ -232,8 +234,10 @@
                                 :start-x start-x})
       (swap! app-state assoc-in [:menu :px-open] (min max-px-width (+ px-open delta-distance))))))
 
-(defn swipe-close-menu [velocity distance]
-  (let [delta-distance (.abs js/Math (- distance (:distance @last-swipe-event)))
+(defn swipe-close-menu [e]
+  (let [velocity (.abs js/Math (aget e "velocityX"))
+        distance(.abs js/Math (aget e "deltaX"))
+        delta-distance (.abs js/Math (- distance (:distance @last-swipe-event)))
         {:keys [px-open max-px-width]} (:menu @app-state)]
     (reset! last-swipe-event {:direction :close
                               :velocity velocity
@@ -242,10 +246,10 @@
                               :start-x (:start-x @last-swipe-event)})
     (swap! app-state assoc-in [:menu :px-open] (max 0 (- px-open delta-distance)))))
 
-(defn swipe-start [start-x]
-  (swap! last-swipe-event assoc :start-x start-x))
+(defn swipe-start [e]
+  (swap! last-swipe-event assoc :start-x (aget e "center" "x")))
 
-(defn swipe-end []
+(defn swipe-end [e]
   (let [{:keys [direction velocity distance]} @last-swipe-event
         px-open (get-in @app-state [:menu :px-open])]
     (if (= direction :close)
@@ -263,15 +267,11 @@
                             :start-x 0}))
 
 (defn setup-swipe-events [ele]
-  (let [hammer (js/Hammer. ele)]
-    (.on hammer "panright" (fn [e]
-                             (swipe-open-menu (.abs js/Math (aget e "velocityX")) (.abs js/Math (aget e "deltaX")))))
-    (.on hammer "panleft" (fn [e] (swipe-close-menu (.abs js/Math (aget e "velocityX")) (.abs js/Math (aget e "deltaX")))))
-    (.on hammer "panend" (fn [e]
-                           (swipe-end)))
-    (.on hammer "panstart" (fn [e]
-                             (swipe-start (aget e "center" "x"))))
-    hammer))
+  (doto (js/Hammer. ele)
+    (.on "panright" swipe-open-menu)
+    (.on "panleft" swipe-close-menu)
+    (.on "panend" swipe-end)
+    (.on "panstart" swipe-start)))
 
 (defn keydown-focus [e]
   (.focus (js/$ ".user-input")))
@@ -286,7 +286,9 @@
    keydown-focus))
 
 (defn stop-focus-listener []
-  (gevents/removeAll (aget js/document "body") goog.events.EventType.KEYDOWN))
+  (gevents/removeAll
+   (aget js/document "body")
+   goog.events.EventType.KEYDOWN))
 
 (defrecord EventHandler [hammer]
   component/Lifecycle
@@ -299,7 +301,7 @@
     (stop-hammer hammer)
     (println "stopping event listener...")
     (stop-focus-listener)
-    component))
+    (dissoc component :hammer)))
 (defn new-event-handler []
   (map->EventHandler {}))
 
