@@ -299,7 +299,6 @@
   (stop [component]
     (println "stopping event handler component...")
     (stop-hammer hammer)
-    (println "stopping event listener...")
     (stop-focus-listener)
     (dissoc component :hammer)))
 (defn new-event-handler []
