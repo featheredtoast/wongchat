@@ -133,14 +133,6 @@
 (defn new-sente-handler []
   (map->SenteHandler {}))
 
-(defn chat-system []
-  (component/system-map
-   :sente (new-channel-socket-client)
-   :sente-handler (component/using
-                   (new-sente-handler)
-                   [:sente])
-   :message-sender (new-message-send-handler)))
-
 (defn send-typing-notification [is-typing]
   (if (not= is-typing (:user-typing @app-state))
     (do
@@ -277,11 +269,40 @@
     (.on hammer "panend" (fn [e]
                            (swipe-end)))
     (.on hammer "panstart" (fn [e]
-                             (swipe-start (aget e "center" "x"))))))
+                             (println "panstart3333333333!!!")
+                             (swipe-start (aget e "center" "x"))))
+    hammer))
+
+(defn keydown-focus [e]
+  (println "moar focus 333333333333")
+  (.focus (js/$ ".user-input")))
+
+(defrecord EventHandler [swipes]
+  component/Lifecycle
+  (start [component]
+    (println "starting event handler component...")
+    (.addEventListener js/document "keydown"
+                       keydown-focus false)
+    (assoc component :swipes {:hammer (setup-swipe-events (aget js/document "body"))}))
+  (stop [component]
+    (println "stopping event handler component...")
+    (let [hammer (:hammer swipes)]
+      (println hammer)
+      (.destory hammer)
+      (println "stopping event listener...")
+      (.removeEventListener js/document "keydown" keydown-focus)
+      component)))
+(defn new-event-handler []
+  (map->EventHandler {}))
+
+(defn chat-system []
+  (component/system-map
+   :sente (new-channel-socket-client)
+   :sente-handler (component/using
+                   (new-sente-handler)
+                   [:sente])
+   :message-sender (new-message-send-handler)
+   :event-handler (new-event-handler)))
 
 (when (:initializing @app-state)
-  (setup-swipe-events (aget js/document "body"))
-  (.addEventListener js/document "keydown"
-                     (fn [e]
-                       (.focus (js/$ ".user-input"))) false)
   (swap! app-state assoc :initializing false))
