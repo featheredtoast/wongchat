@@ -306,24 +306,25 @@
 (defn new-event-handler []
   (map->EventHandler {}))
 
-(defn handle-online []
-  (swap! app-state assoc :network-up? true))
+(defn handle-online [chsk]
+  (swap! app-state assoc :network-up? true)
+  (sente/chsk-reconnect! chsk))
 
 (defn handle-offline []
   (swap! app-state assoc :network-up? false))
 
-(defn start-online-handler []
+(defn start-online-handler [sente]
   (doto (goog.events.OnlineHandler.)
     (.listen goog.events.EventType.OFFLINE handle-offline)
-    (.listen goog.events.EventType.ONLINE handle-online)))
+    (.listen goog.events.EventType.ONLINE #(handle-online (:chsk sente)))))
 
 (defn stop-online-handler [handler]
   (.dispose handler))
 
-(defrecord OnlineHandler [online-handler]
+(defrecord OnlineHandler [sente online-handler]
   component/Lifecycle
   (start [component]
-    (let [online-handler (start-online-handler)]
+    (let [online-handler (start-online-handler sente)]
       (assoc component :online-handler online-handler)))
   (stop [component]
     (stop-online-handler online-handler)
@@ -339,7 +340,9 @@
                    [:sente])
    :message-sender (new-message-send-handler)
    :event-handler (new-event-handler)
-   :online-event-handler (new-online-handler)))
+   :online-event-handler (component/using
+                          (new-online-handler)
+                          [:sente])))
 
 (when (:initializing @app-state)
   (swap! app-state assoc :initializing false))
