@@ -7,7 +7,8 @@
             [system.components.sente :refer [new-channel-socket-client]]
             [sente-websockets-rabbitmq.data :refer [serialize deserialize]]
             [cljsjs.hammer]
-            [goog.events :as gevents]))
+            [goog.dom :as dom]
+            [goog.events :as events]))
 
 (enable-console-print!)
 
@@ -16,7 +17,7 @@
 (defonce history-chan (chan))
 
 (defonce app-state (atom
-                    (deserialize (.html (js/$ "#initial-state")))))
+                    (deserialize (aget (dom/getElement "initial-state") "textContent"))))
 
 (defn send-message [chsk-send! message type]
   (chsk-send!
@@ -273,20 +274,20 @@
     (.on "panend" swipe-end)
     (.on "panstart" swipe-start)))
 
-(defn keydown-focus [e]
-  (.focus (js/$ ".user-input")))
+(defn keydown-focus []
+  (.focus (dom/getElementByClass "user-input")))
 
 (defn stop-hammer [hammer]
   (.destroy hammer))
 
 (defn start-focus-listener []
-  (gevents/listen
+  (events/listen
    (aget js/document "body")
    goog.events.EventType.KEYDOWN
    keydown-focus))
 
 (defn stop-focus-listener []
-  (gevents/removeAll
+  (events/removeAll
    (aget js/document "body")
    goog.events.EventType.KEYDOWN))
 
