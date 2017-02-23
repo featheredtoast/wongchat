@@ -8,7 +8,8 @@
             [sente-websockets-rabbitmq.data :refer [serialize deserialize]]
             [cljsjs.hammer]
             [goog.dom :as dom]
-            [goog.events :as events]))
+            [goog.events :as events]
+            [goog.events.OnlineHandler]))
 
 (enable-console-print!)
 
@@ -305,6 +306,31 @@
 (defn new-event-handler []
   (map->EventHandler {}))
 
+(defn handle-online []
+  (println "online"))
+
+(defn handle-offline []
+  (println "offline"))
+
+(defn start-online-handler []
+  (doto (goog.events.OnlineHandler.)
+    (.listen goog.events.EventType.OFFLINE handle-offline)
+    (.listen goog.events.EventType.ONLINE handle-online)))
+
+(defn stop-online-handler [handler]
+  (.dispose handler))
+
+(defrecord OnlineHandler [online-handler]
+  component/Lifecycle
+  (start [component]
+    (let [online-handler (start-online-handler)]
+      (assoc component :online-handler online-handler)))
+  (stop [component]
+    (stop-online-handler online-handler)
+    (dissoc component :online-handler)))
+(defn new-online-handler []
+  (map->OnlineHandler {}))
+
 (defn chat-system []
   (component/system-map
    :sente (new-channel-socket-client)
@@ -312,7 +338,8 @@
                    (new-sente-handler)
                    [:sente])
    :message-sender (new-message-send-handler)
-   :event-handler (new-event-handler)))
+   :event-handler (new-event-handler)
+   :online-event-handler (new-online-handler)))
 
 (when (:initializing @app-state)
   (swap! app-state assoc :initializing false))
