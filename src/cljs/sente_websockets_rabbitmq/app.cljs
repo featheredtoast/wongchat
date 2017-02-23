@@ -307,10 +307,10 @@
   (map->EventHandler {}))
 
 (defn handle-online []
-  (println "online"))
+  (swap! app-state assoc :network-up? true))
 
 (defn handle-offline []
-  (println "offline"))
+  (swap! app-state assoc :network-up? false))
 
 (defn start-online-handler []
   (doto (goog.events.OnlineHandler.)

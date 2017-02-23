@@ -14,6 +14,7 @@
      (def app-connected (rum/cursor-in app-state [:connected]))
      (def app-active-channel (rum/cursor-in app-state [:active-channel]))
      (def app-menu-state (rum/cursor-in app-state [:menu]))
+     (def network-connected (rum/cursor-in app-state [:network-up?]))
      (def input-change-mixin
        {:did-update
         (fn [state]
@@ -30,6 +31,7 @@
      (def app-active-channel (atom ""))
      (def app-menu-state (atom {:px-open 0
                                 :max-px-width 201}))
+     (def network-connected (atom true))
      (defn submit-message [] ())
      (defn history-recall [] ())
      (defn input-change [] ())
@@ -102,6 +104,12 @@
          :style {:opacity opacity-range}
          :on-click close-menu})]]))
 
+(rum/defc network-down-banner < rum/reactive []
+  (let [network-up? (rum/react network-connected)]
+    (if network-up?
+      [:div ]
+      [:div {:class "alert alert-danger"} "No network connection"])))
+
 (rum/defc main-app < rum/reactive []
   [:div {:class "app"}
    (main-menu)
@@ -117,6 +125,7 @@
    [:div {:class "col-sm-2 hidden-xs"}
     (channel-list)]
    [:div {:class "col-sm-10"}
+    (network-down-banner)
     [:div {:class "panel panel-default"}
      [:div {:class "panel-body"}
       [:div {:class "col-sm-12"}
@@ -137,6 +146,7 @@
           (def app-connected (atom false))
           (def app-active-channel (atom (:active-channel @app-state)))
           (def app-menu-state (atom (:menu @app-state)))
+          (def network-connected (atom (:network-up? @app-state)))
           (defn submit-message [] ())
           (defn input-change [] ())
           (rum/render-html (main-app))))

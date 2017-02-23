@@ -24,7 +24,8 @@
      :message-history (db/get-user-messages uid)
      :message-history-position 0
      :menu {:px-open 0
-            :max-px-width 201}}))
+            :max-px-width 201}
+     :network-up? true}))
 
 (defn routes [url _]
   (let [basic-routes
