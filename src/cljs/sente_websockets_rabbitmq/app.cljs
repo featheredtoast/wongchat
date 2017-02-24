@@ -26,7 +26,13 @@
    8000 ; timeout
    (fn [reply])))
 
+(defn empty-channel! [channel]
+  (let [msg (poll! channel)]
+    (when msg (empty-channel! channel))))
+
 (defn start-message-sender [chsk-send!]
+  (println "starting message sender...")
+  (empty-channel! message-chan)
   (go-loop []
     (let [{:keys [type channel] :as message} (<! message-chan)]
       (if (= type :shutdown)

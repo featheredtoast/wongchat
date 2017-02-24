@@ -57,14 +57,15 @@
   ;; nREPL by default starts in the :main namespace, we want to start in `user`
   ;; because that's where our development helper functions like (run) and
   ;; (browser-repl) live.
-  :repl-options {:init-ns user}
+  :repl-options {:init-ns user
+                 :init (go)}
 
   :cljsbuild {:builds
               [{:id "app"
-                :source-paths ["src/cljs" "src/cljc"]
+                :source-paths ["src/cljs" "src/cljc" "dev"]
                 :figwheel {:on-jsload "org.clojars.featheredtoast.reloaded-repl-cljs/go"
                            :websocket-host :js-client-host}
-                :compiler {:main sente-websockets-rabbitmq.core
+                :compiler {:main cljs.user
                            :asset-path "js/compiled/out"
                            :output-to "resources/public/js/compiled/sente_websockets_rabbitmq.js"
                            :output-dir "resources/public/js/compiled/out"
