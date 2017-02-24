@@ -32,7 +32,7 @@
                  [im.chit/hara.io.watch "2.4.8"]
                  [garden "1.3.2"]
                  [hiccup "1.0.5"]
-                 [org.clojars.featheredtoast/reloaded-repl-cljs "0.1.0-SNAPSHOT"]
+                 [org.clojars.featheredtoast/reloaded-repl-cljs "0.1.0"]
                  [com.cognitect/transit-cljs "0.8.239"]
                  [com.cognitect/transit-clj "0.8.297"]
                  [clj-time "0.13.0"]
