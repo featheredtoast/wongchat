@@ -1,8 +1,8 @@
 (ns cljs.user
-  (:require [sente-websockets-rabbitmq.core])
-  (:use [org.clojars.featheredtoast.reloaded-repl-cljs :only [go reset stop start]]))
+  (:require [sente-websockets-rabbitmq.core]
+            [org.clojars.featheredtoast.reloaded-repl-cljs :as reloaded]))
 
-(defn foo []
-  (println "foo"))
-
-(def asdf "asdf")
+(def go reloaded/go)
+(def reset reloaded/reset)
+(def stop reloaded/stop)
+(def start reloaded/start)
