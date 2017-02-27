@@ -206,7 +206,7 @@
 
 (defn open-menu []
   (go-loop [px-open (get-in @app-state [:menu :px-open])
-            velocity-open 5
+            velocity-open 8
             ticks 0]
     (let [max-px-width (get-in @app-state [:menu :max-px-width])
           new-px-open (min max-px-width (+ velocity-open px-open))]
@@ -214,18 +214,18 @@
 
         (swap! app-state assoc-in [:menu :px-open] new-px-open)
         (<! (timeout 1))
-        (recur new-px-open (max 3 (- velocity-open (/ ticks 5))) (inc ticks))))))
+        (recur new-px-open (max 4 (- velocity-open (/ ticks 5))) (inc ticks))))))
 
 (defn close-menu []
   (go-loop [px-open (get-in @app-state [:menu :px-open])
-            velocity-close 5
+            velocity-close 8
             ticks 0]
     (let [max-px-width (get-in @app-state [:menu :max-px-width])
           new-px-open (max 0 (- px-open velocity-close))]
       (when (< 0 px-open)
         (swap! app-state assoc-in [:menu :px-open] new-px-open)
         (<! (timeout 1))
-        (recur new-px-open (max 3 (- velocity-close (/ ticks 5))) (inc ticks))))))
+        (recur new-px-open (max 4 (- velocity-close (/ ticks 5))) (inc ticks))))))
 
 (defn swipe-open-menu [e]
   (let [velocity (.abs js/Math (aget e "velocityX"))
