@@ -338,6 +338,25 @@
 (defn new-online-handler []
   (map->OnlineHandler {}))
 
+(defn sw-register [registration]
+  (println "registration successful with scope: " (aget registration "scope")))
+(defn sw-error [err]
+  (println "registration failed: " err))
+(defrecord ServiceWorker []
+  component/Lifecycle
+  (start [component]
+    (when-let [sw (aget js/navigator "serviceWorker")]
+      (println "starting service worker...")
+      (-> sw
+          (.register "/sw.js")
+          (.then sw-register)
+          (.catch sw-error)))
+    component)
+  (stop [component]
+    component))
+(defn new-service-worker []
+  (map->ServiceWorker {}))
+
 (defn chat-system []
   (component/system-map
    :sente (new-channel-socket-client)
@@ -348,7 +367,8 @@
    :event-handler (new-event-handler)
    :online-event-handler (component/using
                           (new-online-handler)
-                          [:sente])))
+                          [:sente])
+   :service-worker (new-service-worker)))
 
 (when (:initializing @app-state)
   (swap! app-state assoc :initializing false))

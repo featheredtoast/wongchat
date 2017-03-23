@@ -47,7 +47,7 @@
 
   :test-paths ["test/clj" "test/cljc"]
 
-  :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js"]
+  :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js" "resources/public/sw.js"]
 
   :uberjar-name "sente-websockets-rabbitmq.jar"
 
@@ -70,6 +70,13 @@
                            :output-to "resources/public/js/compiled/sente_websockets_rabbitmq.js"
                            :output-dir "resources/public/js/compiled/out"
                            :source-map-timestamp true}}
+               {:id "sw"
+                :source-paths ["src/cljs" "src/cljc"]
+                :compiler {:main sente-websockets-rabbitmq.sw
+                           :asset-path "js/compiled/out"
+                           :output-to "resources/public/sw.js"
+                           :output-dir "resources/public/js/compiled/sw"
+                           :optimizations :simple}}
                {:id "test"
                 :source-paths ["src/cljs" "test/cljs" "src/cljc" "test/cljc"]
                 :compiler {:output-to "resources/public/js/compiled/testable.js"
