@@ -76,7 +76,8 @@
                            :asset-path "js/compiled/out"
                            :output-to "resources/public/sw.js"
                            :output-dir "resources/public/js/compiled/sw"
-                           :optimizations :simple}}
+                           :optimizations :advanced
+                           :source-map-timestamp true}}
                {:id "test"
                 :source-paths ["src/cljs" "test/cljs" "src/cljc" "test/cljc"]
                 :compiler {:output-to "resources/public/js/compiled/testable.js"
