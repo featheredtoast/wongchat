@@ -16,7 +16,7 @@
 (.addEventListener js/self "install" install-sw)
 (defn fetch-listen [event]
   (.respondWith event
-                (-> (.match js/caches (.request event))
+                (-> (.match js/caches (aget event "request"))
                     (.then (fn [response]
                              (println "response: " response)
                              (if response
@@ -25,5 +25,5 @@
                                  response)
                                (do
                                  (println "fetch from server...")
-                                 (js/fetch (.request event)))))))))
+                                 (js/fetch (aget event "request")))))))))
 (.addEventListener js/self "fetch" fetch-listen)
