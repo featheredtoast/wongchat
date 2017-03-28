@@ -2,6 +2,7 @@
   (:require
    [com.stuartsierra.component :as component]
    [sente-websockets-rabbitmq.config :refer [config]]
+   [sente-websockets-rabbitmq.web-push :refer [gen-ecdh-key]]
    [ragtime.jdbc]
    [ragtime.repl]
    [clojure.java.jdbc :as jdbc]
@@ -56,10 +57,11 @@
 
 (defn get-server-credentials []
   (if-let [credentials (first (jdbc/query db-config
-                                          ["select public_key, private_key from credentials LIMIT 1;"]))]
+                                          ["select public_key as public, private_key as private from credentials LIMIT 1;"]))]
     credentials
-    (do
-      (let []))))
+    (let [credentials (gen-ecdh-key)]
+      (store-server-credentials (:public credentials) (:private credentials))
+      credentials)))
 
 (defn up []
   (ragtime.repl/migrate {:datastore
