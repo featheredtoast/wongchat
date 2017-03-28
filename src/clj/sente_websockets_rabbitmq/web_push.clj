@@ -1,11 +1,9 @@
 (ns sente-websockets-rabbitmq.web-push
-  (:import [org.bouncycastle.jce.ECNamedCurveTable]
-           [java.security.KeyPairGenerator]
-           [java.security.SecureRandom]
-           [java.security.Security]
-           [org.bouncycastle.asn1.pkcs.PrivateKeyInfo]
-           [org.bouncycastle.asn1.x509.SubjectPublicKeyInfo]
-           [java.util.Base64]))
+  (:import [org.bouncycastle.jce ECNamedCurveTable]
+           [java.security KeyPairGenerator SecureRandom Security]
+           [org.bouncycastle.asn1.pkcs PrivateKeyInfo]
+           [org.bouncycastle.asn1.x509 SubjectPublicKeyInfo]
+           [java.util Base64]))
 
 ;;Org.BouncyCastle.Asn1.Pkcs.PrivateKeyInfo, Org.BouncyCastle.Pkcs.PrivateKeyInfoFactory, Org.BouncyCastle.Asn1.X509.SubjectPublicKeyInfo, Org.BouncyCastle.X509.SubjectPublicKeyInfoFactory
 
