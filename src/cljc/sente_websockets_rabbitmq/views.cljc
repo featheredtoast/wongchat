@@ -3,7 +3,7 @@
             [cljs.core.async.macros :as asyncm :refer (go go-loop)]))
   (:require
    [rum.core :as rum]
-   #?(:cljs [sente-websockets-rabbitmq.app :as core :refer [app-state submit-message input-change history-recall set-cursor-position swap-channel open-menu close-menu]])))
+   #?(:cljs [sente-websockets-rabbitmq.app :as core :refer [app-state submit-message input-change history-recall set-cursor-position swap-channel open-menu close-menu subscribe unsubscribe]])))
 
 #?(:cljs
    (do
@@ -37,6 +37,8 @@
      (defn input-change [] ())
      (defn open-menu [] ())
      (defn close-menu [] ())
+     (defn subscribe [] ())
+     (defn unsubscribe [] ())
      (defn swap-channel [channel] ())
      (def input-change-mixin {})))
 
@@ -121,6 +123,8 @@
       [:span {:class "icon-bar"}]
       [:span {:class "icon-bar"}]]
      [:span {:class "pull-right navbar-text"} [:span (rum/react app-user)]
+      [:button {:class "btn btn-default" :on-click subscribe} "Subscribe!"]
+      [:button {:class "btn btn-default" :on-click unsubscribe} "Un-Subscribe!"]
       " " [:a {:href "/logout"} "logout"]]]]
    [:div {:class "col-sm-2 hidden-xs"}
     (channel-list)]

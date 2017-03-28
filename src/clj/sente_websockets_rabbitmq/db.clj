@@ -42,6 +42,25 @@
    (jdbc/insert! db-config :messages
                  {:uid uid :msg msg :channel channel :date (timec/to-timestamp (time/now))})))
 
+(defn create-push-auth [uid subscription]
+  (jdbc/insert! db-config :subscriptions
+                {:uid uid :subscription subscription}))
+
+(defn get-push-auth []
+  (jdbc/query db-config
+              ["select uid, subscription from subscriptions LIMIT 1000;"]))
+
+(defn store-server-credentials [public private]
+  (jdbc/insert! db-config :credentials
+                {:public_key public :private_key private}))
+
+(defn get-server-credentials []
+  (if-let [credentials (first (jdbc/query db-config
+                                          ["select public_key, private_key from credentials LIMIT 1;"]))]
+    credentials
+    (do
+      (let []))))
+
 (defn up []
   (ragtime.repl/migrate {:datastore
                            (ragtime.jdbc/sql-database db-config)

@@ -61,3 +61,8 @@
                                    (println "fetch from server for: " (aget request "url"))
                                    (fetch-and-cache js/event.request)))))))))
 #_(.addEventListener js/self "fetch" fetch-listen)
+
+(defn on-push [event]
+  (println "push received")
+  (.waitUntil event (.showNotification js/self.registration "yay push" #js{:body "it works"})))
+(.addEventListener js/self "push" on-push)

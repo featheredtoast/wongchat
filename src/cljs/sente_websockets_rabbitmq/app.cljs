@@ -298,6 +298,21 @@
    (aget js/document "body")
    goog.events.EventType.KEYDOWN))
 
+(defn subscribe []
+  (-> js/navigator.serviceWorker.ready
+      (.then (fn [reg]
+               (-> (.subscribe js/reg.pushManager #js {:userVisibleOnly true
+                                                       :applicationServerKey (js/urlB64ToUint8Array "BBduD3Ar3eVZXpsUt6VhJFJ8OTuzPnzUs7tcM_uhTsxE9U2GE4fDxC7NtEttE0VK6V7PZipG9u_xYg7_UxVu4Aw")})
+                   (.then (fn [subscription]
+                            (println "subscribed: " (js/JSON.stringify subscription))))
+                   (.catch (fn [e]
+                             (if (= "denied" js/Notification.permission)
+                               (println "permission denied")
+                               (println "something weird happened: " e)))))))))
+
+(defn unsubscribe []
+  )
+
 (defrecord EventHandler [hammer]
   component/Lifecycle
   (start [component]
