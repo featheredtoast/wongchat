@@ -70,8 +70,8 @@
 
 (defn down []
   (ragtime.repl/rollback {:datastore
-                         (ragtime.jdbc/sql-database db-config)
-                         :migrations (ragtime.jdbc/load-resources "migrations")}))
+                          (ragtime.jdbc/sql-database db-config)
+                          :migrations (ragtime.jdbc/load-resources "migrations")}))
 
 (defrecord Migrate []
   component/Lifecycle
