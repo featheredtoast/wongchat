@@ -26,7 +26,7 @@
      :menu {:px-open 0
             :max-px-width 201}
      :network-up? true
-     :push-key (db/get-public-server-credentials)}))
+     :push-key (db/get-uncompressed-server-credentials)}))
 
 (defn routes [url _]
   (let [basic-routes
