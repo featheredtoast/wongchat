@@ -38,9 +38,8 @@
                  [clj-time "0.13.0"]
                  [cljsjs/hammer "2.0.4-5"]
                  [org.bouncycastle/bcprov-jdk15on "1.56"]
-                 [com.auth0/java-jwt "3.1.0"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.8.4"]
-                 [commons-codec/commons-codec "1.10"]]
+                 [commons-codec/commons-codec "1.10"]
+                 [org.bitbucket.b_c/jose4j "0.5.5"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]
             [lein-environ "1.1.0"]]

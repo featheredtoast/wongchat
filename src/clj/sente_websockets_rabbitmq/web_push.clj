@@ -6,7 +6,9 @@
            [org.bouncycastle.asn1.x509 SubjectPublicKeyInfo]
            [java.io StringWriter]
            [java.util Base64]
-           [org.apache.commons.codec.binary Hex]))
+           [org.apache.commons.codec.binary Hex]
+           [org.jose4j.jws JsonWebSignature AlgorithmIdentifiers]
+           [org.jose4j.jwt JwtClaims]))
 
 ;; this was by far the most informative article on what the keys were supposed to look like:
 ;; https://blog.mozilla.org/services/2016/08/23/sending-vapid-identified-webpush-notifications-via-mozillas-push-service/
@@ -70,12 +72,15 @@
 ;; I'd really like to see a move to https://github.com/liquidz/clj-jwt but this works for now.
 (defn gen-jwt-key [creds email]
   (let [privKey (decode-key creds)
-        algorithm (com.auth0.jwt.algorithms.Algorithm/ECDSA256 privKey)]
-    (-> (com.auth0.jwt.JWT/create)
-        (.withHeader {"typ" "JWT"})
-        (.withSubject (str "mailto:" email))
-        (.withExpiresAt (tomorrow))
-        (.sign algorithm))))
+        claims (doto (JwtClaims.)
+                 (.setExpirationTimeMinutesInTheFuture (* 12 60))
+                 (.setSubject (str "mailto:" email)))
+        jws (doto (JsonWebSignature.)
+              (.setHeader "typ" "JWT")
+              (.setHeader "alg" "ES256")
+              (.setPayload (.toJson claims))
+              (.setKey privKey))]
+    (.getCompactSerialization jws)))
 
 (defn get-headers [keys email]
   {:Authorization (str "Webpush " (gen-jwt-key (:private keys) email))
