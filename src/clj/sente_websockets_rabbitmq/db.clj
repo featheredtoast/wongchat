@@ -63,6 +63,12 @@
       (store-server-credentials (:public credentials) (:private credentials))
       credentials)))
 
+(defn get-public-server-credentials []
+  (:public (get-server-credentials)))
+
+(defn get-private-server-credentials []
+  (:private (get-server-credentials)))
+
 (defn up []
   (ragtime.repl/migrate {:datastore
                            (ragtime.jdbc/sql-database db-config)

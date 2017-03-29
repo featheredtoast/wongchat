@@ -302,7 +302,7 @@
   (-> js/navigator.serviceWorker.ready
       (.then (fn [reg]
                (-> (.subscribe js/reg.pushManager #js {:userVisibleOnly true
-                                                       :applicationServerKey (js/urlB64ToUint8Array "BBduD3Ar3eVZXpsUt6VhJFJ8OTuzPnzUs7tcM_uhTsxE9U2GE4fDxC7NtEttE0VK6V7PZipG9u_xYg7_UxVu4Aw")})
+                                                       :applicationServerKey (js/urlB64ToUint8Array (:push-key @app-state))})
                    (.then (fn [subscription]
                             (println "subscribed: " (js/JSON.stringify subscription))))
                    (.catch (fn [e]

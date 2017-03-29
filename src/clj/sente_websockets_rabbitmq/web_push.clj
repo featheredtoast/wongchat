@@ -4,30 +4,31 @@
            [java.security.spec PKCS8EncodedKeySpec X509EncodedKeySpec]
            [org.bouncycastle.asn1.pkcs PrivateKeyInfo]
            [org.bouncycastle.asn1.x509 SubjectPublicKeyInfo]
-           [org.bouncycastle.util.encoders Base64]
-           [java.io StringWriter]))
+           [java.io StringWriter]
+           [java.util Base64]))
 
 ;; https://bouncycastle.org/wiki/display/JA1/Elliptic+Curve+Key+Pair+Generation+and+Key+Factories
-;; https://people.eecs.berkeley.edu/~jonah/bc/org/bouncycastle/util/encoders/Base64.html
 (defn gen-ecdh-key []
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.))
   (let [ecSpec (ECNamedCurveTable/getParameterSpec "prime256v1")
         g (doto (KeyPairGenerator/getInstance "ECDH" "BC")
             (.initialize ecSpec (SecureRandom.)))
         generated-key-pair (.generateKeyPair g)
-        out-pub (java.io.ByteArrayOutputStream.)
+        b64-encoder (-> (Base64/getUrlEncoder)
+                        (.withoutPadding))
         out-priv (java.io.ByteArrayOutputStream.)
-        public-key (do (Base64/encode (.getEncoded (.getPublic generated-key-pair)) out-pub)
-                       (.toString out-pub))
-        private-key (do (Base64/encode (.getEncoded (.getPrivate generated-key-pair)) out-priv)
-                        (.toString out-priv))]
+        public-key (.encodeToString b64-encoder (.getEncoded (.getPublic generated-key-pair)))
+        private-key (.encodeToString b64-encoder (.getEncoded (.getPrivate generated-key-pair)))]
     {:public public-key :private private-key}))
+
+(decode-key (:private (gen-ecdh-key)))
 
 ;; http://stackoverflow.com/questions/4600106/create-privatekey-from-byte-array
 (defn decode-key [key]
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.))
   (let [kf (KeyFactory/getInstance "ECDH" "BC")
-        bytes (Base64/decode key)
+        b64-decoder (Base64/getUrlDecoder)
+        bytes (.decode b64-decoder key)
         ks (PKCS8EncodedKeySpec. bytes)
         pk (.generatePrivate kf ks)]
     pk))
