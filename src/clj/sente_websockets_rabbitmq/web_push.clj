@@ -14,8 +14,8 @@
 ;; https://bouncycastle.org/wiki/display/JA1/Elliptic+Curve+Key+Pair+Generation+and+Key+Factories
 (defn gen-ecdh-key []
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.))
-  (let [ecSpec (ECNamedCurveTable/getParameterSpec "prime256v1")
-        g (doto (KeyPairGenerator/getInstance "ECDSA" "BC")
+  (let [ecSpec (ECNamedCurveTable/getParameterSpec "secp256r1")
+        g (doto (KeyPairGenerator/getInstance "ECDH" "BC")
             (.initialize ecSpec (SecureRandom.)))
         generated-key-pair (.generateKeyPair g)
         b64-encoder (Base64/getEncoder)
@@ -27,7 +27,7 @@
 ;; http://stackoverflow.com/questions/4600106/create-privatekey-from-byte-array
 (defn decode-key [key]
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.))
-  (let [kf (KeyFactory/getInstance "ECDSA" "BC")
+  (let [kf (KeyFactory/getInstance "ECDH" "BC")
         b64-decoder (Base64/getDecoder)
         bytes (.decode b64-decoder key)
         ks (PKCS8EncodedKeySpec. bytes)
@@ -36,7 +36,7 @@
 
 (defn decode-public-key [key]
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.))
-  (let [kf (KeyFactory/getInstance "ECDSA" "BC")
+  (let [kf (KeyFactory/getInstance "ECDH" "BC")
         b64-decoder (Base64/getDecoder)
         bytes (.decode b64-decoder key)
         ks (X509EncodedKeySpec. bytes)
