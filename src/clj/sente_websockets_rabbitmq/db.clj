@@ -72,15 +72,6 @@
 (defn get-private-server-credentials []
   (:private (get-server-credentials)))
 
-(defn get-push-headers []
-  (get-headers (get-server-credentials) "test@test.com"))
-
-(sente-websockets-rabbitmq.web-push/get-ecdh-encoded-private-key (:private (get-server-credentials)))
-
-(get-uncompressed-server-credentials)
-
-(get-push-headers)
-
 (defn up []
   (ragtime.repl/migrate {:datastore
                            (ragtime.jdbc/sql-database db-config)
