@@ -1,4 +1,7 @@
 (ns sente-websockets-rabbitmq.web-push
+  (:require
+   [clj-http.client :as http]
+   [clojure.data.json :as json])
   (:import [org.bouncycastle.jce ECNamedCurveTable]
            [java.security KeyPairGenerator SecureRandom Security KeyFactory]
            [java.security.spec PKCS8EncodedKeySpec X509EncodedKeySpec]
@@ -92,5 +95,14 @@
     (.getCompactSerialization jws)))
 
 (defn get-headers [keys email endpoint]
-  {:Authorization (str "WebPush " (gen-jwt-key (:private keys) email endpoint))
-   :Crypto-Key (str "p256ecdsa=" (get-ecdh-encoded-public-key (:public keys)))})
+  {"Authorization" (str "WebPush " (gen-jwt-key (:private keys) email endpoint))
+   "Crypto-Key" (str "p256ecdsa=" (get-ecdh-encoded-public-key (:public keys)))
+   "TTL" "0"})
+
+(defn do-push! [keys client-data-json admin-email]
+  (let [client-data (json/read-str client-data-json)
+        endpoint (get client-data "endpoint")
+        headers (get-headers keys admin-email endpoint)]
+    (http/post
+     endpoint
+     {:headers headers})))
