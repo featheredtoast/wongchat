@@ -63,27 +63,6 @@
                         (.withoutPadding))]
     (.encodeToString b64-encoder (Hex/decodeHex (.toCharArray (.toString sb))))))
 
-(defn get-ecdh-encoded-private-key [private]
-  (let [key (decode-key private)
-        s (.toString (.getS key) 16)
-        sb (doto (java.lang.StringBuilder.)
-             (.append (apply str (repeat (- 64 (count s)) 0)))
-             (.append s))
-        b64-encoder (-> (Base64/getUrlEncoder)
-                        (.withoutPadding))]
-    (.encodeToString b64-encoder (Hex/decodeHex (.toCharArray (.toString sb))))))
-
-(defn load-ecdh-encoded-private-key [encoded-key]
-  (let [b64-decoder (Base64/getUrlDecoder)
-        decoded-key (.decode b64-decoder encoded-key)
-        params (ECNamedCurveTable/getParameterSpec "prime256v1")
-        prvkey (ECPrivateKeySpec. (BigInteger. decoded-key) params)
-        kf (KeyFactory/getInstance "ECDH" "BC")]
-    (.generatePrivate kf prvkey)))
-
-(defn get-ecdh-private-key [key]
-  (load-ecdh-encoded-private-key (get-ecdh-encoded-private-key key)))
-
 (defn tomorrow []
   (let [dt (java.util.Date.)
         d (.getTime (doto (java.util.Calendar/getInstance)
@@ -99,7 +78,7 @@
 ;; I'd really like to see a move to https://github.com/liquidz/clj-jwt but this works for now.
 (defn gen-jwt-key [creds email endpoint]
   (let [audience (get-audience endpoint)
-        privKey (get-ecdh-private-key creds)
+        privKey (decode-key creds)
         claims (doto (JwtClaims.)
                  (.setExpirationTimeMinutesInTheFuture (* 12 60))
                  (.setSubject (str "mailto:" email))
