@@ -61,6 +61,16 @@
                         (.withoutPadding))]
     (.encodeToString b64-encoder (Hex/decodeHex (.toCharArray (.toString sb))))))
 
+(defn get-ecdh-encoded-private-key [private]
+  (let [key (decode-key private)
+        s (.toString (.getS key) 16)
+        sb (doto (java.lang.StringBuilder.)
+             (.append (apply str (repeat (- 64 (count s)) 0)))
+             (.append s))
+        b64-encoder (-> (Base64/getUrlEncoder)
+                        (.withoutPadding))]
+    (.encodeToString b64-encoder (Hex/decodeHex (.toCharArray (.toString sb))))))
+
 (defn tomorrow []
   (let [dt (java.util.Date.)
         d (.getTime (doto (java.util.Calendar/getInstance)
@@ -83,5 +93,5 @@
     (.getCompactSerialization jws)))
 
 (defn get-headers [keys email]
-  {:Authorization (str "Webpush " (gen-jwt-key (:private keys) email))
+  {:Authorization (str "WebPush " (gen-jwt-key (:private keys) email))
    :Crypto-Key (str "p256ecdsa=" (get-ecdh-encoded-public-key (:public keys)))})
