@@ -2,7 +2,7 @@
   (:require
    [com.stuartsierra.component :as component]
    [sente-websockets-rabbitmq.config :refer [config]]
-   [sente-websockets-rabbitmq.web-push :refer [gen-ecdh-key get-ecdh-encoded-public-key]]
+   [sente-websockets-rabbitmq.web-push :refer [gen-ecdh-key get-ecdh-encoded-public-key get-headers]]
    [ragtime.jdbc]
    [ragtime.repl]
    [clojure.java.jdbc :as jdbc]
@@ -71,6 +71,11 @@
 
 (defn get-private-server-credentials []
   (:private (get-server-credentials)))
+
+(defn get-push-headers []
+  (get-headers (get-server-credentials) "test@test.com"))
+
+(get-push-headers)
 
 (defn up []
   (ragtime.repl/migrate {:datastore

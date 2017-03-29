@@ -8,11 +8,14 @@
            [java.util Base64]
            [org.apache.commons.codec.binary Hex]))
 
+;; this was by far the most informative article on what the keys were supposed to look like:
+;; https://blog.mozilla.org/services/2016/08/23/sending-vapid-identified-webpush-notifications-via-mozillas-push-service/
+
 ;; https://bouncycastle.org/wiki/display/JA1/Elliptic+Curve+Key+Pair+Generation+and+Key+Factories
 (defn gen-ecdh-key []
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.))
   (let [ecSpec (ECNamedCurveTable/getParameterSpec "prime256v1")
-        g (doto (KeyPairGenerator/getInstance "ECDH" "BC")
+        g (doto (KeyPairGenerator/getInstance "ECDSA" "BC")
             (.initialize ecSpec (SecureRandom.)))
         generated-key-pair (.generateKeyPair g)
         b64-encoder (Base64/getEncoder)
@@ -21,12 +24,10 @@
         private-key (.encodeToString b64-encoder (.getEncoded (.getPrivate generated-key-pair)))]
     {:public public-key :private private-key}))
 
-(gen-ecdh-key)
-
 ;; http://stackoverflow.com/questions/4600106/create-privatekey-from-byte-array
 (defn decode-key [key]
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.))
-  (let [kf (KeyFactory/getInstance "ECDH" "BC")
+  (let [kf (KeyFactory/getInstance "ECDSA" "BC")
         b64-decoder (Base64/getDecoder)
         bytes (.decode b64-decoder key)
         ks (PKCS8EncodedKeySpec. bytes)
@@ -35,7 +36,7 @@
 
 (defn decode-public-key [key]
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.))
-  (let [kf (KeyFactory/getInstance "ECDH" "BC")
+  (let [kf (KeyFactory/getInstance "ECDSA" "BC")
         b64-decoder (Base64/getDecoder)
         bytes (.decode b64-decoder key)
         ks (X509EncodedKeySpec. bytes)
@@ -67,11 +68,15 @@
 
 ;; https://github.com/auth0/java-jwt
 ;; I'd really like to see a move to https://github.com/liquidz/clj-jwt but this works for now.
-(defn gen-jwt-key [creds]
+(defn gen-jwt-key [creds email]
   (let [privKey (decode-key creds)
         algorithm (com.auth0.jwt.algorithms.Algorithm/ECDSA256 privKey)]
     (-> (com.auth0.jwt.JWT/create)
         (.withHeader {"typ" "JWT"})
-        (.withSubject "mailto:admin@example.com")
+        (.withSubject (str "mailto:" email))
         (.withExpiresAt (tomorrow))
         (.sign algorithm))))
+
+(defn get-headers [keys email]
+  {:Authorization (str "Webpush " (gen-jwt-key (:private keys) email))
+   :Crypto-Key (str "p256ecdsa=" (get-ecdh-encoded-public-key (:public keys)))})
