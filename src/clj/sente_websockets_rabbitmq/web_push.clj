@@ -45,8 +45,8 @@
 (let [public (:public (gen-ecdh-key))
       pkey (decode-public-key public)
       point (.getW pkey)
-      x (.toString (.getAffineX point))
-      y (.toString (.getAffineY point))
+      x (.toString (.getAffineX point) 16)
+      y (.toString (.getAffineY point) 16)
       sb (doto (java.lang.StringBuilder.)
            (.append "04")
            (.append (apply str (repeat (- 64 (count x)) 0)))
@@ -55,7 +55,8 @@
            (.append y))
       b64-encoder (-> (Base64/getUrlEncoder)
                       (.withoutPadding))]
-  (.encodeToString b64-encoder (Hex/decodeHex (.toCharArray (.toString sb)))))
+  {:x (count x) :y (count y) :encoded (try (.encodeToString b64-encoder (Hex/decodeHex (.toCharArray (.toString sb))))
+                                           (catch Exception e nil))})
 
 (defn tomorrow []
   (let [dt (java.util.Date.)
