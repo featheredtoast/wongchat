@@ -47,7 +47,9 @@
                       [:sente])
      :routes (new-endpoint (partial routes url))
      :middleware (new-middleware
-                  {:middleware [[wrap-defaults (assoc site-defaults :session {:store (redis-session/redis-store redis-conn)})]
+                  {:middleware [[wrap-defaults (-> site-defaults
+                                                   (assoc :session {:store (redis-session/redis-store redis-conn)})
+                                                   (assoc-in [:security :anti-forgery] false))]
                                 wrap-with-logger
                                 wrap-gzip]})
      :handler (component/using
