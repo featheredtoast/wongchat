@@ -44,6 +44,16 @@
                  {:status 200
                   :headers {"Content-Type" "text/html; charset=utf-8"}
                   :body (html/chat initial-state)})))
+         (POST "/subscribe"
+              req
+              (friend/authorize
+               #{:user}
+               (let [uid (auth/get-user-id req)
+                     subscription (get-in req [:params :subscription])]
+                 (db/create-push-auth uid subscription)
+                 {:status 200
+                  :headers {"Content-Type" "text/html; charset=utf-8"}
+                  :body "ok"})))
          (resources "/")
          (friend/logout (ANY "/logout" request (ring.util.response/redirect url))))]
     (-> basic-routes

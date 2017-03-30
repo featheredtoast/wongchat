@@ -5,7 +5,8 @@
    [langohr.basic     :as lb]
    [sente-websockets-rabbitmq.data :refer [serialize deserialize]]
    [com.stuartsierra.component :as component]
-   [sente-websockets-rabbitmq.db :as db]))
+   [sente-websockets-rabbitmq.db :as db]
+   [sente-websockets-rabbitmq.web-push :as web-push]))
 
 (defn stringify-keyword [keywd]
   (str (namespace keywd) "/" (name keywd)))
@@ -13,6 +14,11 @@
 (defn publish [rabbit-data msg type]
   "publish an event to rabbit in json. rabbit-data is a map of {:ch :qname}"
   (lb/publish (:ch rabbit-data) "" (:qname rabbit-data) (serialize msg) {:content-type "text/json" :type (stringify-keyword type)}))
+
+(defn do-web-push []
+  (let [subscriptions (map :subscription (db/get-push-auth))]
+    (for [subscription subscriptions]
+      (web-push/do-push! (db/get-server-credentials) subscription "test@test.com"))))
 
 (defmulti event-msg-handler (fn [_ msg] (:id msg))) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:
@@ -35,6 +41,7 @@
     (let [{:keys [msg channel] :as message} ?data]
       (println "Event from " uid ": " message)
       (db/insert-message uid msg channel)
+      (do-web-push)
       (publish rabbit-data (assoc message :uid uid) id)))
 
   (defmethod event-msg-handler :chat/typing

@@ -304,7 +304,12 @@
                (-> (.subscribe js/reg.pushManager #js {:userVisibleOnly true
                                                        :applicationServerKey (js/urlB64ToUint8Array (:push-key @app-state))})
                    (.then (fn [subscription]
-                            (println "subscribed: " (js/JSON.stringify subscription))))
+                            (-> (js/fetch "/subscribe" #js {:method "POST"
+                                                            :credentials "include"
+                                                            :body (doto (js/FormData.)
+                                                                    (.append "subscription" (js/JSON.stringify subscription)))})
+                                (.then (fn [resp]
+                                         (println "subscribed: " (js/JSON.stringify subscription)))))))
                    (.catch (fn [e]
                              (if (= "denied" js/Notification.permission)
                                (println "permission denied")
