@@ -49,7 +49,7 @@
 
 (defn get-push-auth []
   (jdbc/query db-config
-              ["select uid, subscription from subscriptions LIMIT 1000;"]))
+              ["select id, uid, subscription from subscriptions LIMIT 1000;"]))
 
 (defn store-server-credentials [public private]
   (jdbc/insert! db-config :credentials
