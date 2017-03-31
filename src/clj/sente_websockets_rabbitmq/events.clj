@@ -19,7 +19,7 @@
   (let [subscriptions (map :subscription (db/get-push-auth))]
     (dorun
      (for [subscription subscriptions]
-       (web-push/do-push! (db/get-server-credentials) subscription "test@test.com")))))
+       (web-push/do-push! (db/get-server-credentials) subscription "test@test.com" "test")))))
 
 (defmulti event-msg-handler (fn [_ msg] (:id msg))) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:

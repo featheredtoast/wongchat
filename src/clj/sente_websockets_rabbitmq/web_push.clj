@@ -11,10 +11,11 @@
            [java.io StringWriter]
            [java.util Base64]
            [org.apache.commons.codec.binary Hex]
+           [org.apache.commons.io IOUtils]
            [org.jose4j.jws JsonWebSignature AlgorithmIdentifiers]
            [org.jose4j.jwt JwtClaims]
            [java.net URL]
-           [nl.martijndwars.webpush Utils]))
+           [nl.martijndwars.webpush Utils PushService Notification]))
 
 ;; this was by far the most informative article on what the keys were supposed to look like:
 ;; https://blog.mozilla.org/services/2016/08/23/sending-vapid-identified-webpush-notifications-via-mozillas-push-service/
