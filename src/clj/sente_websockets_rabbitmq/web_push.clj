@@ -13,47 +13,15 @@
            [org.apache.commons.codec.binary Hex]
            [org.jose4j.jws JsonWebSignature AlgorithmIdentifiers]
            [org.jose4j.jwt JwtClaims]
-           [java.net URL]))
+           [java.net URL]
+           [nl.martijndwars.webpush Utils]))
 
 ;; this was by far the most informative article on what the keys were supposed to look like:
 ;; https://blog.mozilla.org/services/2016/08/23/sending-vapid-identified-webpush-notifications-via-mozillas-push-service/
 
-;; https://bouncycastle.org/wiki/display/JA1/Elliptic+Curve+Key+Pair+Generation+and+Key+Factories
-(defn gen-ecdh-key []
-  (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.))
-  (let [ecSpec (ECNamedCurveTable/getParameterSpec "secp256r1")
-        g (doto (KeyPairGenerator/getInstance "ECDH" "BC")
-            (.initialize ecSpec (SecureRandom.)))
-        generated-key-pair (.generateKeyPair g)
-        b64-encoder (Base64/getEncoder)
-        out-priv (java.io.ByteArrayOutputStream.)
-        public-key (.encodeToString b64-encoder (.getEncoded (.getPublic generated-key-pair)))
-        private-key (.encodeToString b64-encoder (.getEncoded (.getPrivate generated-key-pair)))]
-    {:public public-key :private private-key}))
-
-;; http://stackoverflow.com/questions/4600106/create-privatekey-from-byte-array
-(defn decode-key [key]
-  (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.))
-  (let [kf (KeyFactory/getInstance "ECDH" "BC")
-        b64-decoder (Base64/getDecoder)
-        bytes (.decode b64-decoder key)
-        ks (PKCS8EncodedKeySpec. bytes)
-        pk (.generatePrivate kf ks)]
-    pk))
-
-(defn decode-public-key [key]
-  (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.))
-  (let [kf (KeyFactory/getInstance "ECDH" "BC")
-        b64-decoder (Base64/getDecoder)
-        bytes (.decode b64-decoder key)
-        ks (X509EncodedKeySpec. bytes)
-        pk (.generatePublic kf ks)]
-    pk))
-
 ;;an attempt with https://github.com/web-push-libs/web-push-java/blob/3d9f1503aff27a0b96f911a43c247bab5c9660c5/src/main/java/com/ameyakarve/browserpushjava/EllipticCurveKeyUtil.java ?
-(defn get-ecdh-encoded-public-key [public]
-  (let [pkey (decode-public-key public)
-        point (.getW pkey)
+(defn get-ecdh-encoded-public-key [pkey]
+  (let [point (.getW pkey)
         x (.toString (.getAffineX point) 16)
         y (.toString (.getAffineY point) 16)
         sb (doto (java.lang.StringBuilder.)
@@ -65,6 +33,28 @@
         b64-encoder (-> (Base64/getUrlEncoder)
                         (.withoutPadding))]
     (.encodeToString b64-encoder (Hex/decodeHex (.toCharArray (.toString sb))))))
+
+(defn get-ecdh-encoded-private-key [key]
+  (let [s (.toString (.getS key) 16)
+        sb (doto (java.lang.StringBuilder.)
+             (.append (apply str (repeat (- 64 (count s)) 0)))
+             (.append s))
+        b64-encoder (-> (Base64/getUrlEncoder)
+                        (.withoutPadding))]
+    (.encodeToString b64-encoder (Hex/decodeHex (.toCharArray (.toString sb))))))
+
+;; https://bouncycastle.org/wiki/display/JA1/Elliptic+Curve+Key+Pair+Generation+and+Key+Factories
+(defn gen-ecdh-key []
+  (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.))
+  (let [ecSpec (ECNamedCurveTable/getParameterSpec "secp256r1")
+        g (doto (KeyPairGenerator/getInstance "ECDH" "BC")
+            (.initialize ecSpec (SecureRandom.)))
+        generated-key-pair (.generateKeyPair g)
+        b64-encoder (Base64/getEncoder)
+        out-priv (java.io.ByteArrayOutputStream.)
+        public-key (get-ecdh-encoded-public-key (.getPublic generated-key-pair))
+        private-key (get-ecdh-encoded-private-key (.getPrivate generated-key-pair))]
+    {:public public-key :private private-key}))
 
 (defn tomorrow []
   (let [dt (java.util.Date.)
@@ -81,7 +71,7 @@
 ;; I'd really like to see a move to https://github.com/liquidz/clj-jwt but this works for now.
 (defn gen-jwt-key [creds email endpoint]
   (let [audience (get-audience endpoint)
-        privKey (decode-key creds)
+        privKey (Utils/loadPrivateKey creds)
         claims (doto (JwtClaims.)
                  (.setExpirationTimeMinutesInTheFuture (* 12 60))
                  (.setSubject (str "mailto:" email))
@@ -96,7 +86,7 @@
 
 (defn get-headers [keys email endpoint]
   {"Authorization" (str "WebPush " (gen-jwt-key (:private keys) email endpoint))
-   "Crypto-Key" (str "p256ecdsa=" (get-ecdh-encoded-public-key (:public keys)))
+   "Crypto-Key" (str "p256ecdsa=" (:public keys))
    "TTL" "0"})
 
 (defn do-push! [keys client-data-json admin-email]

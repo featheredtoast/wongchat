@@ -40,7 +40,8 @@
                  [org.bouncycastle/bcprov-jdk15on "1.56"]
                  [commons-codec/commons-codec "1.10"]
                  [org.bitbucket.b_c/jose4j "0.5.5"]
-                 [clj-http "2.3.0"]]
+                 [clj-http "2.3.0"]
+                 [nl.martijndwars/web-push "2.0.0"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]
             [lein-environ "1.1.0"]]
