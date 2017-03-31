@@ -90,10 +90,10 @@
    "Crypto-Key" (str "p256ecdsa=" (:public keys))
    "TTL" "0"})
 
-(defn do-push! [keys client-data-json admin-email]
+(defn do-push! [keys client-data-json email payload]
   (let [client-data (json/read-str client-data-json)
         endpoint (get client-data "endpoint")
-        headers (get-headers keys admin-email endpoint)]
+        headers (get-headers keys email endpoint)]
     (http/post
      endpoint
      {:headers headers})))
