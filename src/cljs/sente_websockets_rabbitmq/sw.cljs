@@ -63,6 +63,6 @@
 #_(.addEventListener js/self "fetch" fetch-listen)
 
 (defn on-push [event]
-  (println "push received")
-  (.waitUntil event (.showNotification js/self.registration "yay push" #js{:body "it works"})))
+  (println "push received" (.text js/event.data))
+  (.waitUntil event (.showNotification js/self.registration "yay push" #js{:body (str "it works: " (.text js/event.data))})))
 (.addEventListener js/self "push" on-push)
