@@ -20,6 +20,17 @@
 ;; this was by far the most informative article on what the keys were supposed to look like:
 ;; https://blog.mozilla.org/services/2016/08/23/sending-vapid-identified-webpush-notifications-via-mozillas-push-service/
 
+(defn encrypt [payload user-key user-auth]
+  (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.))
+  (let [padsize 2
+        b64-encoder (-> (Base64/getUrlEncoder)
+                        (.withoutPadding))
+        obj (PushService/encrypt (.getBytes payload) (Utils/loadPublicKey user-key) (.getBytes user-auth) padsize)
+        pubkey (.encodeToString b64-encoder (Utils/savePublicKey (.getPublicKey obj)))
+        salt (.encodeToString b64-encoder (.getSalt obj))
+        cipher-text (.getCiphertext obj)]
+    {:encrypt-pubkey pubkey :salt salt :cipher-text cipher-text}))
+
 ;;an attempt with https://github.com/web-push-libs/web-push-java/blob/3d9f1503aff27a0b96f911a43c247bab5c9660c5/src/main/java/com/ameyakarve/browserpushjava/EllipticCurveKeyUtil.java ?
 (defn get-ecdh-encoded-public-key [pkey]
   (let [point (.getW pkey)
@@ -85,15 +96,22 @@
               (.setAlgorithmHeaderValue (AlgorithmIdentifiers/ECDSA_USING_P256_CURVE_AND_SHA256)))]
     (.getCompactSerialization jws)))
 
-(defn get-headers [keys email endpoint]
+(defn get-headers [keys email endpoint salt encrypt-pubkey]
   {"Authorization" (str "WebPush " (gen-jwt-key (:private keys) email endpoint))
-   "Crypto-Key" (str "p256ecdsa=" (:public keys))
-   "TTL" "0"})
+   "Crypto-Key" (str "keyid=p256dh;dh=" encrypt-pubkey ";" "p256ecdsa=" (:public keys))
+   "Encryption" (str "keyid=p256dh;salt=" salt)
+   "TTL" "60"
+   "Content-Encoding" "aesgcm"})
 
 (defn do-push! [keys client-data-json email payload]
   (let [client-data (json/read-str client-data-json)
         endpoint (get client-data "endpoint")
-        headers (get-headers keys email endpoint)]
+        client-key (get-in client-data ["keys" "p256dh"])
+        client-auth (get-in client-data ["keys" "auth"])
+        {:keys [encrypt-pubkey salt cipher-text]} (encrypt payload client-key client-auth)
+        headers (get-headers keys email endpoint salt encrypt-pubkey)]
+    (println "endpoint: " endpoint " headers: " headers " body: " cipher-text)
     (http/post
      endpoint
-     {:headers headers})))
+     {:headers headers
+      :body cipher-text})))
