@@ -23,9 +23,10 @@
 (defn encrypt [payload user-key user-auth]
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.))
   (let [padsize 2
+        b64-decoder (Base64/getUrlDecoder)
         b64-encoder (-> (Base64/getUrlEncoder)
                         (.withoutPadding))
-        obj (PushService/encrypt (.getBytes payload) (Utils/loadPublicKey user-key) (.getBytes user-auth) padsize)
+        obj (PushService/encrypt (.getBytes payload) (Utils/loadPublicKey user-key) (.decode b64-decoder user-auth) padsize)
         pubkey (.encodeToString b64-encoder (Utils/savePublicKey (.getPublicKey obj)))
         salt (.encodeToString b64-encoder (.getSalt obj))
         cipher-text (.getCiphertext obj)]
