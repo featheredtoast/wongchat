@@ -69,13 +69,6 @@
         private-key (get-ecdh-encoded-private-key (.getPrivate generated-key-pair))]
     {:public public-key :private private-key}))
 
-(defn tomorrow []
-  (let [dt (java.util.Date.)
-        d (.getTime (doto (java.util.Calendar/getInstance)
-                      (.setTime dt)
-                      (.add java.util.Calendar/DATE 1)))]
-    d))
-
 (defn get-audience [endpoint]
   (let [url (URL. endpoint)]
     (str (.getProtocol url) "://" (.getHost url))))
