@@ -16,10 +16,14 @@
   (lb/publish (:ch rabbit-data) "" (:qname rabbit-data) (serialize msg) {:content-type "text/json" :type (stringify-keyword type)}))
 
 (defn do-web-push []
-  (let [subscriptions (map :subscription (db/get-push-auth))]
+  (let [subscriptions (db/get-push-auth)]
     (dorun
      (for [subscription subscriptions]
-       (web-push/do-push! (db/get-server-credentials) subscription "test@test.com" "this is a test send from server data push")))))
+       (try
+         (web-push/do-push! (db/get-server-credentials) (:subscription subscription) "test@test.com" "this is a test send from server data push")
+         (catch clojure.lang.ExceptionInfo e
+           (println "invalid subscription: " (:subscription subscription))
+           (db/delete-push-auth (:id subscription))))))))
 
 (defmulti event-msg-handler (fn [_ msg] (:id msg))) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:

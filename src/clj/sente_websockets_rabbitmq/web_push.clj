@@ -104,8 +104,7 @@
         client-auth (get-in client-data ["keys" "auth"])
         {:keys [encrypt-pubkey salt cipher-text]} (encrypt payload client-key client-auth)
         headers (get-headers keys email endpoint salt encrypt-pubkey)]
-    (println "endpoint: " endpoint " headers: " headers " body: " cipher-text)
-    (println (http/post
-              endpoint
-              {:headers headers
-               :body cipher-text}))))
+    (http/post
+     endpoint
+     {:headers headers
+      :body cipher-text})))

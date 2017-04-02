@@ -47,6 +47,10 @@
   (jdbc/insert! db-config :subscriptions
                 {:uid uid :subscription subscription}))
 
+(defn delete-push-auth [id]
+  (jdbc/delete! db-config :subscriptions
+                ["id = ?" id]))
+
 (defn get-push-auth []
   (jdbc/query db-config
               ["select id, uid, subscription from subscriptions LIMIT 1000;"]))
