@@ -26,7 +26,6 @@
 
 (defn install-sw [event]
   (.waitUntil event
-              (println "install sw")
               (-> (.open js/caches *cache-name*)
                   (.then (fn [cache]
                            (println "opened cache")
@@ -63,8 +62,43 @@
                                    (fetch-and-cache js/event.request)))))))))
 #_(.addEventListener js/self "fetch" fetch-listen)
 
+(defn pop-notification [channel uid msg]
+  (.showNotification
+   js/self.registration
+   (str "New message in " channel)
+   #js{:body (str uid ": " msg)
+       :data #js{:url "/chat"}}))
+
 (defn on-push [event]
   (let [{:keys [msg channel uid] :as event} (deserialize (.text js/event.data))]
     (println "push received" msg)
-    (.waitUntil event (.showNotification js/self.registration (str channel " "  uid " says...") #js{:body (str msg)}))))
+    (.waitUntil
+     event
+     (-> (.getNotifications js/self.registration)
+         (.then
+          (fn [notifications]
+            (when notifications
+              (dorun (for [notification notifications]
+                       (.close notification))))
+            (pop-notification channel uid msg)))))))
 (.addEventListener js/self "push" on-push)
+
+(defn notification-click [event]
+  (println "notification click!" (aget event "notification") (aget event "notification" "data" "url"))
+   (.close js/event.notification)
+   (let [url js/event.notification.data.url]
+     (.waitUntil
+      event
+      (-> (.matchAll js/clients #js{:type "window"})
+          (.then
+           (fn [clients]
+             (if (and clients (< 0 (count clients)))
+               (dorun
+                (take-while
+                 false?
+                 (for [client clients]
+                   (do (.focus client)
+                       true))))
+               (when js/clients.openWindow
+                 (.openWindow js/clients url)))))))))
+(.addEventListener js/self "notificationclick" notification-click)
