@@ -63,7 +63,6 @@
         g (doto (KeyPairGenerator/getInstance "ECDH" "BC")
             (.initialize ecSpec (SecureRandom.)))
         generated-key-pair (.generateKeyPair g)
-        b64-encoder (Base64/getEncoder)
         out-priv (java.io.ByteArrayOutputStream.)
         public-key (get-ecdh-encoded-public-key (.getPublic generated-key-pair))
         private-key (get-ecdh-encoded-private-key (.getPrivate generated-key-pair))]

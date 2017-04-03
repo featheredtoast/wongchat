@@ -1,4 +1,5 @@
-(ns sente-websockets-rabbitmq.sw)
+(ns sente-websockets-rabbitmq.sw
+  (:require [sente-websockets-rabbitmq.data :refer [serialize deserialize]]))
 
 (enable-console-print!)
 
@@ -63,6 +64,7 @@
 #_(.addEventListener js/self "fetch" fetch-listen)
 
 (defn on-push [event]
-  (println "push received" (.text js/event.data))
-  (.waitUntil event (.showNotification js/self.registration "yay push" #js{:body (str "it works: " (.text js/event.data))})))
+  (let [{:keys [msg channel uid] :as event} (deserialize (.text js/event.data))]
+    (println "push received" msg)
+    (.waitUntil event (.showNotification js/self.registration (str channel " "  uid " says...") #js{:body (str msg)}))))
 (.addEventListener js/self "push" on-push)

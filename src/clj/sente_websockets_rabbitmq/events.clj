@@ -15,12 +15,12 @@
   "publish an event to rabbit in json. rabbit-data is a map of {:ch :qname}"
   (lb/publish (:ch rabbit-data) "" (:qname rabbit-data) (serialize msg) {:content-type "text/json" :type (stringify-keyword type)}))
 
-(defn do-web-push []
+(defn do-web-push [msg]
   (let [subscriptions (db/get-push-auth)]
     (dorun
      (for [subscription subscriptions]
        (try
-         (web-push/do-push! (db/get-server-credentials) (:subscription subscription) "test@test.com" "this is a test send from server data push")
+         (web-push/do-push! (db/get-server-credentials) (:subscription subscription) "test@test.com" (serialize msg))
          (catch clojure.lang.ExceptionInfo e
            (println "invalid subscription: " (:subscription subscription))
            (db/delete-push-auth (:id subscription))))))))
@@ -46,7 +46,7 @@
     (let [{:keys [msg channel] :as message} ?data]
       (println "Event from " uid ": " message)
       (db/insert-message uid msg channel)
-      (do-web-push)
+      (do-web-push (assoc message :uid uid))
       (publish rabbit-data (assoc message :uid uid) id)))
 
   (defmethod event-msg-handler :chat/typing
