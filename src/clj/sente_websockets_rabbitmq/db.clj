@@ -43,15 +43,15 @@
    (jdbc/insert! db-config :messages
                  {:uid uid :msg msg :channel channel :date (timec/to-timestamp (time/now))})))
 
-(defn create-push-auth [uid subscription]
+(defn save-subscription [uid subscription]
   (jdbc/insert! db-config :subscriptions
                 {:uid uid :subscription subscription}))
 
-(defn delete-push-auth [id]
+(defn delete-subscription [id]
   (jdbc/delete! db-config :subscriptions
                 ["id = ?" id]))
 
-(defn get-push-auth []
+(defn get-subscriptions []
   (jdbc/query db-config
               ["select id, uid, subscription from subscriptions LIMIT 1000;"]))
 

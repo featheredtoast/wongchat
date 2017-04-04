@@ -50,7 +50,7 @@
                #{:user}
                (let [uid (auth/get-user-id req)
                      subscription (get-in req [:params :subscription])]
-                 (db/create-push-auth uid subscription)
+                 (db/save-subscription uid subscription)
                  {:status 200
                   :headers {"Content-Type" "text/html; charset=utf-8"}
                   :body "ok"})))
