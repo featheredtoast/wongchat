@@ -58,6 +58,8 @@
 
 ;; https://bouncycastle.org/wiki/display/JA1/Elliptic+Curve+Key+Pair+Generation+and+Key+Factories
 (defn gen-ecdh-key []
+  "Generates an ecdh key. Returns the keys as a map {:public :private}
+in ecdh format."
   (Security/addProvider (org.bouncycastle.jce.provider.BouncyCastleProvider.))
   (let [ecSpec (ECNamedCurveTable/getParameterSpec "secp256r1")
         g (doto (KeyPairGenerator/getInstance "ECDH" "BC")
@@ -90,18 +92,30 @@
     (.getCompactSerialization jws)))
 
 (defn get-headers [keys email endpoint salt encrypt-pubkey]
-  {"Authorization" (str "WebPush " (gen-jwt-key (:private keys) email endpoint))
-   "Crypto-Key" (str "keyid=p256dh;dh=" encrypt-pubkey ";" "p256ecdsa=" (:public keys))
-   "Encryption" (str "keyid=p256dh;salt=" salt)
-   "TTL" "60"
-   "Content-Encoding" "aesgcm"})
+  (let [send-pubkey-header (str "p256ecdsa=" (:public keys))
+        tickle (and (nil? encrypt-pubkey) (nil? salt))
+        crypto-key-header (if tickle
+                            send-pubkey-header
+                            (str "keyid=p256dh;dh=" encrypt-pubkey ";" send-pubkey-header))
+        basic-headers
+        {"Authorization" (str "WebPush " (gen-jwt-key (:private keys) email endpoint))
+         "Crypto-Key" crypto-key-header
+         "TTL" "60"}]
+    (if tickle
+      basic-headers
+      (-> (assoc basic-headers "Encryption" (str "keyid=p256dh;salt=" salt))
+          (assoc "Content-Encoding" "aesgcm")))))
 
 (defn do-push! [keys client-data-json email payload]
+  "Executes a push against a registered client.
+Will throw an exception if the client is unregsitered.
+Keys are {:public :private}, everything else is a string."
   (let [client-data (json/read-str client-data-json)
         endpoint (get client-data "endpoint")
         client-key (get-in client-data ["keys" "p256dh"])
         client-auth (get-in client-data ["keys" "auth"])
-        {:keys [encrypt-pubkey salt cipher-text]} (encrypt payload client-key client-auth)
+        {:keys [encrypt-pubkey salt cipher-text]} (when (not (nil? payload))
+                                                    (encrypt payload client-key client-auth))
         headers (get-headers keys email endpoint salt encrypt-pubkey)]
     (http/post
      endpoint
