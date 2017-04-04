@@ -318,8 +318,7 @@
 (defn unsubscribe []
   (-> js/navigator.serviceWorker.ready
       (.then (fn [reg]
-               (-> (.getSubscription js/reg.pushManager #js {:userVisibleOnly true
-                                                       :applicationServerKey (js/urlB64ToUint8Array (:push-key @app-state))})
+               (-> (.getSubscription js/reg.pushManager)
                    (.then (fn [subscription]
                             (.unsubscribe subscription))))))))
 
