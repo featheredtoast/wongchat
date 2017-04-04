@@ -70,7 +70,7 @@
        :data #js{:url "/chat"}}))
 
 (defn on-push [event]
-  (let [{:keys [msg channel uid] :as event} (deserialize (.text js/event.data))]
+  (let [{:keys [msg channel uid]} (deserialize (.text js/event.data))]
     (println "push received" msg)
     (.waitUntil
      event
@@ -84,21 +84,19 @@
 (.addEventListener js/self "push" on-push)
 
 (defn notification-click [event]
-  (println "notification click!" (aget event "notification") (aget event "notification" "data" "url"))
    (.close js/event.notification)
    (let [url js/event.notification.data.url]
      (.waitUntil
       event
       (-> (.matchAll js/clients #js{:type "window"})
           (.then
-           (fn [clients]
-             (if (and clients (< 0 (count clients)))
+           (fn [client-list]
+             (if (and client-list (< 0 (count client-list)))
                (dorun
                 (take-while
                  false?
-                 (for [client clients]
+                 (for [client client-list]
                    (do (.focus client)
                        true))))
-               (when js/clients.openWindow
-                 (.openWindow js/clients url)))))))))
+               (.openWindow js/clients (str "http://localhost:10555" url)))))))))
 (.addEventListener js/self "notificationclick" notification-click)
