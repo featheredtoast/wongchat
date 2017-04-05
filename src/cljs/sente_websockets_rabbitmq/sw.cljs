@@ -67,7 +67,8 @@
    js/self.registration
    (str "New message in " channel)
    #js{:body (str uid ": " msg)
-       :data #js{:url "/chat"}}))
+       :data #js{:url "/chat"}
+       :icon "/images/speech-bubble-xxl.png"}))
 
 (defn on-push [event]
   (let [{:keys [msg channel uid]} (deserialize (.text js/event.data))]

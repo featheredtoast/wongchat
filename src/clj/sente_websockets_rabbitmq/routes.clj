@@ -26,6 +26,7 @@
      :menu {:px-open 0
             :max-px-width 201}
      :network-up? true
+     :subscribed? false
      :push-key (db/get-public-server-credentials)}))
 
 (defn routes [url _]

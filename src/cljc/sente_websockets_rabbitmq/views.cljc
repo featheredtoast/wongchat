@@ -15,6 +15,7 @@
      (def app-active-channel (rum/cursor-in app-state [:active-channel]))
      (def app-menu-state (rum/cursor-in app-state [:menu]))
      (def network-connected (rum/cursor-in app-state [:network-up?]))
+     (def app-subscribed (rum/cursor-in app-state [:subscribed?]))
      (def input-change-mixin
        {:did-update
         (fn [state]
@@ -32,6 +33,7 @@
      (def app-menu-state (atom {:px-open 0
                                 :max-px-width 201}))
      (def network-connected (atom true))
+     (def app-subscribed (atom false))
      (defn submit-message [] ())
      (defn history-recall [] ())
      (defn input-change [] ())
@@ -123,8 +125,9 @@
       [:span {:class "icon-bar"}]
       [:span {:class "icon-bar"}]]
      [:span {:class "pull-right navbar-text"} [:span (rum/react app-user)]
-      [:button {:class "btn btn-default" :on-click subscribe} "Subscribe!"]
-      [:button {:class "btn btn-default" :on-click unsubscribe} "Un-Subscribe!"]
+      (if (rum/react app-subscribed)
+        [:button {:class "btn btn-default" :on-click unsubscribe} "Un-Subscribe!"]
+        [:button {:class "btn btn-default" :on-click subscribe} "Subscribe!"])
       " " [:a {:href "/logout"} "logout"]]]]
    [:div {:class "col-sm-2 hidden-xs"}
     (channel-list)]
@@ -151,6 +154,7 @@
           (def app-active-channel (atom (:active-channel @app-state)))
           (def app-menu-state (atom (:menu @app-state)))
           (def network-connected (atom (:network-up? @app-state)))
+          (def app-subscribed (atom (:subscribed? @app-state)))
           (defn submit-message [] ())
           (defn input-change [] ())
           (rum/render-html (main-app))))

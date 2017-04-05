@@ -309,6 +309,7 @@
                                                             :body (doto (js/FormData.)
                                                                     (.append "subscription" (js/JSON.stringify subscription)))})
                                 (.then (fn [resp]
+                                         (swap! app-state assoc :subscribed? true)
                                          (println "subscribed: " (js/JSON.stringify subscription)))))))
                    (.catch (fn [e]
                              (if (= "denied" js/Notification.permission)
@@ -320,6 +321,7 @@
       (.then (fn [reg]
                (-> (.getSubscription js/reg.pushManager)
                    (.then (fn [subscription]
+                            (swap! app-state assoc :subscribed? false)
                             (.unsubscribe subscription))))))))
 
 (defrecord EventHandler [hammer]
@@ -380,6 +382,14 @@
     component))
 (defn new-service-worker []
   (map->ServiceWorker {}))
+
+(defrecord ClientPermissions []
+  component/Lifecycle
+  (start [component]
+    
+    component)
+  (stop [component]
+    component))
 
 (defn chat-system []
   (component/system-map
