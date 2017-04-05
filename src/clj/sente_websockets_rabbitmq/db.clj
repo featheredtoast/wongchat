@@ -51,6 +51,10 @@
   (jdbc/delete! db-config :subscriptions
                 ["id = ?" id]))
 
+(defn delete-subscription-by-subscription [subscription]
+  (jdbc/delete! db-config :subscriptions
+                ["subscription = ?" subscription]))
+
 (defn get-subscriptions []
   (jdbc/query db-config
               ["select id, uid, subscription from subscriptions LIMIT 1000;"]))

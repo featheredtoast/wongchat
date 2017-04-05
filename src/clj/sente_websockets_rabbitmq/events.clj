@@ -17,13 +17,14 @@
 
 (defn do-web-push [msg]
   (let [subscriptions (db/get-subscriptions)]
-    (dorun
-     (for [subscription subscriptions]
-       (try
-         (web-push/do-push! (db/get-server-credentials) (:subscription subscription) "test@test.com" (serialize msg))
-         (catch clojure.lang.ExceptionInfo e
-           (println "invalid subscription: " (:subscription subscription))
-           (db/delete-subscription (:id subscription))))))))
+    (future
+      (dorun
+       (for [subscription subscriptions]
+         (try
+           (web-push/do-push! (db/get-server-credentials) (:subscription subscription) "test@test.com" (serialize msg))
+           (catch clojure.lang.ExceptionInfo e
+             (println "invalid subscription: " (:subscription subscription))
+             (db/delete-subscription (:id subscription)))))))))
 
 (defmulti event-msg-handler (fn [_ msg] (:id msg))) ; Dispatch on event-id
 ;; Wrap for logging, catching, etc.:

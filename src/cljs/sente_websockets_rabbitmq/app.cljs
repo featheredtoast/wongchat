@@ -322,7 +322,13 @@
                (-> (.getSubscription js/reg.pushManager)
                    (.then (fn [subscription]
                             (swap! app-state assoc :subscribed? false)
-                            (.unsubscribe subscription))))))))
+                            (.unsubscribe subscription)
+                            (-> (js/fetch "/unsubscribe" #js {:method "POST"
+                                                              :credentials "include"
+                                                              :body (doto (js/FormData.)
+                                                                      (.append "subscription" (js/JSON.stringify subscription)))})
+                                (.then (fn [resp]
+                                         (println "unsubscribed: " (js/JSON.stringify subscription))))))))))))
 
 (defrecord EventHandler [hammer]
   component/Lifecycle

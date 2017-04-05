@@ -55,6 +55,16 @@
                  {:status 200
                   :headers {"Content-Type" "text/html; charset=utf-8"}
                   :body "ok"})))
+         (POST "/unsubscribe"
+              req
+              (friend/authorize
+               #{:user}
+               (let [uid (auth/get-user-id req)
+                     subscription (get-in req [:params :subscription])]
+                 (db/delete-subscription-by-subscription subscription)
+                 {:status 200
+                  :headers {"Content-Type" "text/html; charset=utf-8"}
+                  :body "ok"})))
          (resources "/")
          (friend/logout (ANY "/logout" request (ring.util.response/redirect url))))]
     (-> basic-routes
