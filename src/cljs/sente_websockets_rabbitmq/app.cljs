@@ -392,10 +392,16 @@
 (defrecord ClientPermissions []
   component/Lifecycle
   (start [component]
-    
+    (-> js/navigator.serviceWorker.ready
+        (.then (fn [reg]
+                 (-> (.getSubscription js/reg.pushManager)
+                     (.then (fn [subscription]
+                              (swap! app-state assoc :subscribed? (some? subscription))))))))
     component)
   (stop [component]
     component))
+(defn new-client-permissions []
+  (map->ClientPermissions {}))
 
 (defn chat-system []
   (component/system-map
@@ -408,7 +414,8 @@
    :online-event-handler (component/using
                           (new-online-handler)
                           [:sente])
-   :service-worker (new-service-worker)))
+   :service-worker (new-service-worker)
+   :client-permissions (new-client-permissions)))
 
 (when (:initializing @app-state)
   (swap! app-state assoc :initializing false))
