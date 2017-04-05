@@ -142,7 +142,8 @@
 
              :uberjar
              {:source-paths ^:replace ["src/clj" "src/cljc"]
-              :prep-tasks ["compile" ["cljsbuild" "once" "min"]]
+              :prep-tasks ["compile" ["cljsbuild" "once" "min"]
+                           "compile" ["cljsbuild" "once" "sw"]]
               :hooks []
               :omit-source true
               :aot :all}})
