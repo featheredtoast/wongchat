@@ -12,7 +12,6 @@
                  [bk/ring-gzip "0.1.1"]
                  [ring.middleware.logger "0.5.0"]
                  [ring-middleware-format "0.7.0"]
-                 [compojure "1.5.1"]
                  [environ "1.1.0"]
                  [rum "0.10.8"]
                  [org.clojure/core.async "0.2.395"]
@@ -41,7 +40,8 @@
                  [commons-codec/commons-codec "1.10"]
                  [org.bitbucket.b_c/jose4j "0.5.5"]
                  [clj-http "2.3.0"]
-                 [nl.martijndwars/web-push "2.0.0"]]
+                 [nl.martijndwars/web-push "2.0.0"]
+                 [bidi "2.0.16"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]
             [lein-environ "1.1.0"]]
