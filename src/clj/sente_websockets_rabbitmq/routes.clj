@@ -72,8 +72,7 @@
                    ["chat" :chat]
                    ["subscribe" :subscribe]
                    ["unsubscribe" :unsubscribe]
-                   ["logout" :logout]
-                   ["" (bidi.ring/->ResourcesMaybe {:prefix "public/"})]]])
+                   ["logout" :logout]]])
 
 (def bidi-route-handlers
   {:index index
