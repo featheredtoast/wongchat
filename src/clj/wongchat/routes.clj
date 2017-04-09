@@ -36,7 +36,6 @@
    :body (html/login)})
 
 (defn chat [req]
-  (println "yay chat...")
   (friend/authorize
    #{:user}
    (let [uid (auth/get-user-id req)
