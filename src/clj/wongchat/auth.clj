@@ -1,9 +1,9 @@
-(ns sente-websockets-rabbitmq.auth
+(ns wongchat.auth
   (:require [cemerick.friend :as friend]
             [qarth.friend]
             [qarth.oauth :as oauth]
             [qarth.impl.google]
-            [sente-websockets-rabbitmq.config :refer [config]]))
+            [wongchat.config :refer [config]]))
 
 (defn credential-fn [id]
   (let [email (get-in id [:qarth.oauth/record :email])]

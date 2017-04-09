@@ -1,12 +1,12 @@
-(ns sente-websockets-rabbitmq.events
+(ns wongchat.events
   (:require
    [langohr.queue     :as lq]
    [langohr.consumers :as lc]
    [langohr.basic     :as lb]
-   [sente-websockets-rabbitmq.data :refer [serialize deserialize]]
+   [wongchat.data :refer [serialize deserialize]]
    [com.stuartsierra.component :as component]
-   [sente-websockets-rabbitmq.db :as db]
-   [sente-websockets-rabbitmq.web-push :as web-push]))
+   [wongchat.db :as db]
+   [wongchat.web-push :as web-push]))
 
 (defn stringify-keyword [keywd]
   (str (namespace keywd) "/" (name keywd)))

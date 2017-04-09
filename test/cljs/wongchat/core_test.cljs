@@ -1,4 +1,4 @@
-(ns sente-websockets-rabbitmq.core-test
+(ns wongchat.core-test
   (:require-macros [cljs.test :refer (is deftest testing)])
   (:require [cljs.test]))
 

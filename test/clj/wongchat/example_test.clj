@@ -1,4 +1,4 @@
-(ns sente-websockets-rabbitmq.example-test
+(ns wongchat.example-test
   (:require [clojure.test :refer :all]))
 
 (deftest example-passing-test

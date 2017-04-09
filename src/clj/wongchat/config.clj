@@ -1,4 +1,4 @@
-(ns sente-websockets-rabbitmq.config
+(ns wongchat.config
   (:require [environ.core :refer [env]]))
 
 (def defaults

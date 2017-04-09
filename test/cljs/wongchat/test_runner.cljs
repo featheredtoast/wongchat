@@ -1,8 +1,8 @@
-(ns sente-websockets-rabbitmq.test-runner
+(ns wongchat.test-runner
   (:require
    [doo.runner :refer-macros [doo-tests]]
-   [sente-websockets-rabbitmq.core-test]))
+   [wongchat.core-test]))
 
 (enable-console-print!)
 
-(doo-tests 'sente-websockets-rabbitmq.core-test)
+(doo-tests 'wongchat.core-test)

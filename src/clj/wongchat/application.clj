@@ -1,4 +1,4 @@
-(ns sente-websockets-rabbitmq.application
+(ns wongchat.application
   (:require
    [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
    [ring.middleware.gzip :refer [wrap-gzip]]
@@ -12,11 +12,11 @@
    [system.components.rabbitmq :refer [new-rabbit-mq]]
    [taoensso.sente.server-adapters.http-kit :refer [sente-web-server-adapter]]
    [clj-redis-session.core :as redis-session]
-   [sente-websockets-rabbitmq.config :refer [config]]
-   [sente-websockets-rabbitmq.db :as db]
-   [sente-websockets-rabbitmq.routes :refer [routes]]
-   [sente-websockets-rabbitmq.events :as events]
-   [sente-websockets-rabbitmq.auth :as auth])
+   [wongchat.config :refer [config]]
+   [wongchat.db :as db]
+   [wongchat.routes :refer [routes]]
+   [wongchat.events :as events]
+   [wongchat.auth :as auth])
   (:gen-class))
 
 (defn app-system [{:keys [rabbitmq-bigwig-rx-url

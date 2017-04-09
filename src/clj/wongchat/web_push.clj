@@ -1,4 +1,4 @@
-(ns sente-websockets-rabbitmq.web-push
+(ns wongchat.web-push
   (:require
    [clj-http.client :as http]
    [clojure.data.json :as json])

@@ -1,12 +1,12 @@
-(ns sente-websockets-rabbitmq.routes
+(ns wongchat.routes
   (:require
    [bidi.bidi :as bidi]
    [bidi.ring]
    [cemerick.friend :as friend]
-   [sente-websockets-rabbitmq.html.index :as html]
-   [sente-websockets-rabbitmq.auth :as auth]
-   [sente-websockets-rabbitmq.db :as db]
-   [sente-websockets-rabbitmq.router :as router]))
+   [wongchat.html.index :as html]
+   [wongchat.auth :as auth]
+   [wongchat.db :as db]
+   [wongchat.router :as router]))
 
 (defn get-initial-state [uid]
   (let [channel "#general"]

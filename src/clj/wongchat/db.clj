@@ -1,8 +1,8 @@
-(ns sente-websockets-rabbitmq.db
+(ns wongchat.db
   (:require
    [com.stuartsierra.component :as component]
-   [sente-websockets-rabbitmq.config :refer [config]]
-   [sente-websockets-rabbitmq.web-push :refer [gen-ecdh-key get-headers]]
+   [wongchat.config :refer [config]]
+   [wongchat.web-push :refer [gen-ecdh-key get-headers]]
    [ragtime.jdbc]
    [ragtime.repl]
    [clojure.java.jdbc :as jdbc]

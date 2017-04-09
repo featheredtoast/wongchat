@@ -1,4 +1,4 @@
-(ns sente-websockets-rabbitmq.data
+(ns wongchat.data
   (:require [cognitect.transit :as transit]))
 
 #?(:cljs

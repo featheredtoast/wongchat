@@ -1,5 +1,5 @@
-(ns sente-websockets-rabbitmq.sw
-  (:require [sente-websockets-rabbitmq.data :refer [serialize deserialize]]))
+(ns wongchat.sw
+  (:require [wongchat.data :refer [serialize deserialize]]))
 
 (enable-console-print!)
 

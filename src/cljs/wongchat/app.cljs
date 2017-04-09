@@ -1,11 +1,11 @@
-(ns sente-websockets-rabbitmq.app
+(ns wongchat.app
   (:require-macros
    [cljs.core.async.macros :as asyncm :refer (go go-loop)])
   (:require [com.stuartsierra.component :as component]
             [cljs.core.async :as async :refer (<! >! <! poll! put! chan timeout)]
             [taoensso.sente  :as sente :refer (cb-success?)]
             [system.components.sente :refer [new-channel-socket-client]]
-            [sente-websockets-rabbitmq.data :refer [serialize deserialize]]
+            [wongchat.data :refer [serialize deserialize]]
             [cljsjs.hammer]
             [goog.dom :as dom]
             [goog.events :as events]

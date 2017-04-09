@@ -1,9 +1,9 @@
-(ns sente-websockets-rabbitmq.core
+(ns wongchat.core
   (:require-macros
    [cljs.core.async.macros :as asyncm :refer (go go-loop)])
   (:require [org.clojars.featheredtoast.reloaded-repl-cljs :as reloaded]
-            [sente-websockets-rabbitmq.app :as app :refer [chat-system]]
-            [sente-websockets-rabbitmq.views :as views :refer [main-app]]
+            [wongchat.app :as app :refer [chat-system]]
+            [wongchat.views :as views :refer [main-app]]
             [rum.core :as rum]))
 
 (enable-console-print!)

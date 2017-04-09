@@ -1,4 +1,4 @@
-(ns sente-websockets-rabbitmq.router)
+(ns wongchat.router)
 
 (def routes ["/"
              [["" :index]

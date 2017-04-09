@@ -1,8 +1,8 @@
-(ns sente-websockets-rabbitmq.html.index
+(ns wongchat.html.index
   (:require [hiccup.core :refer [html]]
-            [sente-websockets-rabbitmq.views :as app]
+            [wongchat.views :as app]
             [clojure.zip :as zip]
-            [sente-websockets-rabbitmq.data :refer [serialize]]))
+            [wongchat.data :refer [serialize]]))
 
 (def bootstrap-headers
   [[:link {:rel "stylesheet"

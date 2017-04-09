@@ -1,4 +1,4 @@
-(ns sente-websockets-rabbitmq.css.css
+(ns wongchat.css.css
   (:require [garden.def :refer [defstylesheet defstyles]]
             [garden.stylesheet :refer (at-import at-media at-keyframes)]))
 
