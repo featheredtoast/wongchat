@@ -1,5 +1,5 @@
 (ns cljs.user
-  (:require [sente-websockets-rabbitmq.core]
+  (:require [wongchat.core]
             [org.clojars.featheredtoast.reloaded-repl-cljs :as reloaded]))
 
 (def go reloaded/go)

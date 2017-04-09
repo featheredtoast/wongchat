@@ -1,4 +1,4 @@
-(defproject sente-websockets-rabbitmq "0.1.0-SNAPSHOT"
+(defproject wongchat "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -55,10 +55,10 @@
 
   :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js" "resources/public/sw.js"]
 
-  :uberjar-name "sente-websockets-rabbitmq.jar"
+  :uberjar-name "wongchat.jar"
 
   ;; Use `lein run` if you just want to start a HTTP server, without figwheel
-  :main sente-websockets-rabbitmq.application
+  :main wongchat.application
 
   ;; nREPL by default starts in the :main namespace, we want to start in `user`
   ;; because that's where our development helper functions like (run) and
@@ -78,7 +78,7 @@
                            :source-map-timestamp true}}
                {:id "sw"
                 :source-paths ["src/cljs" "src/cljc"]
-                :compiler {:main sente-websockets-rabbitmq.sw
+                :compiler {:main wongchat.sw
                            :asset-path "js/compiled/out"
                            :output-to "resources/public/sw.js"
                            :output-dir "resources/public/js/compiled/sw"
@@ -87,13 +87,13 @@
                {:id "test"
                 :source-paths ["src/cljs" "test/cljs" "src/cljc" "test/cljc"]
                 :compiler {:output-to "resources/public/js/compiled/testable.js"
-                           :main sente-websockets-rabbitmq.test-runner
+                           :main wongchat.test-runner
                            :optimizations :none}}
 
                {:id "min"
                 :source-paths ["src/cljs" "src/cljc"]
                 :jar true
-                :compiler {:main sente-websockets-rabbitmq.core
+                :compiler {:main wongchat.core
                            :output-to "resources/public/js/compiled/sente_websockets_rabbitmq.js"
                            :output-dir "target"
                            :source-map-timestamp true

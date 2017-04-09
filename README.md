@@ -1,4 +1,4 @@
-# sente-websockets-rabbitmq
+# wongchat
 
 Yet another chat app.
 
@@ -8,7 +8,7 @@ HTTP Sessions stored in redis.
 
 This has now been refactored to work using components + system.
 
-[Check it out!](https://sente-websockets-rabbitmq.herokuapp.com)
+[Check it out!](https://wongchat.herokuapp.com)
 
 ## Env vars
 
