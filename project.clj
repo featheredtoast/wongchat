@@ -12,6 +12,7 @@
                  [bk/ring-gzip "0.1.1"]
                  [ring.middleware.logger "0.5.0"]
                  [ring-middleware-format "0.7.0"]
+                 [compojure "1.5.1"]
                  [environ "1.1.0"]
                  [rum "0.10.8"]
                  [org.clojure/core.async "0.2.395"]
