@@ -14,7 +14,7 @@
    :amqp-user "guest"
    :amqp-pass "guest"
    :rabbitmq-bigwig-rx-url nil
-   :url "/"
+   :base-url "http://localhost:10555"
    :port 10555})
 
 (defn get-env-map []

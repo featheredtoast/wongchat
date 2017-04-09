@@ -6,7 +6,8 @@
    [wongchat.html.index :as html]
    [wongchat.auth :as auth]
    [wongchat.db :as db]
-   [wongchat.router :as router]))
+   [wongchat.router :as router]
+   [wongchat.config :refer [config]]))
 
 (defn get-initial-state [uid]
   (let [channel "#general"]
@@ -28,7 +29,8 @@
             :max-px-width 201}
      :network-up? true
      :subscribed? false
-     :push-key (db/get-public-server-credentials)}))
+     :push-key (db/get-public-server-credentials)
+     :base-url (:base-url config)}))
 
 (defn index [req]
   {:status 200
@@ -74,7 +76,7 @@
    :unsubscribe unsubscribe
    :logout logout})
 
-(defn routes [url _]
+(defn routes [url]
   (let [basic-routes
         (bidi.ring/make-handler router/routes
                                 route-handlers)]

@@ -62,16 +62,16 @@
                                    (fetch-and-cache js/event.request)))))))))
 #_(.addEventListener js/self "fetch" fetch-listen)
 
-(defn pop-notification [channel uid msg]
+(defn pop-notification [channel uid msg url]
   (.showNotification
    js/self.registration
    (str "New message in " channel)
    #js{:body (str uid ": " msg)
-       :data #js{:url "/chat"}
+       :data #js{:url url}
        :icon "/images/speech-bubble-xxl.png"}))
 
 (defn on-push [event]
-  (let [{:keys [msg channel uid]} (deserialize (.text js/event.data))]
+  (let [{:keys [msg channel uid url]} (deserialize (.text js/event.data))]
     (println "push received" msg)
     (.waitUntil
      event
@@ -81,7 +81,7 @@
             (when notifications
               (dorun (for [notification notifications]
                        (.close notification))))
-            (pop-notification channel uid msg)))))))
+            (pop-notification channel uid msg url)))))))
 (.addEventListener js/self "push" on-push)
 
 (defn notification-click [event]
@@ -99,5 +99,5 @@
                  (for [client client-list]
                    (do (.focus client)
                        true))))
-               (.openWindow js/clients (str "http://localhost:10555" url)))))))))
+               (.openWindow js/clients url))))))))
 (.addEventListener js/self "notificationclick" notification-click)

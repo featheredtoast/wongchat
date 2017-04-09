@@ -21,7 +21,7 @@
 
 (defn app-system [{:keys [rabbitmq-bigwig-rx-url
                           amqp-user amqp-pass amqp-host amqp-port
-                          url]
+                          base-url]
                    :as config}]
   (let [redis-conn {:spec {:uri (:redis-url config)}}
         port (Integer. (:port config))
@@ -45,7 +45,7 @@
      :sente-endpoint (component/using
                       (new-endpoint sente-routes)
                       [:sente])
-     :routes (new-endpoint (partial routes url))
+     :routes (new-endpoint routes)
      :middleware (new-middleware
                   {:middleware [[wrap-defaults (-> site-defaults
                                                    (assoc :session {:store (redis-session/redis-store redis-conn)})

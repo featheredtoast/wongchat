@@ -6,7 +6,8 @@
    [wongchat.data :refer [serialize deserialize]]
    [com.stuartsierra.component :as component]
    [wongchat.db :as db]
-   [wongchat.web-push :as web-push]))
+   [wongchat.web-push :as web-push]
+   [wongchat.config :refer [config]]))
 
 (defn stringify-keyword [keywd]
   (str (namespace keywd) "/" (name keywd)))
@@ -47,7 +48,8 @@
     (let [{:keys [msg channel] :as message} ?data]
       (println "Event from " uid ": " message)
       (db/insert-message uid msg channel)
-      (do-web-push (assoc message :uid uid))
+      (do-web-push (-> (assoc message :uid uid)
+                       (assoc :url (str (:base-url config) "/chat"))))
       (publish rabbit-data (assoc message :uid uid) id)))
 
   (defmethod event-msg-handler :chat/typing
