@@ -5,7 +5,8 @@
    [cemerick.friend :as friend]
    [sente-websockets-rabbitmq.html.index :as html]
    [sente-websockets-rabbitmq.auth :as auth]
-   [sente-websockets-rabbitmq.db :as db]))
+   [sente-websockets-rabbitmq.db :as db]
+   [sente-websockets-rabbitmq.router :as router]))
 
 (defn get-initial-state [uid]
   (let [channel "#general"]
@@ -67,14 +68,7 @@
 (defn logout [req]
   (friend/logout* (ring.util.response/redirect "/")))
 
-(def bidi-routes ["/"
-                  [["" :index]
-                   ["chat" :chat]
-                   ["subscribe" :subscribe]
-                   ["unsubscribe" :unsubscribe]
-                   ["logout" :logout]]])
-
-(def bidi-route-handlers
+(def route-handlers
   {:index index
    :chat chat
    :subscribe subscribe
@@ -83,8 +77,8 @@
 
 (defn routes [url _]
   (let [basic-routes
-        (bidi.ring/make-handler bidi-routes
-                                bidi-route-handlers)]
+        (bidi.ring/make-handler router/routes
+                                route-handlers)]
     (-> basic-routes
         (friend/authenticate
          {:workflows [auth/workflow] :auth-url "/login"
