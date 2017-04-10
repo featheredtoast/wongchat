@@ -72,14 +72,14 @@
                 :figwheel {:on-jsload "org.clojars.featheredtoast.reloaded-repl-cljs/go"
                            :websocket-host :js-client-host}
                 :compiler {:main cljs.user
-                           :asset-path "js/compiled/out"
-                           :output-to "resources/public/js/compiled/sente_websockets_rabbitmq.js"
+                           :asset-path "/js/compiled/out"
+                           :output-to "resources/public/js/compiled/wongchat.js"
                            :output-dir "resources/public/js/compiled/out"
                            :source-map-timestamp true}}
                {:id "sw"
                 :source-paths ["src/cljs" "src/cljc"]
                 :compiler {:main wongchat.sw
-                           :asset-path "js/compiled/out"
+                           :asset-path "/js/compiled/out"
                            :output-to "resources/public/sw.js"
                            :output-dir "resources/public/js/compiled/sw"
                            :optimizations :advanced
@@ -94,7 +94,7 @@
                 :source-paths ["src/cljs" "src/cljc"]
                 :jar true
                 :compiler {:main wongchat.core
-                           :output-to "resources/public/js/compiled/sente_websockets_rabbitmq.js"
+                           :output-to "resources/public/js/compiled/wongchat.js"
                            :output-dir "target"
                            :source-map-timestamp true
                            :optimizations :advanced

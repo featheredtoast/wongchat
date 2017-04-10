@@ -4,9 +4,8 @@
 (enable-console-print!)
 
 (def *cache-name* "cache-v1")
-(def urls-to-cache ["/chat"
-                    "/css/style.css"
-                    "/js/compiled/sente_websockets_rabbitmq.js"])
+(def urls-to-cache ["/css/style.css"
+                    "/js/compiled/wongchat.js"])
 
 (defn add-cache [cache url]
   (println "adding cache: " url)

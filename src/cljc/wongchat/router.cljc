@@ -2,7 +2,8 @@
 
 (def routes ["/"
              [["" :index]
-              ["chat" :chat]
+              ["chat" [["" :chat]
+                       [["/channel/" :channel] :chat]]]
               ["subscribe" :subscribe]
               ["unsubscribe" :unsubscribe]
               ["logout" :logout]]])

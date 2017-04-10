@@ -40,7 +40,7 @@
 (defn chat [state]
   (-> [:html
        [:head
-        [:link {:href "css/style.css"
+        [:link {:href "/css/style.css"
                 :rel "stylesheet"
                 :type "text/css"}]
         [:link {:rel "manifest"
@@ -62,7 +62,7 @@
   }
   return outputArray;
 }"]
-        [:script {:src "js/compiled/sente_websockets_rabbitmq.js"}]]]
+        [:script {:src "/js/compiled/wongchat.js"}]]]
       (add-headers basic-headers)
       (add-headers bootstrap-headers)
       html))

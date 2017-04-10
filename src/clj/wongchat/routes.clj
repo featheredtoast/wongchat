@@ -9,42 +9,44 @@
    [wongchat.router :as router]
    [wongchat.config :refer [config]]))
 
-(defn get-initial-state [uid]
-  (let [channel "#general"]
-    {:messages (db/get-recent-messages)
-     :typing #{}
-     :channel-data {channel
-                    {:messages (db/get-recent-messages channel)
-                     :typing #{}}}
-     :active-channel channel
-     :user-typing false
-     :input ""
-     :initializing true
-     :latest-input ""
-     :connected false
-     :user uid
-     :message-history (db/get-user-messages uid)
-     :message-history-position 0
-     :menu {:px-open 0
-            :max-px-width 201}
-     :network-up? true
-     :subscribed? false
-     :push-key (db/get-public-server-credentials)
-     :base-url (:base-url config)}))
+(defn get-initial-state [uid channel]
+  {:messages (db/get-recent-messages channel)
+   :typing #{}
+   :channel-data {channel
+                  {:messages (db/get-recent-messages channel)
+                   :typing #{}}}
+   :active-channel channel
+   :user-typing false
+   :input ""
+   :initializing true
+   :latest-input ""
+   :connected false
+   :user uid
+   :message-history (db/get-user-messages uid)
+   :message-history-position 0
+   :menu {:px-open 0
+          :max-px-width 201}
+   :network-up? true
+   :subscribed? false
+   :push-key (db/get-public-server-credentials)
+   :base-url (:base-url config)})
 
 (defn index [req]
   {:status 200
    :headers {"Content-Type" "text/html; charset=utf-8"}
    :body (html/login)})
 
-(defn chat [req]
-  (friend/authorize
-   #{:user}
-   (let [uid (auth/get-user-id req)
-         initial-state (get-initial-state uid)]
-     {:status 200
-      :headers {"Content-Type" "text/html; charset=utf-8"}
-      :body (html/chat initial-state)})))
+(defn chat [{:keys [route-params] :as req}]
+  (let [channel (if (:channel route-params)
+                  (str "#" (:channel route-params))
+                  "#general")]
+    (friend/authorize
+     #{:user}
+     (let [uid (auth/get-user-id req)
+           initial-state (get-initial-state uid channel)]
+       {:status 200
+        :headers {"Content-Type" "text/html; charset=utf-8"}
+        :body (html/chat initial-state)}))))
 
 (defn subscribe [req]
   (friend/authorize
