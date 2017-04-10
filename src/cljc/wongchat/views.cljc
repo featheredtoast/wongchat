@@ -89,8 +89,8 @@
 (rum/defc channel-list < rum/reactive []
   (let [active-channel (rum/react app-active-channel)]
       [:ul {:class "nav nav-stacked nav-pills"}
-       [:li (when (= active-channel "#general") {:class "active"}) [:a {:href "#" :on-click #(swap-channel "#general")} "#general"]]
-       [:li (when (= active-channel "#random") {:class "active"}) [:a {:href "#" :on-click #(swap-channel "#random")} "#random"]]]))
+       [:li (when (= active-channel "#general") {:class "active"}) [:a {:href "/chat/channel/general"} "#general"]]
+       [:li (when (= active-channel "#random") {:class "active"}) [:a {:href "/chat/channel/random"} "#random"]]]))
 
 (rum/defc main-menu < rum/reactive []
   (let [{:keys [px-open max-px-width] :as menu-state} (rum/react app-menu-state)

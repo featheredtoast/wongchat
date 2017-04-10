@@ -9,7 +9,10 @@
             [cljsjs.hammer]
             [goog.dom :as dom]
             [goog.events :as events]
-            [goog.events.OnlineHandler]))
+            [goog.events.OnlineHandler]
+            [wongchat.router :as router]
+            [bidi.bidi :as bidi]
+            [pushy.core :as pushy]))
 
 (enable-console-print!)
 
@@ -403,6 +406,25 @@
 (defn new-client-permissions []
   (map->ClientPermissions {}))
 
+(defmulti route! (fn [{:keys [handler]}] handler))
+(defmethod route! :chat [{:keys [handler route-params]}]
+  (let [{:keys [channel]} route-params
+        target-channel (if channel (str "#" channel) "#general")]
+    (swap-channel target-channel)))
+
+(defrecord Router [history]
+  component/Lifecycle
+  (start [component]
+    (let [match-route (partial bidi/match-route router/routes)
+          history (pushy/pushy route! match-route)]
+      (pushy/start! history)
+      (assoc component :history history)))
+  (stop [component]
+    (pushy/stop! history)
+    (dissoc component :history)))
+(defn new-router []
+  (map->Router {}))
+
 (defn chat-system []
   (component/system-map
    :sente (new-channel-socket-client)
@@ -415,7 +437,8 @@
                           (new-online-handler)
                           [:sente])
    :service-worker (new-service-worker)
-   :client-permissions (new-client-permissions)))
+   :client-permissions (new-client-permissions)
+   :router (new-router)))
 
 (when (:initializing @app-state)
   (swap! app-state assoc :initializing false))

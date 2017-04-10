@@ -42,7 +42,8 @@
                  [org.bitbucket.b_c/jose4j "0.5.5"]
                  [clj-http "2.3.0"]
                  [nl.martijndwars/web-push "2.0.0"]
-                 [bidi "2.0.16"]]
+                 [bidi "2.0.16"]
+                 [kibu/pushy "0.3.7"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]
             [lein-environ "1.1.0"]]
