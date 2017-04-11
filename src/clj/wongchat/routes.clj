@@ -74,6 +74,7 @@
 (def route-handlers
   {:index index
    :chat chat
+   :chat-index chat
    :subscribe subscribe
    :unsubscribe unsubscribe
    :logout logout})

@@ -7,7 +7,9 @@
    [com.stuartsierra.component :as component]
    [wongchat.db :as db]
    [wongchat.web-push :as web-push]
-   [wongchat.config :refer [config]]))
+   [wongchat.config :refer [config]]
+   [wongchat.router :as router]
+   [bidi.bidi :as bidi]))
 
 (defn stringify-keyword [keywd]
   (str (namespace keywd) "/" (name keywd)))
@@ -31,6 +33,7 @@
 ;; Wrap for logging, catching, etc.:
 (defn     event-msg-handler* [rabbit-data {:as ev-msg :keys [id ?data event]}]
   (event-msg-handler rabbit-data ev-msg))
+
 (do ; Client-side methods
   (defmethod event-msg-handler :default ; Fallback
     [_ {:as ev-msg :keys [event]}]
@@ -48,8 +51,10 @@
     (let [{:keys [msg channel] :as message} ?data]
       (println "Event from " uid ": " message)
       (db/insert-message uid msg channel)
-      (do-web-push (-> (assoc message :uid uid)
-                       (assoc :url (str (:base-url config) "/chat"))))
+      (let [relative-url (bidi/path-for router/routes :chat :channel (clojure.string/replace channel "#" ""))]
+        (do-web-push (-> (assoc message :uid uid)
+                         (assoc :url (str (:base-url config) relative-url))
+                         (assoc :relative-url relative-url))))
       (publish rabbit-data (assoc message :uid uid) id)))
 
   (defmethod event-msg-handler :chat/typing

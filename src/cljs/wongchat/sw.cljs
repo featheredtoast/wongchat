@@ -31,6 +31,10 @@
                            (add-all-cache cache urls-to-cache))))))
 (.addEventListener js/self "install" install-sw)
 
+(defn activate-sw [event]
+  (.waitUntil event (js/self.clients.claim)))
+(.addEventListener js/self "activate" activate-sw)
+
 (defn fetch-and-cache [request]
   (let [fetch-request (.clone request)]
     (-> (js/fetch fetch-request)
@@ -61,16 +65,17 @@
                                    (fetch-and-cache js/event.request)))))))))
 #_(.addEventListener js/self "fetch" fetch-listen)
 
-(defn pop-notification [channel uid msg url]
+(defn pop-notification [channel uid msg url relative-url]
   (.showNotification
    js/self.registration
    (str "New message in " channel)
    #js{:body (str uid ": " msg)
-       :data #js{:url url}
+       :data #js{:url url
+                 :relativeUrl relative-url}
        :icon "/images/speech-bubble-xxl.png"}))
 
 (defn on-push [event]
-  (let [{:keys [msg channel uid url]} (deserialize (.text js/event.data))]
+  (let [{:keys [msg channel uid url relative-url]} (deserialize (.text js/event.data))]
     (println "push received" msg)
     (.waitUntil
      event
@@ -80,23 +85,22 @@
             (when notifications
               (dorun (for [notification notifications]
                        (.close notification))))
-            (pop-notification channel uid msg url)))))))
+            (pop-notification channel uid msg url relative-url)))))))
 (.addEventListener js/self "push" on-push)
 
 (defn notification-click [event]
-   (.close js/event.notification)
-   (let [url js/event.notification.data.url]
+  (.close js/event.notification)
+  (let [url (aget event "notification" "data" "url")
+        relative-url (aget event "notification" "data" "relativeUrl")]
      (.waitUntil
       event
       (-> (.matchAll js/clients #js{:type "window"})
           (.then
            (fn [client-list]
              (if (and client-list (< 0 (count client-list)))
-               (dorun
-                (take-while
-                 false?
-                 (for [client client-list]
-                   (do (.focus client)
-                       true))))
+               (let [client (first client-list)]
+                 (.focus client)
+                 (println "post message with url: " relative-url)
+                 (.postMessage client #js{:url relative-url}))
                (.openWindow js/clients url))))))))
 (.addEventListener js/self "notificationclick" notification-click)

@@ -377,6 +377,10 @@
   (println "registration successful with scope: " (aget registration "scope")))
 (defn sw-error [err]
   (println "registration failed: " err))
+(defn sw-on-message [history event]
+  (let [url (aget event "data" "url")]
+    (println "data from sw push: " url)
+    (pushy/set-token! history url)))
 (defrecord ServiceWorker []
   component/Lifecycle
   (start [component]
@@ -417,6 +421,8 @@
   (start [component]
     (let [match-route (partial bidi/match-route router/routes)
           history (pushy/pushy route! match-route)]
+      (when-let [sw (aget js/navigator "serviceWorker")]
+        (.addEventListener sw "message" (partial sw-on-message history)))
       (pushy/start! history)
       (assoc component :history history)))
   (stop [component]
