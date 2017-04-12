@@ -69,7 +69,7 @@
       :body "ok"})))
 
 (defn logout [req]
-  (friend/logout* (ring.util.response/redirect "/")))
+  (friend/logout* (ring.util.response/redirect (str (:base-url config) "/"))))
 
 (def route-handlers
   {:index index

@@ -21,7 +21,7 @@
    {:service service
     :login-failure-handler
     (fn [_] (ring.util.response/redirect
-             "/login?exception=true"))}))
+             (str (:base-url config) "/login?exception=true")))}))
 
 (defn get-user-id [req]
   (let [id (-> req (qarth.friend/requestor service) oauth/id)
