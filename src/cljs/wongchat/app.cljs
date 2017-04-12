@@ -415,6 +415,8 @@
   (let [{:keys [channel]} route-params
         target-channel (if channel (str "#" channel) "#general")]
     (swap-channel target-channel)))
+(defmethod route! :chat-index [{:keys [handler]}]
+  (swap-channel "general"))
 
 (defrecord Router [history]
   component/Lifecycle
