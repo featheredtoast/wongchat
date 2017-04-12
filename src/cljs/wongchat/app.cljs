@@ -401,7 +401,7 @@
   (start [component]
     (-> js/navigator.serviceWorker.ready
         (.then (fn [reg]
-                 (-> (.getSubscription js/reg.pushManager)
+                 (-> (.getSubscription (aget reg "pushManager"))
                      (.then (fn [subscription]
                               (swap! app-state assoc :subscribed? (some? subscription))))))))
     component)

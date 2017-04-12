@@ -14,7 +14,7 @@
                (.put cache url resp)))))
 
 (defn add-cache-from-response [cache-name request response]
-  (println "adding cache: " js/request.url)
+  (println "adding cache: " (aget request "url"))
   (-> (.open js/caches cache-name)
       (.then (fn [cache]
                (.put cache request response)))))
@@ -41,9 +41,9 @@
         (.then
          (fn [response]
            (if (or (not response)
-                   (<= 400 js/response.status 599))
+                   (<= 400 (aget response "status") 599))
              (do
-               (println "not caching. this is a butt response for " js/request.url " | " js/response.status " | " js/response.type)
+               (println "not caching. this is a butt response for " (aget request "url") " | " (aget response "status") " | " (aget response "type"))
                response)
              (do
                (println "caching and responding...!")
@@ -62,7 +62,7 @@
                                    response)
                                  (do
                                    (println "fetch from server for: " (aget request "url"))
-                                   (fetch-and-cache js/event.request)))))))))
+                                   (fetch-and-cache (aget event "request"))))))))))
 #_(.addEventListener js/self "fetch" fetch-listen)
 
 (defn pop-notification [channel uid msg url relative-url]
@@ -75,7 +75,7 @@
        :icon "/images/speech-bubble-xxl.png"}))
 
 (defn on-push [event]
-  (let [{:keys [msg channel uid url relative-url]} (deserialize (.text js/event.data))]
+  (let [{:keys [msg channel uid url relative-url]} (deserialize (.text (aget event "data")))]
     (println "push received" msg)
     (.waitUntil
      event
@@ -89,7 +89,7 @@
 (.addEventListener js/self "push" on-push)
 
 (defn notification-click [event]
-  (.close js/event.notification)
+  (.close (aget event "notification"))
   (let [url (aget event "notification" "data" "url")
         relative-url (aget event "notification" "data" "relativeUrl")]
      (.waitUntil
