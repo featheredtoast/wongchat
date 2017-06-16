@@ -304,34 +304,34 @@
 (defn subscribe []
   (-> js/navigator.serviceWorker.ready
       (.then (fn [reg]
-               (-> (.subscribe js/reg.pushManager #js {:userVisibleOnly true
-                                                       :applicationServerKey (js/urlB64ToUint8Array (:push-key @app-state))})
-                   (.then (fn [subscription]
-                            (-> (js/fetch "/subscribe" #js {:method "POST"
-                                                            :credentials "include"
-                                                            :body (doto (js/FormData.)
-                                                                    (.append "subscription" (js/JSON.stringify subscription)))})
-                                (.then (fn [resp]
-                                         (swap! app-state assoc :subscribed? true)
-                                         (println "subscribed: " (js/JSON.stringify subscription)))))))
-                   (.catch (fn [e]
-                             (if (= "denied" js/Notification.permission)
-                               (println "permission denied")
-                               (println "something weird happened: " e)))))))))
+               (.subscribe js/reg.pushManager #js {:userVisibleOnly true
+                                                   :applicationServerKey (js/urlB64ToUint8Array (:push-key @app-state))})))
+      (.then
+       (fn [subscription]
+         (println "subscribed: " (js/JSON.stringify subscription))
+         (js/fetch "/subscribe" #js {:method "POST"
+                                     :credentials "include"
+                                     :body (doto (js/FormData.)
+                                             (.append "subscription" (js/JSON.stringify subscription)))})))
+      (.then (fn [resp]
+               (swap! app-state assoc :subscribed? true)))
+      (.catch (fn [e]
+                (if (= "denied" js/Notification.permission)
+                  (println "permission denied")
+                  (println "something weird happened: " e))))))
 
 (defn unsubscribe []
   (-> js/navigator.serviceWorker.ready
       (.then (fn [reg]
-               (-> (.getSubscription js/reg.pushManager)
-                   (.then (fn [subscription]
-                            (swap! app-state assoc :subscribed? false)
-                            (.unsubscribe subscription)
-                            (-> (js/fetch "/unsubscribe" #js {:method "POST"
-                                                              :credentials "include"
-                                                              :body (doto (js/FormData.)
-                                                                      (.append "subscription" (js/JSON.stringify subscription)))})
-                                (.then (fn [resp]
-                                         (println "unsubscribed: " (js/JSON.stringify subscription))))))))))))
+               (.getSubscription js/reg.pushManager)))
+      (.then (fn [subscription]
+               (swap! app-state assoc :subscribed? false)
+               (.unsubscribe subscription)
+               (println "unsubscribed: " (js/JSON.stringify subscription))
+               (js/fetch "/unsubscribe" #js {:method "POST"
+                                             :credentials "include"
+                                             :body (doto (js/FormData.)
+                                                     (.append "subscription" (js/JSON.stringify subscription)))})))))
 
 (defrecord EventHandler [hammer]
   component/Lifecycle
@@ -401,9 +401,9 @@
   (start [component]
     (-> js/navigator.serviceWorker.ready
         (.then (fn [reg]
-                 (-> (.getSubscription (aget reg "pushManager"))
-                     (.then (fn [subscription]
-                              (swap! app-state assoc :subscribed? (some? subscription))))))))
+                 (.getSubscription (aget reg "pushManager"))))
+        (.then (fn [subscription]
+                 (swap! app-state assoc :subscribed? (some? subscription)))))
     component)
   (stop [component]
     component))
