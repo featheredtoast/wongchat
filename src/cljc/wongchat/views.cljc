@@ -22,25 +22,36 @@
           state)}))
    :clj
    (do
-     (def app-messages (atom []))
-     (def app-typing (atom false))
-     (def app-user (atom ""))
-     (def app-input (atom ""))
-     (def app-connected (atom true))
-     (def app-active-channel (atom ""))
-     (def app-menu-state (atom {:px-open 0
-                                :max-px-width 201}))
-     (def network-connected (atom true))
-     (def app-subscribed (atom false))
-     (defn submit-message [] ())
-     (defn history-recall [] ())
-     (defn input-change [] ())
-     (defn open-menu [] ())
-     (defn close-menu [] ())
-     (defn subscribe [] ())
-     (defn unsubscribe [] ())
-     (defn swap-channel [channel] ())
-     (def input-change-mixin {})))
+     (declare main-app
+              app-messages
+              app-typing
+              app-user
+              app-input
+              app-connected
+              app-active-channel
+              app-menu-state
+              network-connected
+              app-subscribed
+              submit-message
+              history-recall
+              input-change
+              open-menu
+              close-menu
+              subscribe
+              unsubscribe
+              swap-channel
+              input-change-mixin)
+     (defn init-main-app [app-state]
+       (def app-messages (atom (:messages @app-state)))
+       (def app-typing (atom (:typing @app-state)))
+       (def app-user (atom (:user @app-state)))
+       (def app-input (atom ""))
+       (def app-connected (atom false))
+       (def app-active-channel (atom (:active-channel @app-state)))
+       (def app-menu-state (atom (:menu @app-state)))
+       (def network-connected (atom (:network-up? @app-state)))
+       (def app-subscribed (atom (:subscribed? @app-state)))
+       (rum/render-html (main-app)))))
 
 (defn print-message [message-key {:keys [uid msg] :as message}]
   [:div {:key message-key} (str uid ": " msg)])
@@ -141,17 +152,3 @@
       (user-input)
       [:span {:class "input-group-btn"}
        [:button.btn.btn-default {:on-click submit-message} "send"]]]]]])
-
-#?(:clj (defn init-main-app [app-state]
-          (def app-messages (atom (:messages @app-state)))
-          (def app-typing (atom (:typing @app-state)))
-          (def app-user (atom (:user @app-state)))
-          (def app-input (atom ""))
-          (def app-connected (atom false))
-          (def app-active-channel (atom (:active-channel @app-state)))
-          (def app-menu-state (atom (:menu @app-state)))
-          (def network-connected (atom (:network-up? @app-state)))
-          (def app-subscribed (atom (:subscribed? @app-state)))
-          (defn submit-message [] ())
-          (defn input-change [] ())
-          (rum/render-html (main-app))))
