@@ -1,6 +1,4 @@
 (ns wongchat.views
-  #?(:cljs (:require-macros
-            [cljs.core.async.macros :as asyncm :refer (go go-loop)]))
   (:require
    [rum.core :as rum]
    #?(:cljs [wongchat.app :as core :refer [app-state submit-message input-change history-recall set-cursor-position swap-channel open-menu close-menu subscribe unsubscribe]])))
