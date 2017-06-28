@@ -58,13 +58,13 @@
     [:span "multiple people are typing"]))
 
 (rum/defc print-typing-notification < rum/reactive [typists]
-  [:div {:class "typing-notification-container"}
+  [:div.typing-notification-container
    (when (< 0 (count typists))
      [:span {:class "small typing-notification"}
       (print-typing-notification-message typists)
-      [:div {:class "circle"}]
-      [:div {:class "circle circle2"}]
-      [:div {:class "circle circle3"}]])])
+      [:.circle]
+      [:.circle.circle2]
+      [:.circle.circle3]])])
 
 (rum/defc print-typists < rum/reactive []
   (let [typists (rum/react app-typing)]
@@ -73,7 +73,7 @@
 (rum/defc user-input < rum/reactive
   input-change-mixin
    []
-  [:input {:class "form-control user-input"
+  [:input.form-control.user-input {
            :placeholder "type a message..."
            :type "text" :ref "message"
            :on-change input-change
@@ -88,7 +88,7 @@
 
 (rum/defc channel-list < rum/reactive []
   (let [active-channel (rum/react app-active-channel)]
-      [:ul {:class "nav nav-stacked nav-pills"}
+      [:ul.nav.nav-stacked.nav-pills
        [:li (when (= active-channel "#general") {:class "active"}) [:a {:href "/chat/channel/general"} "#general"]]
        [:li (when (= active-channel "#random") {:class "active"}) [:a {:href "/chat/channel/random"} "#random"]]]))
 
@@ -96,10 +96,9 @@
   (let [{:keys [px-open max-px-width] :as menu-state} (rum/react app-menu-state)
         menu-offset (- px-open max-px-width )
         opacity-range (* 0.5 (/ px-open max-px-width))]
-    [:div {:class "visible-xs"}
-     [:div
-      {:class "main-menu panel"
-       :style {:left menu-offset}}
+    [:.visible-xs
+     [:.main-menu.panel
+      {:style {:left menu-offset}}
       (channel-list)]
      [:div
       (if (= 0 px-open)
@@ -112,38 +111,38 @@
   (let [network-up? (rum/react network-connected)]
     (if network-up?
       [:div ]
-      [:div {:class "alert alert-danger"} "No network connection"])))
+      [:.alert.alert-danger "No network connection"])))
 
 (rum/defc main-app < rum/reactive []
-  [:div {:class "app"}
+  [:.app
    (main-menu)
-   [:nav {:class "navbar navbar-default"}
-    [:div {:class "container-fluid"}
-     [:button {:type "button" :class "pull-left hidden-lg navbar-toggle"
+   [:nav.navbar.navbar-default
+    [:.container-fluid
+     [:button.pull-left.hidden-lg.navbar-toggle {:type "button"
              :on-click open-menu}
-      [:span {:class "icon-bar"}]
-      [:span {:class "icon-bar"}]
-      [:span {:class "icon-bar"}]]
-     [:span {:class "pull-right navbar-text"} [:span (rum/react app-user)]
+      [:span.icon-bar]
+      [:span.icon-bar]
+      [:span.icon-bar]]
+     [:span.pull-right.navbar-text [:span (rum/react app-user)]
       (if (rum/react app-subscribed)
-        [:button {:class "btn btn-default" :on-click unsubscribe} "Un-Subscribe!"]
-        [:button {:class "btn btn-default" :on-click subscribe} "Subscribe!"])
+        [:button.btn.btn-default {:on-click unsubscribe} "Un-Subscribe!"]
+        [:button.btn.btn-default {:on-click subscribe} "Subscribe!"])
       " " [:a {:href "/logout"} "logout"]]]]
-   [:div {:class "col-sm-2 hidden-xs"}
+   [:.col-sm-2.hidden-xs
     (channel-list)]
-   [:div {:class "col-sm-10"}
+   [:.col-sm-10
     (network-down-banner)
-    [:div {:class "panel panel-default"}
-     [:div {:class "panel-body"}
-      [:div {:class "col-sm-12"}
+    [:.panel.panel-default
+     [:.panel-body
+      [:.col-sm-12
        (print-messages)
        (print-typists)]]]
 
-    [:div {:class "col-lg-12"}
-     [:div {:class "input-group"}
+    [:.col-lg-12
+     [:.input-group
       (user-input)
       [:span {:class "input-group-btn"}
-       [:button {:class "btn btn-default" :on-click submit-message} "send"]]]]]])
+       [:button.btn.btn-default {:on-click submit-message} "send"]]]]]])
 
 #?(:clj (defn init-main-app [app-state]
           (def app-messages (atom (:messages @app-state)))
