@@ -3,17 +3,20 @@
    [rum.core :as rum]
    #?(:cljs [wongchat.app :as core :refer [app-state submit-message input-change history-recall set-cursor-position swap-channel open-menu close-menu subscribe unsubscribe]])))
 
+(defn init-vars [app-state]
+  (def app-messages (rum/cursor-in app-state [:messages]))
+  (def app-typing (rum/cursor-in app-state [:typing]))
+  (def app-input (rum/cursor-in app-state [:input]))
+  (def app-user (rum/cursor-in app-state [:user]))
+  (def app-connected (rum/cursor-in app-state [:connected]))
+  (def app-active-channel (rum/cursor-in app-state [:active-channel]))
+  (def app-menu-state (rum/cursor-in app-state [:menu]))
+  (def network-connected (rum/cursor-in app-state [:network-up?]))
+  (def app-subscribed (rum/cursor-in app-state [:subscribed?])))
+
 #?(:cljs
    (do
-     (def app-messages (rum/cursor-in app-state [:messages]))
-     (def app-typing (rum/cursor-in app-state [:typing]))
-     (def app-input (rum/cursor-in app-state [:input]))
-     (def app-user (rum/cursor-in app-state [:user]))
-     (def app-connected (rum/cursor-in app-state [:connected]))
-     (def app-active-channel (rum/cursor-in app-state [:active-channel]))
-     (def app-menu-state (rum/cursor-in app-state [:menu]))
-     (def network-connected (rum/cursor-in app-state [:network-up?]))
-     (def app-subscribed (rum/cursor-in app-state [:subscribed?]))
+     (init-vars app-state)
      (def input-change-mixin
        {:did-update
         (fn [state]
@@ -42,15 +45,7 @@
               swap-channel
               input-change-mixin)
      (defn init-main-app [app-state]
-       (def app-messages (atom (:messages @app-state)))
-       (def app-typing (atom (:typing @app-state)))
-       (def app-user (atom (:user @app-state)))
-       (def app-input (atom ""))
-       (def app-connected (atom false))
-       (def app-active-channel (atom (:active-channel @app-state)))
-       (def app-menu-state (atom (:menu @app-state)))
-       (def network-connected (atom (:network-up? @app-state)))
-       (def app-subscribed (atom (:subscribed? @app-state)))
+       (init-vars app-state)
        (rum/render-html (main-app)))))
 
 (defn print-message [message-key {:keys [uid msg] :as message}]
