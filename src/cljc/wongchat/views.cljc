@@ -64,7 +64,7 @@
 (rum/defc print-typing-notification < rum/reactive [typists]
   [:div.typing-notification-container
    (when (< 0 (count typists))
-     [:span {:class "small typing-notification"}
+     [:span.small.typing-notification
       (print-typing-notification-message typists)
       [:.circle]
       [:.circle.circle2]
