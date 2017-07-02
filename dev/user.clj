@@ -4,30 +4,35 @@
             [figwheel-sidecar.config :as fw-config]
             [figwheel-sidecar.system :as fw-sys]
             [clojure.tools.namespace.repl :refer [set-refresh-dirs]]
-            [reloaded.repl :refer [system init start stop go reset reset-all]]
+            [reloaded.repl :refer [system init]]
+            [ring.middleware.reload :refer [wrap-reload]]
+            [figwheel-sidecar.repl-api :as figwheel]
             [wongchat.config :refer [config]]))
 
-;; Let Clojure warn you when it needs to reflect on types, or when it does math
-;; on unboxed numbers. In both cases you should add type annotations to prevent
-;; degraded performance.
-(set! *warn-on-reflection* true)
-(set! *unchecked-math* :warn-on-boxed)
-
-(defn dev-system [config]
-  (merge
-   (wongchat.application/app-system config)
-   (component/system-map
+(defn dev-system []
+  (assoc (wongchat.application/app-system (config))
     :figwheel-system (fw-sys/figwheel-system (fw-config/fetch-config))
-    :css-watcher (fw-sys/css-watcher {:watch-paths ["resources/public/css"]}))))
+    :css-watcher (fw-sys/css-watcher {:watch-paths ["resources/public/css"]})))
 
 (set-refresh-dirs "src" "dev")
-(reloaded.repl/set-init! #(dev-system config))
+(reloaded.repl/set-init! #(dev-system))
 
-(defn reload []
-  (reset))
+(defn cljs-repl []
+  (fw-sys/cljs-repl (:figwheel-system system)))
 
+;; Set up aliases so they don't accidentally
+;; get scrubbed from the namespace declaration
+(def start reloaded.repl/start)
+(def stop reloaded.repl/stop)
+(def go reloaded.repl/go)
+(def reset reloaded.repl/reset)
+(def reset-all reloaded.repl/reset-all)
+
+;; deprecated, to be removed in Chestnut 1.0
 (defn run []
+  (println "(run) is deprecated, use (go)")
   (go))
 
 (defn browser-repl []
-  (fw-sys/cljs-repl (:figwheel-system system)))
+  (println "(browser-repl) is deprecated, use (cljs-repl)")
+  (cljs-repl))

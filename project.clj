@@ -7,42 +7,41 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.8.40" :scope "provided"]
                  [http-kit "2.2.0"]
-                 [ring "1.5.0"]
-                 [ring/ring-defaults "0.2.1"]
-                 [bk/ring-gzip "0.1.1"]
+                 [ring "1.6.1"]
+                 [ring/ring-defaults "0.3.0"]
+                 [bk/ring-gzip "0.2.1"]
                  [ring.middleware.logger "0.5.0"]
-                 [ring-middleware-format "0.7.0"]
-                 [compojure "1.5.1"]
+                 [ring-middleware-format "0.7.2"]
+                 [compojure "1.6.0"]
                  [environ "1.1.0"]
                  [rum "0.10.8"]
-                 [org.clojure/core.async "0.2.395"]
+                 [org.clojure/core.async "0.3.443"]
                  [com.taoensso/sente "1.11.0"]
-                 [org.clojure/tools.reader "1.0.0-alpha1"]
-                 [com.novemberain/langohr "3.6.1" :exclusions [com.fasterxml.jackson.core/jackson-core]]
+                 [org.clojure/tools.reader "1.0.0"]
+                 [com.novemberain/langohr "4.0.0" :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [com.cemerick/friend "0.2.3"]
-                 [qarth "0.1.2" :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [clj-http "2.2.0"]
-                 [ragtime "0.6.3"]
+                 [qarth "0.1.3" :exclusions [com.fasterxml.jackson.core/jackson-core]]
+                 [ragtime "0.7.1"]
                  [org.clojure/java.jdbc "0.6.1"]
                  [postgresql/postgresql "9.3-1102.jdbc41"]
                  [clj-redis-session "2.1.0"]
-                 [com.stuartsierra/component "0.3.1"]
+                 [com.stuartsierra/component "0.3.2"]
                  [org.danielsz/system "0.4.1-SNAPSHOT"]
                  [org.clojure/tools.namespace "0.2.11"]
-                 [im.chit/hara.io.watch "2.4.8"]
+                 [im.chit/hara.io.watch "2.5.10"]
                  [garden "1.3.2"]
                  [hiccup "1.0.5"]
                  [org.clojars.featheredtoast/reloaded-repl-cljs "0.1.0"]
                  [com.cognitect/transit-cljs "0.8.239"]
-                 [com.cognitect/transit-clj "0.8.297"]
+                 [com.cognitect/transit-clj "0.8.300"]
                  [clj-time "0.13.0"]
                  [cljsjs/hammer "2.0.4-5"]
-                 [org.bouncycastle/bcprov-jdk15on "1.56"]
+                 [org.bouncycastle/bcprov-jdk15on "1.57"]
                  [commons-codec/commons-codec "1.10"]
-                 [org.bitbucket.b_c/jose4j "0.5.5"]
+                 [org.bitbucket.b_c/jose4j "0.5.7"]
                  [clj-http "2.3.0"]
-                 [nl.martijndwars/web-push "2.0.0"]
-                 [bidi "2.0.16"]
+                 [nl.martijndwars/web-push "3.0.0"]
+                 [bidi "2.1.1"]
                  [kibu/pushy "0.3.7"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]
@@ -64,8 +63,7 @@
   ;; nREPL by default starts in the :main namespace, we want to start in `user`
   ;; because that's where our development helper functions like (run) and
   ;; (browser-repl) live.
-  :repl-options {:init-ns user
-                 :init (go)}
+  :repl-options {:init-ns user}
 
   :cljsbuild {:builds
               [{:id "app"
@@ -130,10 +128,10 @@
   :doo {:build "test"}
 
   :profiles {:dev
-             {:dependencies [[figwheel "0.5.8"]
-                             [figwheel-sidecar "0.5.8"]
-                             [com.cemerick/piggieback "0.2.1"]
-                             [org.clojure/tools.nrepl "0.2.12"]
+             {:dependencies [[figwheel "0.5.11"]
+                             [figwheel-sidecar "0.5.11"]
+                             [com.cemerick/piggieback "0.2.2"]
+                             [org.clojure/tools.nrepl "0.2.13"]
                              [lein-doo "0.1.7"]
                              [reloaded.repl "0.2.3"]]
 

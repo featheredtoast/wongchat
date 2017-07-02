@@ -20,7 +20,7 @@
 (defn get-env-map []
   (into {} (filter (fn [kv] (some? (second kv))) (zipmap (keys defaults) (map env (keys defaults))))))
 
-(def config
+(defn config []
   (merge defaults
          (try (clojure.edn/read-string (slurp (clojure.java.io/resource "config.edn"))) (catch Throwable e {}))
          (get-env-map)))

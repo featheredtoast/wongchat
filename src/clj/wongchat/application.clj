@@ -60,4 +60,4 @@
             [:handler]))))
 
 (defn -main [& [port]]
-  (component/start (app-system config)))
+  (component/start (app-system (config))))
