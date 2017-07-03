@@ -135,7 +135,7 @@
                              [lein-doo "0.1.7"]
                              [reloaded.repl "0.2.3"]]
 
-              :plugins [[lein-figwheel "0.5.8"]
+              :plugins [[lein-figwheel "0.5.11"]
                         [lein-doo "0.1.7"]]
               :source-paths ["dev"]
               :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}
