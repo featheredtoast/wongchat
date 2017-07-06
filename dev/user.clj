@@ -11,7 +11,9 @@
             [wongchat.config :refer [config]]))
 
 (defn get-dev-middleware [redis-url]
-  (conj (wongchat.application/get-middleware redis-url) [wrap-file "public" {:allow-symlinks? true}]))
+  (-> (wongchat.application/get-middleware redis-url)
+      (conj [wrap-file "public" {:allow-symlinks? true}])
+      (conj wrap-reload)))
 
 (defn dev-system []
   (let [config (config)]
