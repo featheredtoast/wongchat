@@ -3,6 +3,7 @@
    [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
    [ring.middleware.gzip :refer [wrap-gzip]]
    [ring.middleware.logger :refer [wrap-with-logger]]
+   [ring.middleware.file :refer [wrap-file]]
    [com.stuartsierra.component :as component]
    [system.components.http-kit :refer [new-web-server]]
    [system.components.sente :refer [new-channel-sockets sente-routes]]
@@ -21,14 +22,18 @@
 
 (defn find-static-resources [])
 
-(defn get-site-defaults [redis-conn dev?]
-  (let [site-defaults
-        (-> site-defaults
-            (assoc :session {:store (redis-session/redis-store redis-conn)})
-            (assoc-in [:security :anti-forgery] false))]
+(defn get-site-defaults [redis-conn]
+  (-> site-defaults
+      (assoc :session {:store (redis-session/redis-store redis-conn)})
+      (assoc-in [:security :anti-forgery] false)))
+
+(defn get-middleware [redis-conn dev?]
+  (let [middleware [[wrap-defaults (get-site-defaults redis-conn)]
+                    wrap-with-logger
+                    wrap-gzip]]
     (if dev?
-      (assoc site-defaults :static {:files "public"})
-      site-defaults)))
+      (conj middleware [wrap-file "public" {:allow-symlinks? true}])
+      middleware)))
 
 (defn app-system [{:keys [rabbitmq-bigwig-rx-url
                           amqp-user amqp-pass amqp-host amqp-port
@@ -59,9 +64,7 @@
                       [:sente])
      :routes (new-endpoint routes)
      :middleware (new-middleware
-                  {:middleware [[wrap-defaults (get-site-defaults redis-conn development-mode)]
-                                wrap-with-logger
-                                wrap-gzip]})
+                  {:middleware (get-middleware redis-conn development-mode)})
      :handler (component/using
                (new-handler)
                [:sente-endpoint :routes :middleware])
