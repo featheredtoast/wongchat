@@ -19,9 +19,21 @@
    [wongchat.auth :as auth])
   (:gen-class))
 
+(defn find-static-resources [])
+
+(defn get-site-defaults [redis-conn dev?]
+  (let [site-defaults
+        (-> site-defaults
+            (assoc :session {:store (redis-session/redis-store redis-conn)})
+            (assoc-in [:security :anti-forgery] false))]
+    (if dev?
+      (assoc site-defaults :static {:files "public"})
+      site-defaults)))
+
 (defn app-system [{:keys [rabbitmq-bigwig-rx-url
                           amqp-user amqp-pass amqp-host amqp-port
-                          base-url]
+                          base-url
+                          development-mode]
                    :as config}]
   (let [redis-conn {:spec {:uri (:redis-url config)}}
         port (Integer. (:port config))
@@ -47,9 +59,7 @@
                       [:sente])
      :routes (new-endpoint routes)
      :middleware (new-middleware
-                  {:middleware [[wrap-defaults (-> site-defaults
-                                                   (assoc :session {:store (redis-session/redis-store redis-conn)})
-                                                   (assoc-in [:security :anti-forgery] false))]
+                  {:middleware [[wrap-defaults (get-site-defaults redis-conn development-mode)]
                                 wrap-with-logger
                                 wrap-gzip]})
      :handler (component/using

@@ -3,18 +3,16 @@
             [com.stuartsierra.component :as component]
             [figwheel-sidecar.config :as fw-config]
             [figwheel-sidecar.system :as fw-sys]
-            [clojure.tools.namespace.repl :refer [set-refresh-dirs]]
             [reloaded.repl :refer [system init]]
             [ring.middleware.reload :refer [wrap-reload]]
             [figwheel-sidecar.repl-api :as figwheel]
             [wongchat.config :refer [config]]))
 
 (defn dev-system []
-  (assoc (wongchat.application/app-system (config))
+  (assoc (wongchat.application/app-system (assoc (config) :development-mode true))
     :figwheel-system (fw-sys/figwheel-system (fw-config/fetch-config))
     :css-watcher (fw-sys/css-watcher {:watch-paths ["resources/public/css"]})))
 
-(set-refresh-dirs "src" "dev")
 (reloaded.repl/set-init! #(dev-system))
 
 (defn cljs-repl []

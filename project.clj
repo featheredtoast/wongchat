@@ -53,7 +53,7 @@
 
   :test-paths ["test/clj" "test/cljc"]
 
-  :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js" "resources/public/sw.js"]
+  :clean-targets ^{:protect false} [:target-path :compile-path "public/js" "public/sw.js" "resources/public/js" "resources/public/sw.js"]
 
   :uberjar-name "wongchat.jar"
 
@@ -72,20 +72,20 @@
                            :websocket-host :js-client-host}
                 :compiler {:main cljs.user
                            :asset-path "/js/compiled/out"
-                           :output-to "resources/public/js/compiled/wongchat.js"
-                           :output-dir "resources/public/js/compiled/out"
+                           :output-to "public/js/compiled/wongchat.js"
+                           :output-dir "public/js/compiled/out"
                            :source-map-timestamp true}}
                {:id "sw"
                 :source-paths ["src/cljs" "src/cljc"]
                 :compiler {:main wongchat.sw
                            :asset-path "/js/compiled/out"
-                           :output-to "resources/public/sw.js"
-                           :output-dir "resources/public/js/compiled/sw"
+                           :output-to "public/sw.js"
+                           :output-dir "public/js/compiled/sw"
                            :optimizations :advanced
                            :source-map-timestamp true}}
                {:id "test"
                 :source-paths ["src/cljs" "test/cljs" "src/cljc" "test/cljc"]
-                :compiler {:output-to "resources/public/js/compiled/testable.js"
+                :compiler {:output-to "public/js/compiled/testable.js"
                            :main wongchat.test-runner
                            :optimizations :none}}
 
@@ -94,10 +94,19 @@
                 :jar true
                 :compiler {:main wongchat.core
                            :output-to "resources/public/js/compiled/wongchat.js"
-                           :output-dir "target"
+                           :output-dir "target/min"
                            :source-map-timestamp true
                            :optimizations :advanced
-                           :pretty-print false}}]}
+                           :pretty-print false}}
+
+               {:id "sw-uberjar"
+                :source-paths ["src/cljs" "src/cljc"]
+                :compiler {:main wongchat.sw
+                           :asset-path "/js/compiled/out"
+                           :output-to "resources/public/sw.js"
+                           :output-dir "target/sw-uberjar"
+                           :optimizations :advanced
+                           :source-map-timestamp true}}]}
 
   ;; When running figwheel from nREPL, figwheel will read this configuration
   ;; stanza, but it will read it without passing through leiningen's profile
@@ -143,7 +152,7 @@
              :uberjar
              {:source-paths ^:replace ["src/clj" "src/cljc"]
               :prep-tasks ["compile" ["cljsbuild" "once" "min"]
-                           "compile" ["cljsbuild" "once" "sw"]]
+                           "compile" ["cljsbuild" "once" "sw-uberjar"]]
               :hooks []
               :omit-source true
               :aot :all}})
