@@ -12,9 +12,9 @@
 (def db-config
   {:classname "org.postgresql.Driver"
    :subprotocol "postgresql"
-   :subname (:db-host config)
-   :user (:db-user config)
-   :password (:db-pass config)})
+   :subname (:db-host (config))
+   :user (:db-user (config))
+   :password (:db-pass (config))})
 
 (defn get-recent-messages
   ([]

@@ -53,7 +53,7 @@
       (db/insert-message uid msg channel)
       (let [relative-url (bidi/path-for router/routes :chat :channel (clojure.string/replace channel "#" ""))]
         (do-web-push (-> (assoc message :uid uid)
-                         (assoc :url (str (:base-url config) relative-url))
+                         (assoc :url (str (:base-url (config)) relative-url))
                          (assoc :relative-url relative-url))))
       (publish rabbit-data (assoc message :uid uid) id)))
 

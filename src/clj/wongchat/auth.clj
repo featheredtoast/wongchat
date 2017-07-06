@@ -10,9 +10,9 @@
     (assoc id :roles [:user])))
 
 (def conf {:type :google
-           :callback (:oauth-callback config)
-           :api-key (:oauth-api-key config)
-           :api-secret (:oauth-api-secret config)})
+           :callback (:oauth-callback (config))
+           :api-key (:oauth-api-key (config))
+           :api-secret (:oauth-api-secret (config))})
 
 (def service (oauth/build conf))
 
@@ -21,7 +21,7 @@
    {:service service
     :login-failure-handler
     (fn [_] (ring.util.response/redirect
-             (str (:base-url config) "/login?exception=true")))}))
+             (str (:base-url (config)) "/login?exception=true")))}))
 
 (defn get-user-id [req]
   (let [id (-> req (qarth.friend/requestor service) oauth/id)

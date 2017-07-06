@@ -29,7 +29,7 @@
    :network-up? true
    :subscribed? false
    :push-key (db/get-public-server-credentials)
-   :base-url (:base-url config)})
+   :base-url (:base-url (config))})
 
 (defn index [req]
   {:status 200
@@ -69,7 +69,7 @@
       :body "ok"})))
 
 (defn logout [req]
-  (friend/logout* (ring.util.response/redirect (str (:base-url config) "/"))))
+  (friend/logout* (ring.util.response/redirect (str (:base-url (config)) "/"))))
 
 (def route-handlers
   {:index index
