@@ -3,7 +3,6 @@
    [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
    [ring.middleware.gzip :refer [wrap-gzip]]
    [ring.middleware.logger :refer [wrap-with-logger]]
-   [ring.middleware.file :refer [wrap-file]]
    [com.stuartsierra.component :as component]
    [system.components.http-kit :refer [new-web-server]]
    [system.components.sente :refer [new-channel-sockets sente-routes]]
@@ -27,21 +26,18 @@
       (assoc :session {:store (redis-session/redis-store redis-conn)})
       (assoc-in [:security :anti-forgery] false)))
 
-(defn get-middleware [redis-conn dev?]
-  (let [middleware [[wrap-defaults (get-site-defaults redis-conn)]
-                    wrap-with-logger
-                    wrap-gzip]]
-    (if dev?
-      (conj middleware [wrap-file "public" {:allow-symlinks? true}])
-      middleware)))
+(defn get-middleware [redis-url]
+  (let [redis-conn {:spec {:uri redis-url}}]
+    [[wrap-defaults (get-site-defaults redis-conn)]
+     wrap-with-logger
+     wrap-gzip]))
 
 (defn app-system [{:keys [rabbitmq-bigwig-rx-url
                           amqp-user amqp-pass amqp-host amqp-port
                           base-url
-                          development-mode]
+                          redis-url]
                    :as config}]
-  (let [redis-conn {:spec {:uri (:redis-url config)}}
-        port (Integer. (:port config))
+  (let [port (Integer. (:port config))
         rabbitmq-uri (or rabbitmq-bigwig-rx-url
                          (str "amqp://" amqp-user ":"
                               amqp-pass "@" amqp-host ":" amqp-port))]
@@ -64,7 +60,7 @@
                       [:sente])
      :routes (new-endpoint routes)
      :middleware (new-middleware
-                  {:middleware (get-middleware redis-conn development-mode)})
+                  {:middleware (get-middleware redis-url)})
      :handler (component/using
                (new-handler)
                [:sente-endpoint :routes :middleware])

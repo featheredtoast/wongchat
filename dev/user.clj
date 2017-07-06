@@ -5,13 +5,21 @@
             [figwheel-sidecar.system :as fw-sys]
             [reloaded.repl :refer [system init]]
             [ring.middleware.reload :refer [wrap-reload]]
+            [ring.middleware.file :refer [wrap-file]]
+            [system.components.middleware :refer [new-middleware]]
             [figwheel-sidecar.repl-api :as figwheel]
             [wongchat.config :refer [config]]))
 
+(defn get-dev-middleware [redis-url]
+  (conj (wongchat.application/get-middleware redis-url) [wrap-file "public" {:allow-symlinks? true}]))
+
 (defn dev-system []
-  (assoc (wongchat.application/app-system (assoc (config) :development-mode true))
-    :figwheel-system (fw-sys/figwheel-system (fw-config/fetch-config))
-    :css-watcher (fw-sys/css-watcher {:watch-paths ["resources/public/css"]})))
+  (let [config (config)]
+    (assoc (wongchat.application/app-system config)
+           :middleware (new-middleware
+                        {:middleware (get-dev-middleware (:redis-url config))})
+           :figwheel-system (fw-sys/figwheel-system (fw-config/fetch-config))
+           :css-watcher (fw-sys/css-watcher {:watch-paths ["resources/public/css"]}))))
 
 (reloaded.repl/set-init! #(dev-system))
 
