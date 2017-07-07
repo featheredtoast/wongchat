@@ -32,6 +32,7 @@
    :base-url (:base-url (config))})
 
 (defn index [req]
+  (println "hihihihihi")
   {:status 200
    :headers {"Content-Type" "text/html; charset=utf-8"}
    :body (html/login)})

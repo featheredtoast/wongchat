@@ -10,10 +10,25 @@
             [figwheel-sidecar.repl-api :as figwheel]
             [wongchat.config :refer [config]]))
 
+;; Set up aliases so they don't accidentally
+;; get scrubbed from the namespace declaration
+(def start reloaded.repl/start)
+(def stop reloaded.repl/stop)
+(def go reloaded.repl/go)
+(def reset reloaded.repl/reset)
+(def reset-all reloaded.repl/reset-all)
+
+(defn handle-reload [req]
+  (println "calling reset..")
+  (reset)
+  (println "reset called!")
+  ((:handler (:handler reloaded.repl/system)) req))
+
 (defn get-dev-middleware [redis-url]
-  (-> (wongchat.application/get-middleware redis-url)
-      (conj [wrap-file "public" {:allow-symlinks? true}])
-      (conj wrap-reload)))
+  (->
+   [[wrap-reload #'user/handle-reload]]
+   (concat (wongchat.application/get-middleware redis-url))
+   (conj [wrap-file "public" {:allow-symlinks? true}])))
 
 (defn dev-system []
   (let [config (config)]
@@ -27,14 +42,6 @@
 
 (defn cljs-repl []
   (fw-sys/cljs-repl (:figwheel-system system)))
-
-;; Set up aliases so they don't accidentally
-;; get scrubbed from the namespace declaration
-(def start reloaded.repl/start)
-(def stop reloaded.repl/stop)
-(def go reloaded.repl/go)
-(def reset reloaded.repl/reset)
-(def reset-all reloaded.repl/reset-all)
 
 ;; deprecated, to be removed in Chestnut 1.0
 (defn run []
