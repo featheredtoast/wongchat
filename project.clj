@@ -39,7 +39,7 @@
                  [org.bouncycastle/bcprov-jdk15on "1.57"]
                  [commons-codec/commons-codec "1.10"]
                  [org.bitbucket.b_c/jose4j "0.6.0"]
-                 [clj-http "3.6.1" :exclusions [commons-logging]]
+                 [clj-http "3.6.1"]
                  [nl.martijndwars/web-push "3.0.0" :exclusions [commons-logging org.apache.httpcomponents/httpclient]]
                  [bidi "2.1.2"]
                  [kibu/pushy "0.3.7"]]
