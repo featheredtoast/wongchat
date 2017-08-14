@@ -5,8 +5,8 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.8.40" :scope "provided"]
-                 [http-kit "2.2.0"]
+                 [org.clojure/clojurescript "1.9.854" :scope "provided"]
+                 [com.google.guava/guava "23.0"]
                  [ring "1.6.2"]
                  [ring/ring-defaults "0.3.1"]
                  [bk/ring-gzip "0.2.1"]
@@ -43,7 +43,7 @@
                  [bidi "2.1.2"]
                  [kibu/pushy "0.3.7"]]
 
-  :plugins [[lein-cljsbuild "1.1.5"]
+  :plugins [[lein-cljsbuild "1.1.7"]
             [lein-environ "1.1.0"]]
 
   :min-lein-version "2.6.1"
