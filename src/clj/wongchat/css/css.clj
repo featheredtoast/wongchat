@@ -11,8 +11,7 @@
     {:output-to "resources/public/css/style.css"}
     typing-keyframe
     [:body
-     {:font-family "sans-serif"
-      }]
+     {:font-family "sans-serif"}]
     [:.typing-notification-container
      {:display "inline-block"
       :height "10px"}]
