@@ -142,7 +142,7 @@
                              [org.clojure/tools.nrepl "0.2.13"]
                              [lein-doo "0.1.7"]
                              [reloaded.repl "0.2.3"]
-                             [featheredtoast/repl-watch "0.2.1"]]
+                             [featheredtoast/repl-watcher "0.2.1"]]
 
               :plugins [[lein-figwheel "0.5.12"]
                         [lein-doo "0.1.7"]]
