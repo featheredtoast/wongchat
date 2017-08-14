@@ -1,14 +1,14 @@
-(defproject wongchat "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+(defproject featheredtoast/wongchat "0.1.0-SNAPSHOT"
+  :description "A chat app"
+  :url "https://github.com/featheredtoast/wongchat"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.8.40" :scope "provided"]
+                 [org.clojure/clojurescript "1.9.854" :scope "provided"]
                  [http-kit "2.2.0"]
-                 [ring "1.6.1"]
-                 [ring/ring-defaults "0.3.0"]
+                 [ring "1.6.2"]
+                 [ring/ring-defaults "0.3.1"]
                  [bk/ring-gzip "0.2.1"]
                  [ring.middleware.logger "0.5.0"]
                  [ring-middleware-format "0.7.2"]
@@ -31,7 +31,6 @@
                  [im.chit/hara.io.watch "2.5.10"]
                  [garden "1.3.2"]
                  [hiccup "1.0.5"]
-                 [org.clojars.featheredtoast/reloaded-repl-cljs "0.1.0"]
                  [com.cognitect/transit-cljs "0.8.239"]
                  [com.cognitect/transit-clj "0.8.300"]
                  [clj-time "0.13.0"]
@@ -53,7 +52,7 @@
 
   :test-paths ["test/clj" "test/cljc"]
 
-  :clean-targets ^{:protect false} [:target-path :compile-path "public/js" "public/sw.js" "resources/public/js" "resources/public/sw.js"]
+  :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js" "resources/public/sw.js" "dev-target"]
 
   :uberjar-name "wongchat.jar"
 
@@ -68,24 +67,24 @@
   :cljsbuild {:builds
               [{:id "app"
                 :source-paths ["src/cljs" "src/cljc" "dev"]
-                :figwheel {:on-jsload "org.clojars.featheredtoast.reloaded-repl-cljs/go"
+                :figwheel {:on-jsload "wongchat.system/reset"
                            :websocket-host :js-client-host}
                 :compiler {:main cljs.user
                            :asset-path "/js/compiled/out"
-                           :output-to "public/js/compiled/wongchat.js"
-                           :output-dir "public/js/compiled/out"
+                           :output-to "dev-target/js/compiled/wongchat.js"
+                           :output-dir "dev-target/js/compiled/out"
                            :source-map-timestamp true}}
                {:id "sw"
                 :source-paths ["src/cljs" "src/cljc"]
                 :compiler {:main wongchat.sw
                            :asset-path "/js/compiled/out"
-                           :output-to "public/sw.js"
-                           :output-dir "public/js/compiled/sw"
+                           :output-to "dev-target/sw.js"
+                           :output-dir "dev-target/js/compiled/sw"
                            :optimizations :advanced
                            :source-map-timestamp true}}
                {:id "test"
                 :source-paths ["src/cljs" "test/cljs" "src/cljc" "test/cljc"]
-                :compiler {:output-to "public/js/compiled/testable.js"
+                :compiler {:output-to "dev-target/js/compiled/testable.js"
                            :main wongchat.test-runner
                            :optimizations :none}}
 
@@ -137,14 +136,15 @@
   :doo {:build "test"}
 
   :profiles {:dev
-             {:dependencies [[figwheel "0.5.11"]
-                             [figwheel-sidecar "0.5.11"]
+             {:dependencies [[figwheel "0.5.12"]
+                             [figwheel-sidecar "0.5.12"]
                              [com.cemerick/piggieback "0.2.2"]
                              [org.clojure/tools.nrepl "0.2.13"]
                              [lein-doo "0.1.7"]
-                             [reloaded.repl "0.2.3"]]
+                             [reloaded.repl "0.2.3"]
+                             [featheredtoast/repl-watch "0.2.1"]]
 
-              :plugins [[lein-figwheel "0.5.11"]
+              :plugins [[lein-figwheel "0.5.12"]
                         [lein-doo "0.1.7"]]
               :source-paths ["dev"]
               :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}

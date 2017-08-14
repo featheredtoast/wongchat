@@ -62,7 +62,8 @@
   }
   return outputArray;
 }"]
-        [:script {:src "/js/compiled/wongchat.js"}]]]
+        [:script {:src "/js/compiled/wongchat.js"}]
+        [:script {:type "text/javascript"} "testnut.system.go();"]]]
       (add-headers basic-headers)
       (add-headers bootstrap-headers)
       html))
