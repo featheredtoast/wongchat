@@ -19,8 +19,6 @@
    [wongchat.auth :as auth])
   (:gen-class))
 
-(defn find-static-resources [])
-
 (defn get-site-defaults [redis-conn]
   (-> site-defaults
       (assoc :session {:store (redis-session/redis-store redis-conn)})
