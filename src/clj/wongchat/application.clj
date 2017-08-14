@@ -66,4 +66,5 @@
             [:handler]))))
 
 (defn -main [& [port]]
+  (db/migrate)
   (component/start (app-system (config))))

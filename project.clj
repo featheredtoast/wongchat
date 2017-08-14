@@ -153,7 +153,6 @@
               :prep-tasks ["compile"
                            ["cljsbuild" "once" "min"]
                            ["cljsbuild" "once" "sw-uberjar"]
-                           ["run" "-m" "wongchat.db/migrate"]
                            ["run" "-m" "garden-watcher.main" "wongchat.styles"]]
               :hooks []
               :omit-source true
