@@ -93,10 +93,7 @@
   (defmethod event-msg-handler :chsk/state
     [_ {:as ev-msg :keys [?data]}]
     (when-let [new-state (second ?data)]
-      (swap! app-state assoc :connected (:open? new-state))
-      (if (:first-open? new-state)
-        (println "Channel socket successfully established!")
-        (println "Channel socket state change: %s" ?data))))
+      (swap! app-state assoc :connected (:open? new-state))))
 
   (defmethod event-msg-handler :chsk/recv
     [_ {:as ev-msg :keys [?data]}]
