@@ -18,6 +18,11 @@
   [[:meta {:charset "UTF-8"}]
    [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]])
 
+(def app-css
+  [[:link {:href "/css/style.css"
+            :rel "stylesheet"
+            :type "text/css"}]])
+
 (defn add-headers [html headers]
   (-> (zip/vector-zip html)
       zip/down
@@ -40,9 +45,7 @@
 (defn chat [state]
   (-> [:html
        [:head
-        [:link {:href "/css/style.css"
-                :rel "stylesheet"
-                :type "text/css"}]
+        
         [:link {:rel "manifest"
                 :href "/manifest.json"}]]
        [:body
@@ -66,4 +69,5 @@
         [:script {:type "text/javascript"} "wongchat.system.go();"]]]
       (add-headers basic-headers)
       (add-headers bootstrap-headers)
+      (add-headers app-css)
       html))
