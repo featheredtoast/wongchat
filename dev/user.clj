@@ -4,7 +4,6 @@
             [figwheel-sidecar.config :as fw-config]
             [figwheel-sidecar.system :as fw-sys]
             [reloaded.repl :refer [system init]]
-            [ring.middleware.reload :refer [wrap-reload]]
             [ring.middleware.file :refer [wrap-file]]
             [system.components.middleware :refer [new-middleware]]
             [figwheel-sidecar.repl-api :as figwheel]
@@ -12,8 +11,7 @@
 
 (defn get-dev-middleware [redis-url]
   (-> (wongchat.application/get-middleware redis-url)
-      (conj [wrap-file "public" {:allow-symlinks? true}])
-      (conj wrap-reload)))
+      (conj [wrap-file "dev-target" {:allow-symlinks? true}])))
 
 (defn dev-system []
   (let [config (config)]

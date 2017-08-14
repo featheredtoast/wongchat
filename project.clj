@@ -16,7 +16,7 @@
                  [environ "1.1.0"]
                  [rum "0.10.8"]
                  [org.clojure/core.async "0.3.443"]
-                 [com.taoensso/sente "1.11.0" :exclusions [org.clojure/core.cache]]
+                 [com.taoensso/sente "1.11.0"]
                  [com.novemberain/langohr "4.0.0" :exclusions [clj-http slingshot com.fasterxml.jackson.core/jackson-core]]
                  [com.cemerick/friend "0.2.3" :exclusions [org.clojure/core.cache]]
                  [qarth "0.1.3" :exclusions [slingshot com.fasterxml.jackson.core/jackson-core]]
