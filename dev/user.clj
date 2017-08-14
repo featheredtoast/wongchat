@@ -9,7 +9,8 @@
             [figwheel-sidecar.repl-api :as figwheel]
             [garden-watcher.core :refer [new-garden-watcher]]
             [wongchat.config :refer [config]]
-            [repl-watcher.core :refer [repl-watcher]]))
+            [repl-watcher.core :refer [repl-watcher]]
+            [wongchat.db :refer [migrate rollback]]))
 
 (defn get-dev-middleware [redis-url]
   (-> (wongchat.application/get-middleware redis-url)

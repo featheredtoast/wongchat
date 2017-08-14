@@ -43,7 +43,6 @@
                               amqp-pass "@" amqp-host ":" amqp-port))]
     (println "amqp uri " rabbitmq-uri)
     (component/system-map
-     :db-migrate (db/new-migrate)
      :rabbit-mq (new-rabbit-mq rabbitmq-uri)
      :sente (component/using
              (new-channel-sockets

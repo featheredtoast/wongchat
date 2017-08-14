@@ -77,25 +77,12 @@
 (defn get-private-server-credentials []
   (:private (get-server-credentials)))
 
-(defn up []
+(defn migrate []
   (ragtime.repl/migrate {:datastore
                            (ragtime.jdbc/sql-database db-config)
                          :migrations (ragtime.jdbc/load-resources "migrations")}))
 
-(defn down []
+(defn rollback []
   (ragtime.repl/rollback {:datastore
                           (ragtime.jdbc/sql-database db-config)
                           :migrations (ragtime.jdbc/load-resources "migrations")}))
-
-(defrecord Migrate []
-  component/Lifecycle
-  (start [component]
-    (println "migrating...")
-    (try (up)
-         (catch Exception e nil))
-    component)
-  (stop [component]
-    component))
-
-(defn new-migrate []
-  (map->Migrate {}))
