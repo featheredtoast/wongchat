@@ -7,6 +7,7 @@
             [ring.middleware.file :refer [wrap-file]]
             [system.components.middleware :refer [new-middleware]]
             [figwheel-sidecar.repl-api :as figwheel]
+            [garden-watcher.core :refer [new-garden-watcher]]
             [wongchat.config :refer [config]]))
 
 (defn get-dev-middleware [redis-url]
@@ -19,7 +20,8 @@
            :middleware (new-middleware
                         {:middleware (get-dev-middleware (:redis-url config))})
            :figwheel-system (fw-sys/figwheel-system (fw-config/fetch-config))
-           :css-watcher (fw-sys/css-watcher {:watch-paths ["resources/public/css"]}))))
+           :css-watcher (fw-sys/css-watcher {:watch-paths ["resources/public/css"]})
+           :garden-watcher (new-garden-watcher ['wongchat.styles]))))
 
 (reloaded.repl/set-init! #(dev-system))
 

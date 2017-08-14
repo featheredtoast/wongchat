@@ -28,6 +28,7 @@
                  [org.danielsz/system "0.4.1-SNAPSHOT"]
                  [im.chit/hara.io.watch "2.5.10"]
                  [garden "1.3.2"]
+                 [lambdaisland/garden-watcher "0.3.2"]
                  [hiccup "1.0.5"]
                  [com.cognitect/transit-cljs "0.8.239"]
                  [com.cognitect/transit-clj "0.8.300"]
@@ -149,8 +150,10 @@
 
              :uberjar
              {:source-paths ^:replace ["src/clj" "src/cljc"]
-              :prep-tasks ["compile" ["cljsbuild" "once" "min"]
-                           "compile" ["cljsbuild" "once" "sw-uberjar"]]
+              :prep-tasks ["compile"
+                           ["cljsbuild" "once" "min"]
+                           ["cljsbuild" "once" "sw-uberjar"]
+                           ["run" "-m" "garden-watcher.main" "wongchat.styles"]]
               :hooks []
               :omit-source true
               :aot :all}})
