@@ -8,7 +8,8 @@
             [system.components.middleware :refer [new-middleware]]
             [figwheel-sidecar.repl-api :as figwheel]
             [garden-watcher.core :refer [new-garden-watcher]]
-            [wongchat.config :refer [config]]))
+            [wongchat.config :refer [config]]
+            [repl-watcher.core :refer [repl-watcher]]))
 
 (defn get-dev-middleware [redis-url]
   (-> (wongchat.application/get-middleware redis-url)
@@ -21,7 +22,8 @@
                         {:middleware (get-dev-middleware (:redis-url config))})
            :figwheel-system (fw-sys/figwheel-system (fw-config/fetch-config))
            :css-watcher (fw-sys/css-watcher {:watch-paths ["resources/public/css"]})
-           :garden-watcher (new-garden-watcher ['wongchat.styles]))))
+           :garden-watcher (new-garden-watcher ['wongchat.styles])
+           :auto-reload (repl-watcher ["src/clj"] "(reloaded.repl/reset)"))))
 
 (reloaded.repl/set-init! #(dev-system))
 
