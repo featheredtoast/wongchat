@@ -14,7 +14,7 @@
    [clj-redis-session.core :as redis-session]
    [wongchat.config :refer [config]]
    [wongchat.db :as db]
-   [wongchat.routes :refer [get-routes]]
+   [wongchat.routes :refer [routes]]
    [wongchat.events :as events]
    [wongchat.auth :as auth])
   (:gen-class))
@@ -58,7 +58,7 @@
      :sente-endpoint (component/using
                       (new-endpoint sente-routes)
                       [:sente])
-     :routes (new-endpoint get-routes)
+     :routes (new-endpoint routes)
      :middleware (new-middleware
                   {:middleware (get-middleware redis-url)})
      :handler (component/using

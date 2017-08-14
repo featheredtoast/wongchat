@@ -79,7 +79,7 @@
    :unsubscribe unsubscribe
    :logout logout})
 
-(def routes
+(defn routes [_]
   (let [basic-routes
         (bidi.ring/make-handler router/routes
                                 route-handlers)]
@@ -87,6 +87,3 @@
         (friend/authenticate
          {:workflows [auth/workflow] :auth-url "/login"
           :credential-fn auth/credential-fn}))))
-
-(defn get-routes [_]
-  #'routes)
