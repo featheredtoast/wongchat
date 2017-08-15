@@ -30,11 +30,10 @@
                   channel])))))
 
 (defn get-user-messages [uid]
-  (reverse
-   (map :msg
-        (jdbc/query db-config
-                    ["select uid, msg from messages where uid = ? order by id DESC LIMIT 10;"
-                     uid]))))
+  (map :msg
+       (jdbc/query db-config
+                   ["select uid, msg from messages where uid = ? order by id DESC LIMIT 10;"
+                    uid])))
 
 (defn insert-message
   ([uid msg]

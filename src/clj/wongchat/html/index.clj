@@ -45,7 +45,6 @@
 (defn chat [state]
   (-> [:html
        [:head
-        
         [:link {:rel "manifest"
                 :href "/manifest.json"}]]
        [:body
