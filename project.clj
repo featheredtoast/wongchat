@@ -91,7 +91,7 @@
                {:id "min"
                 :source-paths ["src/cljs" "src/cljc"]
                 :jar true
-                :compiler {:main wongchat.core
+                :compiler {:main wongchat.system
                            :output-to "resources/public/js/compiled/wongchat.js"
                            :output-dir "target/min"
                            :source-map-timestamp true

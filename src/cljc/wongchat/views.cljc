@@ -1,7 +1,7 @@
 (ns wongchat.views
   (:require
    [rum.core :as rum]
-   #?(:cljs [wongchat.app :as core :refer [app-state submit-message input-change history-recall set-cursor-position swap-channel open-menu close-menu subscribe unsubscribe]])))
+   #?(:cljs [wongchat.core :as core :refer [app-state submit-message input-change history-recall set-cursor-position swap-channel open-menu close-menu subscribe unsubscribe]])))
 
 (defn init-vars [app-state]
   (def app-messages (rum/cursor-in app-state [:messages]))

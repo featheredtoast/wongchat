@@ -18,7 +18,6 @@
    :active-channel channel
    :user-typing false
    :input ""
-   :initializing true
    :latest-input ""
    :connected false
    :user uid
