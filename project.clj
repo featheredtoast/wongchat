@@ -7,6 +7,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.854" :scope "provided"]
                  [com.google.guava/guava "23.0"]
+                 [http-kit "2.2.0"]
                  [ring "1.6.2"]
                  [ring/ring-defaults "0.3.1"]
                  [bk/ring-gzip "0.2.1"]
