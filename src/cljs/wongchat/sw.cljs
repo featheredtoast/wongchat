@@ -1,5 +1,5 @@
 (ns wongchat.sw
-  (:require [wongchat.data :refer [serialize deserialize]]))
+  (:require [wongchat.data :refer [deserialize]]))
 
 (enable-console-print!)
 

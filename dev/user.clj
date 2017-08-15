@@ -13,8 +13,7 @@
             [wongchat.db :refer [migrate rollback]]))
 
 (defn get-dev-middleware [redis-url]
-  (-> (wongchat.application/get-middleware redis-url)
-      (conj [wrap-file "dev-target" {:allow-symlinks? true}])))
+  (vec (concat [[wrap-file "dev-target/public"]] (wongchat.application/get-middleware redis-url))))
 
 (defn dev-system []
   (let [config (config)]
@@ -30,6 +29,9 @@
 
 (defn cljs-repl []
   (fw-sys/cljs-repl (:figwheel-system system)))
+
+(defn build-service-worker []
+  (fw-sys/build-once @(:system (:figwheel-system system)) [:sw]))
 
 ;; Set up aliases so they don't accidentally
 ;; get scrubbed from the namespace declaration

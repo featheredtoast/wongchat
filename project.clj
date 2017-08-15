@@ -72,20 +72,20 @@
                            :websocket-host :js-client-host}
                 :compiler {:main cljs.user
                            :asset-path "/js/compiled/out"
-                           :output-to "dev-target/js/compiled/wongchat.js"
-                           :output-dir "dev-target/js/compiled/out"
+                           :output-to "dev-target/public/js/compiled/wongchat.js"
+                           :output-dir "dev-target/public/js/compiled/out"
                            :source-map-timestamp true}}
                {:id "sw"
                 :source-paths ["src/cljs" "src/cljc"]
                 :compiler {:main wongchat.sw
                            :asset-path "/js/compiled/out"
-                           :output-to "dev-target/sw.js"
-                           :output-dir "dev-target/js/compiled/sw"
+                           :output-to "dev-target/public/sw.js"
+                           :output-dir "dev-target/public/js/compiled/sw"
                            :optimizations :advanced
                            :source-map-timestamp true}}
                {:id "test"
                 :source-paths ["src/cljs" "test/cljs" "src/cljc" "test/cljc"]
-                :compiler {:output-to "dev-target/js/compiled/testable.js"
+                :compiler {:output-to "dev-target/public/js/compiled/testable.js"
                            :main wongchat.test-runner
                            :optimizations :none}}
 
