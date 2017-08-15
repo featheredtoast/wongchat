@@ -9,8 +9,8 @@
       (println "starting service worker...")
       (-> sw
           (.register "/sw.js")
-          (.then sw-register)
-          (.catch sw-error)))
+          (.then core/sw-register)
+          (.catch core/sw-error)))
     component)
   (stop [component]
     component))

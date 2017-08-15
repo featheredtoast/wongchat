@@ -11,7 +11,7 @@
     (let [match-route (partial bidi/match-route router/routes)
           history (pushy/pushy core/route! match-route)]
       (when-let [sw (aget js/navigator "serviceWorker")]
-        (.addEventListener sw "message" (partial sw-on-message history)))
+        (.addEventListener sw "message" (partial core/sw-on-message history)))
       (pushy/start! history)
       (assoc component :history history)))
   (stop [component]

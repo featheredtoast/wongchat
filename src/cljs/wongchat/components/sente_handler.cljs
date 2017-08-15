@@ -1,7 +1,8 @@
 (ns wongchat.components.sente-handler
   (:require [com.stuartsierra.component :as component]
             [wongchat.core :as core]
-            [taoensso.sente  :as sente]))
+            [taoensso.sente  :as sente]
+            [cljs.core.async :as async :refer [put!]]))
 
 (defrecord SenteHandler [router chsk sente]
   component/Lifecycle
