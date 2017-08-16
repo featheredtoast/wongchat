@@ -1,6 +1,7 @@
 (ns user
   (:require [wongchat.application]
             [com.stuartsierra.component :as component]
+            [suspendable.core :refer [Suspendable suspend resume]]
             [figwheel-sidecar.config :as fw-config]
             [figwheel-sidecar.system :as fw-sys]
             [reloaded.repl :refer [system init]]
@@ -15,12 +16,28 @@
 (defn get-dev-middleware [redis-url]
   (vec (concat [[wrap-file "dev-target/public"]] (wongchat.application/get-middleware redis-url))))
 
+(defrecord ServiceWorkerBuild [figwheel-system]
+  component/Lifecycle
+  (start [this]
+    (fw-sys/build-once @(:system figwheel-system) [:sw])
+    this)
+  (stop [this]
+    this)
+  Suspendable
+  (suspend [this]
+    this)
+  (resume [this old-this]
+    this))
+
 (defn dev-system []
   (let [config (config)]
     (assoc (wongchat.application/app-system config)
            :middleware (new-middleware
                         {:middleware (get-dev-middleware (:redis-url config))})
            :figwheel-system (fw-sys/figwheel-system (fw-config/fetch-config))
+           :service-worker-build (component/using
+                                  (map->ServiceWorkerBuild {})
+                                  [:figwheel-system])
            :css-watcher (fw-sys/css-watcher {:watch-paths ["resources/public/css"]})
            :garden-watcher (new-garden-watcher ['wongchat.styles])
            :auto-reload (repl-watcher ["src/clj"] "(reloaded.repl/reset)"))))
@@ -29,9 +46,6 @@
 
 (defn cljs-repl []
   (fw-sys/cljs-repl (:figwheel-system system)))
-
-(defn build-service-worker []
-  (fw-sys/build-once @(:system (:figwheel-system system)) [:sw]))
 
 ;; Set up aliases so they don't accidentally
 ;; get scrubbed from the namespace declaration
