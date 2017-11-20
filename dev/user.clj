@@ -16,28 +16,15 @@
 (defn get-dev-middleware [redis-url]
   (vec (concat [[wrap-file "dev-target/public"]] (wongchat.application/get-middleware redis-url))))
 
-(defrecord ServiceWorkerBuild [figwheel-system]
-  component/Lifecycle
-  (start [this]
-    (fw-sys/build-once @(:system figwheel-system) [:sw])
-    this)
-  (stop [this]
-    this)
-  Suspendable
-  (suspend [this]
-    this)
-  (resume [this old-this]
-    this))
+(defn figwheel-config []
+  (update-in (fw-config/fetch-config) [:data :build-ids] #(conj % :sw)))
 
 (defn dev-system []
   (let [config (config)]
     (assoc (wongchat.application/app-system config)
            :middleware (new-middleware
                         {:middleware (get-dev-middleware (:redis-url config))})
-           :figwheel-system (fw-sys/figwheel-system (fw-config/fetch-config))
-           :service-worker-build (component/using
-                                  (map->ServiceWorkerBuild {})
-                                  [:figwheel-system])
+           :figwheel-system (fw-sys/figwheel-system (figwheel-config))
            :css-watcher (fw-sys/css-watcher {:watch-paths ["resources/public/css"]})
            :garden-watcher (new-garden-watcher ['wongchat.styles])
            :auto-reload (repl-watcher ["src/clj"] "(reloaded.repl/reset)"))))
