@@ -4,46 +4,47 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
-  :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.854" :scope "provided"]
+  :dependencies [[org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojurescript "1.10.238" :scope "provided"]
                  [com.google.guava/guava "23.0"]
-                 [http-kit "2.2.0"]
-                 [ring "1.6.2"]
+                 [http-kit "2.3.0"]
+                 [ring "1.6.3"]
                  [ring/ring-defaults "0.3.1"]
-                 [bk/ring-gzip "0.2.1"]
+                 [bk/ring-gzip "0.3.0"]
                  [radicalzephyr/ring.middleware.logger "0.6.0"]
                  [onelog "0.5.0" :exclusions [io.aviso/pretty]]
                  [ring-middleware-format "0.7.2"]
-                 [compojure "1.6.0"]
+                 [compojure "1.6.1"]
                  [environ "1.1.0"]
-                 [rum "0.10.8"]
-                 [org.clojure/core.async "0.3.443" :exclusions [org.clojure/tools.reader]]
-                 [com.taoensso/sente "1.11.0" :exclusions [org.clojure/tools.reader]]
-                 [com.novemberain/langohr "4.1.0" :exclusions [clj-http cheshire slingshot com.fasterxml.jackson.core/jackson-core]]
+                 [rum "0.11.2"]
+                 [org.clojure/core.async "0.4.474" :exclusions [org.clojure/tools.reader]]
+                 [com.taoensso/sente "1.12.0" :exclusions [org.clojure/tools.reader]]
+                 [com.novemberain/langohr "5.0.0" :exclusions [clj-http cheshire slingshot com.fasterxml.jackson.core/jackson-core]]
                  [com.cemerick/friend "0.2.3" :exclusions [slingshot commons-logging org.apache.httpcomponents/httpclient org.clojure/core.cache]]
-                 [qarth "0.1.3" :exclusions [slingshot org.apache.httpcomponents/httpclient com.fasterxml.jackson.core/jackson-core]]
-                 [ragtime "0.7.1"]
-                 [org.clojure/java.jdbc "0.7.0"]
+                 [featheredtoast/qarth "0.2.0" :exclusions [slingshot org.apache.httpcomponents/httpclient com.fasterxml.jackson.core/jackson-core]]
+
+                 [ragtime "0.7.2"]
+                 [org.clojure/java.jdbc "0.7.6"]
                  [postgresql/postgresql "9.3-1102.jdbc41"]
                  [clj-redis-session "2.1.0"]
                  [com.stuartsierra/component "0.3.2"]
                  [suspendable "0.1.1"]
-                 [org.danielsz/system "0.4.1-SNAPSHOT"]
+                 [org.danielsz/system "0.4.1"]
                  [im.chit/hara.io.watch "2.5.10"]
-                 [garden "1.3.2"]
+                 [garden "1.3.5"]
                  [lambdaisland/garden-watcher "0.3.2"]
                  [hiccup "1.0.5"]
-                 [com.cognitect/transit-cljs "0.8.239"]
-                 [com.cognitect/transit-clj "0.8.300" :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [clj-time "0.14.0"]
-                 [cljsjs/hammer "2.0.4-5"]
-                 [org.bouncycastle/bcprov-jdk15on "1.57"]
-                 [commons-codec/commons-codec "1.10"]
-                 [org.bitbucket.b_c/jose4j "0.6.0"]
-                 [clj-http "3.6.1"]
-                 [nl.martijndwars/web-push "3.0.0" :exclusions [commons-logging org.apache.httpcomponents/httpclient]]
-                 [bidi "2.1.2"]
-                 [kibu/pushy "0.3.7"]]
+                 [com.cognitect/transit-cljs "0.8.256"]
+                 [com.cognitect/transit-clj "0.8.309" :exclusions [com.fasterxml.jackson.core/jackson-core]]
+                 [clj-time "0.14.4"]
+                 [cljsjs/hammer "2.0.8-0"]
+                 [org.bouncycastle/bcprov-jdk15on "1.59"]
+                 [commons-codec/commons-codec "1.11"]
+                 [org.bitbucket.b_c/jose4j "0.6.3"]
+                 [clj-http "3.9.0"]
+                 [nl.martijndwars/web-push "3.1.0" :exclusions [commons-logging org.apache.httpcomponents/httpclient]]
+                 [bidi "2.1.3"]
+                 [kibu/pushy "0.3.8"]]
 
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-environ "1.1.0"]]
@@ -82,7 +83,8 @@
                            :asset-path "/js/compiled/out"
                            :output-to "dev-target/public/sw.js"
                            :output-dir "dev-target/public/js/compiled/sw"
-                           :optimizations :advanced
+                           :target :webworker
+                           :optimizations :none
                            :source-map-timestamp true}}
                {:id "test"
                 :source-paths ["src/cljs" "test/cljs" "src/cljc" "test/cljc"]
@@ -138,16 +140,16 @@
   :doo {:build "test"}
 
   :profiles {:dev
-             {:dependencies [[figwheel "0.5.12" :exclusions [org.clojure/clojurescript com.google.javascript/closure-compiler org.clojure/tools.reader]]
-                             [figwheel-sidecar "0.5.12" :exclusions [org.clojure/clojurescript com.google.javascript/closure-compiler org.clojure/tools.reader]]
+             {:dependencies [[figwheel "0.5.16" :exclusions [org.clojure/clojurescript com.google.javascript/closure-compiler org.clojure/tools.reader]]
+                             [figwheel-sidecar "0.5.16" :exclusions [org.clojure/clojurescript com.google.javascript/closure-compiler org.clojure/tools.reader]]
                              [com.cemerick/piggieback "0.2.2"]
                              [org.clojure/tools.nrepl "0.2.13"]
-                             [lein-doo "0.1.7"]
-                             [reloaded.repl "0.2.3"]
+                             [lein-doo "0.1.10"]
+                             [reloaded.repl "0.2.4"]
                              [featheredtoast/repl-watcher "0.2.1"]]
 
-              :plugins [[lein-figwheel "0.5.12"]
-                        [lein-doo "0.1.7"]]
+              :plugins [[lein-figwheel "0.5.16"]
+                        [lein-doo "0.1.10"]]
               :source-paths ["dev"]
               :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}
 
